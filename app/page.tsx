@@ -3,9 +3,9 @@ export default function Home() {
   return (
     <main>
       <h1>
-        Nyimul Hoque
+        Down for maintenance. 
       </h1>
-      <h2>
+      {/* <h2>
         About me:
       </h2>
       <p>
@@ -19,7 +19,7 @@ export default function Home() {
       </h2>
       <h2>
         Contact
-      </h2>
+      </h2> */}
     </main>
   );
 }
