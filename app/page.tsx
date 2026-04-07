@@ -1,7 +1,28 @@
 
 export default function Home() {
   return (
-    <main className="bg-neutral-900 text-white min-h-screen px-8 pb-16">
+    <main className="bg-neutral-900 text-white min-h-screen px-8 pb-16 relative">
+      {/* Cloth texture: SVG warp/weft grid fixed over the entire page */}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 w-full h-full"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <pattern id="cloth" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="8" y2="0" stroke="#A08B6B" strokeWidth="0.5" opacity="0.08" />
+            <line x1="0" y1="4" x2="8" y2="4" stroke="#A08B6B" strokeWidth="0.3" opacity="0.06" />
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#A08B6B" strokeWidth="0.5" opacity="0.05" />
+            <line x1="4" y1="0" x2="4" y2="8" stroke="#A08B6B" strokeWidth="0.3" opacity="0.04" />
+          </pattern>
+          <pattern id="cloth-weave" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="4" height="4" fill="#A08B6B" opacity="0.04" />
+            <rect x="4" y="4" width="4" height="4" fill="#A08B6B" opacity="0.04" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#cloth)" />
+        <rect width="100%" height="100%" fill="url(#cloth-weave)" />
+      </svg>
       <div className="relative h-screen">
         <nav className="flex justify-between items-center pt-12">
           <span className="text-lg">Nyimul</span>
