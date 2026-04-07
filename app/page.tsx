@@ -1,7 +1,7 @@
 
 export default function Home() {
   return (
-    <main className="bg-neutral-900 text-white min-h-screen px-8 pb-16 relative">
+    <main className="min-h-screen px-8 pb-16 relative" style={{backgroundColor: '#1C1914'}}>
       {/* Cloth texture: SVG warp/weft grid fixed over the entire page */}
       <svg
         aria-hidden="true"
@@ -25,9 +25,10 @@ export default function Home() {
       </svg>
       <div className="relative h-screen">
         <nav className="flex justify-between items-center pt-12">
-          <span className="text-lg">Nyimul</span>
+          {/* This is the top left corner placeholder: */}
+          {/* <span className="text-lg" style={{color: 'var(--color-subtle)'}}>Nyimul</span> */}
           <div className="flex gap-8">
-            <a href="#">Photography</a>
+            {/* <a href="#">Photography</a> */}
             {/* <a href="#">Music</a> */}
             {/* <a href="#">Wedding</a> */}
             {/* <a href="#">Tax Return Video Game</a> */}
@@ -103,15 +104,24 @@ export default function Home() {
                 strokeDasharray="10 13 17 12 15 10 19 14"
                 mask="url(#mask-c3)" />
             </svg>
-            <h1 className="text-5xl text-center">Hi, I&apos;m Nyimul Hoque!</h1>
+            <h1 className="text-5xl text-center">hi, i&apos;m Nyimul Hoque!</h1>
           </div>
         </section>
       </div>
-      <section className="mt-24">
-        <h2>About me:</h2>
-        <p>Placeholder</p>
+      <section className="mt-24 max-w-2xl mx-auto">
+        <h2 className="text-2xl mb-6">about me</h2>
+        <p className="leading-relaxed">
+          I&apos;m a software engineer focused on backend, data, and 
+          full-stack development, with experience building scalable 
+          healthcare systems using Python, PySpark, Databricks, Kafka, 
+          Azure, .NET, Java, and React. Currently, I work at Humana on 
+          intake and automation platforms that support large-scale 
+          Medicare and Medicaid workflows. Outside of engineering, 
+          I&apos;m passionate about music, photography, and building 
+          creative, user-focused projects.
+        </p>
       </section>
-      <section className="mt-24">
+      {/* <section className="mt-24">
         <h2>Experience</h2>
       </section>
       <section className="mt-24">
@@ -119,7 +129,7 @@ export default function Home() {
       </section>
       <section className="mt-24">
         <h2>Contact</h2>
-      </section>
+      </section> */}
     </main>
   );
 }
