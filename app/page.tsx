@@ -19,6 +19,9 @@ export default function Home() {
             {/* placeholder circle: <div className="w-48 h-48 rounded-full bg-amber-200" /> */}
             <svg width="204" height="204" viewBox="0 0 204 204">
               <defs>
+                <clipPath id="headshot-clip">
+                  <circle cx="102" cy="102" r="88" />
+                </clipPath>
                 {/* Each mask has a fat-stroked circle that sweeps from a starting angle,
                     progressively revealing the decorative dashed circle beneath */}
                 <mask id="mask-c1">
@@ -36,7 +39,7 @@ export default function Home() {
                     strokeDasharray="584 584" strokeDashoffset="584"
                     transform="rotate(137, 102, 102)">
                     <animate attributeName="stroke-dashoffset"
-                      from="584" to="0" dur="12s" begin="5s" fill="freeze" />
+                      from="584" to="0" dur="5s" begin="5s" fill="freeze" />
                   </circle>
                 </mask>
                 <mask id="mask-c3">
@@ -45,18 +48,29 @@ export default function Home() {
                     strokeDasharray="622 622" strokeDashoffset="622"
                     transform="rotate(215, 102, 102)">
                     <animate attributeName="stroke-dashoffset"
-                      from="622" to="0" dur="20s" begin="17s" fill="freeze" />
+                      from="622" to="0" dur="5s" begin="10s" fill="freeze" />
                   </circle>
                 </mask>
               </defs>
 
-              {/* Fill fades in with the first ring */}
-              <circle cx="102" cy="102" r="88" fill="#292524" opacity="0">
+              {/* Headshot cropped to the inner circle */}
+              {/* To reposition: adjust x/y to shift (negative = move image right/down into frame) */}
+              {/* To rezoom: increase width/height (larger = zoomed out, smaller = zoomed in) */}
+              <image
+                href="/headshot_spain.jpg"
+                x="-15"
+                y="2"
+                width="250"
+                height="210"
+                clipPath="url(#headshot-clip)"
+                preserveAspectRatio="xMidYMid slice"
+                opacity="0"
+              >
                 <animate attributeName="opacity" from="0" to="1" dur="0.8s" begin="0s" fill="freeze" />
-              </circle>
+              </image>
 
               <circle cx="102" cy="102" r="88"
-                fill="none" stroke="#C87941" strokeWidth="2"
+                fill="none" stroke="#EFD8C8" strokeWidth="2"
                 strokeDasharray="17 14 20 16 15 11 21 17 16 15 18 10"
                 mask="url(#mask-c1)" />
               <circle cx="102" cy="102" r="93"
@@ -64,7 +78,7 @@ export default function Home() {
                 strokeDasharray="12 10 18 13 14 16 20 11"
                 mask="url(#mask-c2)" />
               <circle cx="102" cy="102" r="99"
-                fill="none" stroke="#7F77DD" strokeWidth="2"
+                fill="none" stroke="#C87941" strokeWidth="2"
                 strokeDasharray="10 13 17 12 15 10 19 14"
                 mask="url(#mask-c3)" />
             </svg>
