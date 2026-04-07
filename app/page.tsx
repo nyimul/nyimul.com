@@ -1,3 +1,4 @@
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -25,8 +26,35 @@ export default function Home() {
       </svg>
       <div className="relative h-screen">
         <nav className="flex justify-between items-center pt-12">
-          {/* This is the top left corner placeholder: */}
-          {/* <span className="text-lg" style={{color: 'var(--color-subtle)'}}>Nyimul</span> */}
+          <Link href="/" aria-label="Home">
+            {/* Kantha flower logo — 4 wide petals + 4 teal leaves between them */}
+            <svg width="100" height="100" viewBox="-30 -30 60 60" fill="none" strokeLinecap="round">
+              {/* Amber center eye */}
+              <circle cx="0" cy="0" r="2" stroke="#E8A84C" strokeWidth="1.5" strokeDasharray="1 2"/>
+              {/* Red center ring */}
+              <circle cx="0" cy="0" r="6" stroke="#E24B4A" strokeWidth="2" strokeDasharray="2 2.5"/>
+              {/* 4 wide cardinal petals — wide lateral control point makes them rounded, not spiky */}
+              <path d="M0 -8 Q11 -15 0 -24 Q-11 -15 0 -8" stroke="#D85A30" strokeWidth="1.5" strokeDasharray="2 3"/>
+              <path d="M0 -8 Q11 -15 0 -24 Q-11 -15 0 -8" stroke="#E24B4A" strokeWidth="1.5" strokeDasharray="2 3" transform="rotate(90)"/>
+              <path d="M0 -8 Q11 -15 0 -24 Q-11 -15 0 -8" stroke="#D85A30" strokeWidth="1.5" strokeDasharray="2 3" transform="rotate(180)"/>
+              <path d="M0 -8 Q11 -15 0 -24 Q-11 -15 0 -8" stroke="#E24B4A" strokeWidth="1.5" strokeDasharray="2 3" transform="rotate(270)"/>
+              {/* 4 teal leaves at 45° between petals */}
+              <path d="M0 -8 Q6 -14 0 -19 Q-6 -14 0 -8" stroke="#1D9E75" strokeWidth="1.5" strokeDasharray="2 3" transform="rotate(45)"/>
+              <path d="M0 -8 Q6 -14 0 -19 Q-6 -14 0 -8" stroke="#1D9E75" strokeWidth="1.5" strokeDasharray="2 3" transform="rotate(135)"/>
+              <path d="M0 -8 Q6 -14 0 -19 Q-6 -14 0 -8" stroke="#1D9E75" strokeWidth="1.5" strokeDasharray="2 3" transform="rotate(225)"/>
+              <path d="M0 -8 Q6 -14 0 -19 Q-6 -14 0 -8" stroke="#1D9E75" strokeWidth="1.5" strokeDasharray="2 3" transform="rotate(315)"/>
+              {/* Pink dots at cardinal petal tips */}
+              <circle cx="0" cy="-24" r="1.5" stroke="#D4537E" strokeWidth="1" strokeDasharray="1 2"/>
+              <circle cx="0" cy="-24" r="1.5" stroke="#D4537E" strokeWidth="1" strokeDasharray="1 2" transform="rotate(90)"/>
+              <circle cx="0" cy="-24" r="1.5" stroke="#D4537E" strokeWidth="1" strokeDasharray="1 2" transform="rotate(180)"/>
+              <circle cx="0" cy="-24" r="1.5" stroke="#D4537E" strokeWidth="1" strokeDasharray="1 2" transform="rotate(270)"/>
+              {/* Amber dots at leaf tips */}
+              <circle cx="0" cy="-19" r="1.5" stroke="#E8A84C" strokeWidth="1" strokeDasharray="1 2" transform="rotate(45)"/>
+              <circle cx="0" cy="-19" r="1.5" stroke="#E8A84C" strokeWidth="1" strokeDasharray="1 2" transform="rotate(135)"/>
+              <circle cx="0" cy="-19" r="1.5" stroke="#E8A84C" strokeWidth="1" strokeDasharray="1 2" transform="rotate(225)"/>
+              <circle cx="0" cy="-19" r="1.5" stroke="#E8A84C" strokeWidth="1" strokeDasharray="1 2" transform="rotate(315)"/>
+            </svg>
+          </Link>
           <div className="flex gap-8">
             {/* <a href="#">Photography</a> */}
             {/* <a href="#">Music</a> */}
