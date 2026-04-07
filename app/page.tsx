@@ -1,25 +1,135 @@
 
 export default function Home() {
   return (
-    <main>
-      <h1>
-        Down for maintenance. 
-      </h1>
-      {/* <h2>
-        About me:
-      </h2>
-      <p>
-        Placeholder
-      </p>
-      <h2>
-        Experience
-      </h2>
-      <h2>
-        Projects
-      </h2>
-      <h2>
-        Contact
-      </h2> */}
+    <main className="min-h-screen px-8 pb-16 relative" style={{backgroundColor: '#1C1914'}}>
+      {/* Cloth texture: SVG warp/weft grid fixed over the entire page */}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 w-full h-full"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <pattern id="cloth" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="8" y2="0" stroke="#A08B6B" strokeWidth="0.5" opacity="0.08" />
+            <line x1="0" y1="4" x2="8" y2="4" stroke="#A08B6B" strokeWidth="0.3" opacity="0.06" />
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#A08B6B" strokeWidth="0.5" opacity="0.05" />
+            <line x1="4" y1="0" x2="4" y2="8" stroke="#A08B6B" strokeWidth="0.3" opacity="0.04" />
+          </pattern>
+          <pattern id="cloth-weave" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect x="0" y="0" width="4" height="4" fill="#A08B6B" opacity="0.04" />
+            <rect x="4" y="4" width="4" height="4" fill="#A08B6B" opacity="0.04" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#cloth)" />
+        <rect width="100%" height="100%" fill="url(#cloth-weave)" />
+      </svg>
+      <div className="relative h-screen">
+        <nav className="flex justify-between items-center pt-12">
+          {/* This is the top left corner placeholder: */}
+          {/* <span className="text-lg" style={{color: 'var(--color-subtle)'}}>Nyimul</span> */}
+          <div className="flex gap-8">
+            {/* <a href="#">Photography</a> */}
+            {/* <a href="#">Music</a> */}
+            {/* <a href="#">Wedding</a> */}
+            {/* <a href="#">Tax Return Video Game</a> */}
+            {/* <a href="#">AI Guitar Tutor</a> */}
+            {/* <a href="#">Omnichord Online</a> */}
+          </div>
+        </nav>
+        <section className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="flex items-center gap-8">
+            {/* placeholder circle: <div className="w-48 h-48 rounded-full bg-amber-200" /> */}
+            <svg width="204" height="204" viewBox="0 0 204 204">
+              <defs>
+                <clipPath id="headshot-clip">
+                  <circle cx="102" cy="102" r="88" />
+                </clipPath>
+                {/* Each mask has a fat-stroked circle that sweeps from a starting angle,
+                    progressively revealing the decorative dashed circle beneath */}
+                <mask id="mask-c1">
+                  <circle cx="102" cy="102" r="88"
+                    stroke="white" strokeWidth="12" fill="none"
+                    strokeDasharray="553 553" strokeDashoffset="553"
+                    transform="rotate(75, 102, 102)">
+                    <animate attributeName="stroke-dashoffset"
+                      from="553" to="0" dur="5s" begin="0s" fill="freeze" />
+                  </circle>
+                </mask>
+                <mask id="mask-c2">
+                  <circle cx="102" cy="102" r="93"
+                    stroke="white" strokeWidth="12" fill="none"
+                    strokeDasharray="584 584" strokeDashoffset="584"
+                    transform="rotate(137, 102, 102)">
+                    <animate attributeName="stroke-dashoffset"
+                      from="584" to="0" dur="5s" begin="5s" fill="freeze" />
+                  </circle>
+                </mask>
+                <mask id="mask-c3">
+                  <circle cx="102" cy="102" r="99"
+                    stroke="white" strokeWidth="12" fill="none"
+                    strokeDasharray="622 622" strokeDashoffset="622"
+                    transform="rotate(215, 102, 102)">
+                    <animate attributeName="stroke-dashoffset"
+                      from="622" to="0" dur="5s" begin="10s" fill="freeze" />
+                  </circle>
+                </mask>
+              </defs>
+
+              {/* Headshot cropped to the inner circle */}
+              {/* To reposition: adjust x/y to shift (negative = move image right/down into frame) */}
+              {/* To rezoom: increase width/height (larger = zoomed out, smaller = zoomed in) */}
+              <image
+                href="/headshot_spain.jpg"
+                x="-15"
+                y="2"
+                width="250"
+                height="210"
+                clipPath="url(#headshot-clip)"
+                preserveAspectRatio="xMidYMid slice"
+                opacity="0"
+              >
+                <animate attributeName="opacity" from="0" to="1" dur="0.8s" begin="0s" fill="freeze" />
+              </image>
+
+              <circle cx="102" cy="102" r="88"
+                fill="none" stroke="#EFD8C8" strokeWidth="2"
+                strokeDasharray="17 14 20 16 15 11 21 17 16 15 18 10"
+                mask="url(#mask-c1)" />
+              <circle cx="102" cy="102" r="93"
+                fill="none" stroke="#D85A30" strokeWidth="1.5"
+                strokeDasharray="12 10 18 13 14 16 20 11"
+                mask="url(#mask-c2)" />
+              <circle cx="102" cy="102" r="99"
+                fill="none" stroke="#C87941" strokeWidth="2"
+                strokeDasharray="10 13 17 12 15 10 19 14"
+                mask="url(#mask-c3)" />
+            </svg>
+            <h1 className="text-5xl text-center">hi, i&apos;m Nyimul Hoque!</h1>
+          </div>
+        </section>
+      </div>
+      <section className="mt-24 max-w-2xl mx-auto">
+        <h2 className="text-2xl mb-6">about me</h2>
+        <p className="leading-relaxed">
+          I&apos;m a software engineer focused on backend, data, and 
+          full-stack development, with experience building scalable 
+          healthcare systems using Python, PySpark, Databricks, Kafka, 
+          Azure, .NET, Java, and React. Currently, I work at Humana on 
+          intake and automation platforms that support large-scale 
+          Medicare and Medicaid workflows. Outside of engineering, 
+          I&apos;m passionate about music, photography, and building 
+          creative, user-focused projects.
+        </p>
+      </section>
+      {/* <section className="mt-24">
+        <h2>Experience</h2>
+      </section>
+      <section className="mt-24">
+        <h2>Projects</h2>
+      </section>
+      <section className="mt-24">
+        <h2>Contact</h2>
+      </section> */}
     </main>
   );
 }
