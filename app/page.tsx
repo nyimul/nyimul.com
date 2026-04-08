@@ -153,7 +153,7 @@ export default function Home() {
         </section>
 
         {/* Scroll-down arrow — stitches in left-to-right over 3s */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center pointer-events-none">
+        <a href="#about" className="absolute bottom-8 left-0 right-0 flex justify-center cursor-pointer">
           <svg width="80" height="32" viewBox="-40 -6 80 38" fill="none" strokeLinecap="round" strokeLinejoin="round">
             <defs>
               <clipPath id="arrow-reveal">
@@ -171,9 +171,9 @@ export default function Home() {
               clipPath="url(#arrow-reveal)"
             />
           </svg>
-        </div>
+        </a>
       </div>
-      <section className="mt-24 max-w-2xl mx-auto">
+      <section id="about" className="mt-24 max-w-2xl mx-auto">
         <h2 className="text-2xl mb-6">about me</h2>
         <p className="leading-relaxed">
           I&apos;m a software engineer focused on backend, data, and 
