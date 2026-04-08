@@ -69,36 +69,44 @@ export default function Home() {
             {/* placeholder circle: <div className="w-48 h-48 rounded-full bg-amber-200" /> */}
             <svg width="204" height="204" viewBox="0 0 204 204">
               <defs>
+                {/* Photo clips to r=88 — innermost stitch ring at r=80 draws on top of it */}
                 <clipPath id="headshot-clip">
                   <circle cx="102" cy="102" r="88" />
                 </clipPath>
-                {/* Each mask has a fat-stroked circle that sweeps from a starting angle,
-                    progressively revealing the decorative dashed circle beneath */}
                 <mask id="mask-c1">
+                  <circle cx="102" cy="102" r="80"
+                    stroke="white" strokeWidth="12" fill="none"
+                    strokeDasharray="503 503" strokeDashoffset="503"
+                    transform="rotate(70, 102, 102)">
+                    <animate attributeName="stroke-dashoffset"
+                      from="503" to="0" dur="5s" begin="0s" fill="freeze" />
+                  </circle>
+                </mask>
+                <mask id="mask-c2">
                   <circle cx="102" cy="102" r="88"
                     stroke="white" strokeWidth="12" fill="none"
                     strokeDasharray="553 553" strokeDashoffset="553"
                     transform="rotate(75, 102, 102)">
                     <animate attributeName="stroke-dashoffset"
-                      from="553" to="0" dur="5s" begin="0s" fill="freeze" />
+                      from="553" to="0" dur="5s" begin="5s" fill="freeze" />
                   </circle>
                 </mask>
-                <mask id="mask-c2">
+                <mask id="mask-c3">
                   <circle cx="102" cy="102" r="93"
                     stroke="white" strokeWidth="12" fill="none"
                     strokeDasharray="584 584" strokeDashoffset="584"
                     transform="rotate(137, 102, 102)">
                     <animate attributeName="stroke-dashoffset"
-                      from="584" to="0" dur="5s" begin="5s" fill="freeze" />
+                      from="584" to="0" dur="5s" begin="10s" fill="freeze" />
                   </circle>
                 </mask>
-                <mask id="mask-c3">
+                <mask id="mask-c4">
                   <circle cx="102" cy="102" r="99"
                     stroke="white" strokeWidth="12" fill="none"
                     strokeDasharray="622 622" strokeDashoffset="622"
                     transform="rotate(215, 102, 102)">
                     <animate attributeName="stroke-dashoffset"
-                      from="622" to="0" dur="5s" begin="10s" fill="freeze" />
+                      from="622" to="0" dur="5s" begin="15s" fill="freeze" />
                   </circle>
                 </mask>
               </defs>
@@ -119,22 +127,51 @@ export default function Home() {
                 <animate attributeName="opacity" from="0" to="1" dur="0.8s" begin="0s" fill="freeze" />
               </image>
 
-              <circle cx="102" cy="102" r="88"
-                fill="none" stroke="#EFD8C8" strokeWidth="2"
-                strokeDasharray="17 14 20 16 15 11 21 17 16 15 18 10"
+              {/* r=80 — sits inside the photo, looks stitched onto it */}
+              <circle cx="102" cy="102" r="85"
+                fill="none" stroke="#EFD8C8" strokeWidth="1.5"
+                strokeDasharray="14 11 16 12 15 10"
                 mask="url(#mask-c1)" />
-              <circle cx="102" cy="102" r="93"
-                fill="none" stroke="#D85A30" strokeWidth="1.5"
-                strokeDasharray="12 10 18 13 14 16 20 11"
+              {/* r=88 — where innermost used to be */}
+              <circle cx="102" cy="102" r="91"
+                fill="none" stroke="#D85A30" strokeWidth="2"
+                strokeDasharray="17 14 20 16 15 11 21 17 16 15 18 10"
                 mask="url(#mask-c2)" />
-              <circle cx="102" cy="102" r="99"
-                fill="none" stroke="#C87941" strokeWidth="2"
-                strokeDasharray="10 13 17 12 15 10 19 14"
+              {/* r=93 — where 2nd used to be */}
+              <circle cx="102" cy="102" r="96"
+                fill="none" stroke="#C87941" strokeWidth="1.5"
+                strokeDasharray="12 10 18 13 14 16 20 11"
                 mask="url(#mask-c3)" />
+              {/* r=99 — new outermost, warm golden yellow */}
+              <circle cx="102" cy="102" r="101"
+                fill="none" stroke="#E8C040" strokeWidth="2"
+                strokeDasharray="10 13 17 12 15 10 19 14"
+                mask="url(#mask-c4)" />
             </svg>
-            <h1 className="text-5xl text-center">hi, i&apos;m Nyimul Hoque!</h1>
+            <h1 className="text-5xl text-center">Hi! I&apos;m Nyimul.</h1>
           </div>
         </section>
+
+        {/* Scroll-down arrow — stitches in left-to-right over 3s */}
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center pointer-events-none">
+          <svg width="80" height="32" viewBox="-40 -6 80 38" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <defs>
+              <clipPath id="arrow-reveal">
+                {/* Rect starts at left edge, width expands rightward to reveal the V */}
+                <rect x="-40" y="-6" height="38" width="0">
+                  <animate attributeName="width" from="0" to="80" dur="3s" begin="0.5s" fill="freeze"/>
+                </rect>
+              </clipPath>
+            </defs>
+            <path
+              d="M-32 0 L0 24 L32 0"
+              stroke="#C87941"
+              strokeWidth="2"
+              strokeDasharray="7 5"
+              clipPath="url(#arrow-reveal)"
+            />
+          </svg>
+        </div>
       </div>
       <section className="mt-24 max-w-2xl mx-auto">
         <h2 className="text-2xl mb-6">about me</h2>
@@ -146,7 +183,8 @@ export default function Home() {
           intake and automation platforms that support large-scale 
           Medicare and Medicaid workflows. Outside of engineering, 
           I&apos;m passionate about music, photography, and building 
-          creative, user-focused projects.
+          creative, user-focused projects. This website will continue 
+          to be updated with my projects.
         </p>
       </section>
       {/* <section className="mt-24">
