@@ -54,7 +54,7 @@ export default function Home() {
           <div className="flex items-center gap-8">
             {/* <a href="/">Home</a> */}
             <a href="#music">Music</a>
-            <a href="#photography">Photography</a>
+            <a href="/photography">Photography</a>
             <div className="relative group">
               <button className="flex items-center gap-1.5 cursor-pointer"
                 style={{color: 'var(--color-accent)', fontFamily: 'Georgia, "Times New Roman", serif', background: 'none', border: 'none', padding: 0, fontSize: 'inherit'}}>
