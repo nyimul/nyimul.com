@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ProjectsDropdown from './components/ProjectsDropdown';
 
 export default function Home() {
   return (
@@ -55,27 +56,7 @@ export default function Home() {
             {/* <a href="/">Home</a> */}
             <a href="#music">Music</a>
             <a href="/photography">Photography</a>
-            <div className="relative group">
-              <button className="flex items-center gap-1.5 cursor-pointer"
-                style={{color: 'var(--color-accent)', fontFamily: 'Georgia, "Times New Roman", serif', background: 'none', border: 'none', padding: 0, fontSize: 'inherit'}}>
-                Projects
-                <svg width="10" height="7" viewBox="0 0 10 7" fill="none" strokeLinecap="round">
-                  <path d="M1 1.5L5 5.5L9 1.5" stroke="currentColor" strokeWidth="1.5"/>
-                </svg>
-              </button>
-              {/* pt-3 creates a transparent hover bridge so the mouse doesn't break the hover target crossing the gap */}
-              <div className="absolute right-0 top-full z-50 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-200 min-w-55 pt-3">
-                <div style={{backgroundColor: '#241E18', padding: '0.5rem 0', position: 'relative'}}>
-                  <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none',overflow:'visible'}}>
-                    <rect x="0" y="0" width="100%" height="100%"
-                      fill="none" stroke="#E24B4A" strokeWidth="1"
-                      strokeDasharray="12 6"
-                    />
-                  </svg>
-                  <a href="#" className="block px-5 py-2.5" style={{fontSize: '0.875rem'}}>Run With Friends App</a>
-                </div>
-              </div>
-            </div>
+            <ProjectsDropdown />
           </div>
         </nav>
 
