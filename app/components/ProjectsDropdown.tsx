@@ -1,27 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 
 export default function ProjectsDropdown() {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent | TouchEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, []);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative">
       <button
         onClick={() => setOpen(prev => !prev)}
         className="flex items-center gap-1.5 cursor-pointer"
@@ -35,17 +20,22 @@ export default function ProjectsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 min-w-55 pt-3">
-          <div style={{backgroundColor: '#241E18', padding: '0.5rem 0', position: 'relative'}}>
-            <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none',overflow:'visible'}}>
-              <rect x="0" y="0" width="100%" height="100%"
-                fill="none" stroke="#E24B4A" strokeWidth="1"
-                strokeDasharray="12 6"
-              />
-            </svg>
-            <a href="#" className="block px-5 py-2.5" style={{fontSize: '0.875rem'}}>Run With Friends App</a>
+        <>
+          {/* Invisible full-screen backdrop — clicking outside the menu closes it */}
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full z-50 min-w-55 pt-3">
+            <div style={{backgroundColor: '#241E18', padding: '0.5rem 0', position: 'relative'}}>
+              <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none',overflow:'visible'}}>
+                <rect x="0" y="0" width="100%" height="100%"
+                  fill="none" stroke="#E24B4A" strokeWidth="1"
+                  strokeDasharray="12 6"
+                />
+              </svg>
+              <a href="https://github.com/nyimul" target="_blank" rel="noopener noreferrer" className="block px-5 py-2.5" style={{fontSize: '0.875rem'}}>Github</a>
+              <a href="#" className="block px-5 py-2.5" style={{fontSize: '0.875rem'}}>Run With Friends App</a>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
