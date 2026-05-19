@@ -55,7 +55,7 @@ export default function Home() {
           <div className="flex items-center gap-8">
             {/* <a href="/">Home</a> */}
             {/* <a href="#music">Music</a> */}
-            <a href="/photography">Photography</a>
+            {/*<a href="/photography">Photography</a>*/}
             <ProjectsDropdown />
           </div>
         </nav>
