@@ -32,7 +32,7 @@ export default function ProjectsDropdown() {
                 />
               </svg>
               <a href="https://github.com/nyimul" target="_blank" rel="noopener noreferrer" className="block px-5 py-2.5" style={{fontSize: '0.875rem'}}>Github</a>
-              <a href="#" className="block px-5 py-2.5" style={{fontSize: '0.875rem'}}>Run With Friends App</a>
+              {/* <a href="#" className="block px-5 py-2.5" style={{fontSize: '0.875rem'}}>Run With Friends App</a> */}
             </div>
           </div>
         </>
