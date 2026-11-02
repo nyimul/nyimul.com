@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/*
+  Wedding theme. Every colour and font token lives here so the whole site can be
+  re-themed from one file. Tailwind v4 turns @theme variables into utilities:
+    --color-paper   -> bg-paper, text-paper, border-paper ...
+    --font-display  -> font-display
+
+  Note: Tailwind v4 scans the whole project for class names by default, so this file and
+  app/(portfolio)/globals.css both compile fine side by side. They are loaded by different
+  root layouts, so they never end up on the same page.
+*/
+
+/* Colours: plain values, so they also exist as CSS variables (var(--color-paper)) for custom CSS. */
+@theme {
+  /* TODO: pick the real palette from the engagement photos / invitations. Keep it to 4-5 colours. */
+  --color-paper: #fbf7f2;        /* page background */
+  --color-ink: #2b2420;          /* primary text, high contrast for older eyes */
+  --color-muted: #7a6e66;        /* secondary text */
+  --color-accent: #9a6b4f;       /* buttons, links, rules */
+  --color-accent-soft: #eadbcf;  /* tints, borders, hover states */
+}
+
+/* Fonts: `inline` because the values reference the next/font variables set on <html> in layout.tsx. */
+@theme inline {
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+}
+
+/* Base styles go in @layer base so Tailwind utilities (e.g. font-display on a <p>) can still override them. */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    /* Slightly larger default type: the audience includes grandparents on phones. */
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  a {
+    color: var(--color-accent);
+    text-underline-offset: 0.2em;
+  }
+
+  /* Accessibility: anyone who has turned off motion gets an instant, still site.
+     Every animation/transition on the site must respect this. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
