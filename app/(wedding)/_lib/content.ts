@@ -25,29 +25,13 @@ export const wedding = {
 
 export const events: WeddingEvent[] = [
   {
-    id: "holud",
-    name: "Gaye Holud",
-    date: "2027-04-01", // TODO
-    startTime: "18:00", // TODO
-    venue: {
-      name: "TPC Sugarloaf", // TODO: confirm
-      address: "Duluth, GA", // TODO: full street address
-      website: "",
-      mapsUrl: "",
-      directions: "",
-    },
-    dressCode: "", // TODO e.g. "Traditional South Asian attire, yellows and oranges welcome"
-    description: "", // TODO: 1-2 sentences on what a Holud is, for guests who have never been to one
-    guestNotes: "",
-  },
-  {
     id: "nikkah",
     name: "Nikkah",
-    date: "2027-04-02", // TODO
-    startTime: "11:00", // TODO
+    date: "2027-04-09",
+    startTime: "09:30",
     venue: {
-      name: "TPC Sugarloaf", // TODO: confirm
-      address: "Duluth, GA", // TODO
+      name: "TPC Sugarloaf",
+      address: "2595 Sugarloaf Club Dr, Duluth, GA 30097",
       website: "",
       mapsUrl: "",
       directions: "",
@@ -57,13 +41,29 @@ export const events: WeddingEvent[] = [
     guestNotes: "",
   },
   {
+    id: "holud",
+    name: "Gaye Holud",
+    date: "2027-04-09",
+    startTime: "18:30",
+    venue: {
+      name: "TPC Sugarloaf",
+      address: "2595 Sugarloaf Club Dr, Duluth, GA 30097",
+      website: "",
+      mapsUrl: "",
+      directions: "",
+    },
+    dressCode: "Dress code Holud", // TODO e.g. "Traditional South Asian attire, yellows and oranges welcome"
+    description: "", // TODO: 1-2 sentences on what a Holud is, for guests who have never been to one
+    guestNotes: "",
+  },
+  {
     id: "reception",
     name: "Reception",
-    date: "2027-04-03", // TODO
-    startTime: "18:00", // TODO
+    date: "2027-04-03", // TODO: confirm reception date
+    startTime: "19:00",
     venue: {
-      name: "Hilton Atlanta Northeast", // TODO: confirm
-      address: "Peachtree Corners, GA", // TODO
+      name: "Hilton Atlanta Northeast",
+      address: "5993 Peachtree Industrial Blvd, Peachtree Corners, GA 30092",
       website: "",
       mapsUrl: "",
       directions: "",
