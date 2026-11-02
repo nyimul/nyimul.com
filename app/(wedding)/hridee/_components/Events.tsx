@@ -12,6 +12,7 @@
  * Everything comes from _lib/content.ts (the `events` array). Nothing is hardcoded here.
  */
 import { events } from "../../_lib/content";
+import { formatTime } from "../../_lib/format";
 
 export default function Events() {
   return (
@@ -22,7 +23,7 @@ export default function Events() {
           <li key={event.id} className="rounded-2xl border border-accent-soft p-6">
             <h3 className="font-display text-2xl">{event.name}</h3>
             <p className="text-muted">
-              {event.date} · {event.startTime} · {event.venue.name}
+              {event.date} · {formatTime(event.startTime)} · {event.venue.name}
             </p>
             {/* TODO: description, dress code, address + directions link, venue link, add-to-calendar */}
           </li>
