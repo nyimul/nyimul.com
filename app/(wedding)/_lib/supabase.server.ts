@@ -21,7 +21,8 @@ let client: SupabaseClient | undefined;
 
 export function supabaseAdmin(): SupabaseClient {
   if (client) return client;
-  const url = process.env.SUPABASE_URL;
+  // The dashboard also shows the URL with /rest/v1 on the end; the client adds that itself.
+  const url = process.env.SUPABASE_URL?.trim().replace(/(\/rest\/v1)?\/*$/, "");
   const key = process.env.SUPABASE_SECRET_KEY;
   if (!url || !key) {
     throw new Error(

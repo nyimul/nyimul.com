@@ -37,7 +37,8 @@ export type DbGuest = {
   sortOrder: number;
 };
 
-export type DbInvitation = { partyId: string; eventId: EventId; maxGuests: number };
+/** guestIds: null means anyone in the party may take the seats; otherwise only these guests. */
+export type DbInvitation = { partyId: string; eventId: EventId; maxGuests: number; guestIds: string[] | null };
 
 export type DbRsvp = {
   guestId: string;
@@ -69,14 +70,14 @@ export type Snapshot = {
 export type SheetPlan = {
   /** New parties, renamed parties, and archived parties that are back in the sheet (un-archives them). */
   upsertParties: { id: string; displayName: string }[];
-  /** RSVPs for an event the party is no longer invited to. */
+  /** RSVPs for an event the party (or that guest) is no longer invited to. */
   deleteRsvps: { eventId: EventId; guestIds: string[] }[];
   deleteInvitations: { partyId: string; eventId: EventId }[];
   /** People taken off an invitation. Their RSVPs go with them (on delete cascade). */
   deleteGuestIds: string[];
   /** Named people. Never touches a slot. */
   upsertNamedGuests: { id: string; partyId: string; fullName: string; isChild: boolean; sortOrder: number }[];
-  /** "+1" and unnamed-child slots. Never touches the name a guest typed into a slot. */
+  /** Open spots (invites without a name). Never touches the name a guest typed into one. */
   upsertSlots: { id: string; partyId: string; isChild: boolean; sortOrder: number }[];
   upsertInvitations: DbInvitation[];
   /** Rows gone from the sheet (or with no seats left): hidden from the site, data kept. */

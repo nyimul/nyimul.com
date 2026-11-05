@@ -59,9 +59,9 @@ export type Party = {
 
 export type Guest = {
   id: string;
-  /** null until a "+1" or unnamed child slot is filled in by the guest. */
+  /** null for an open spot nobody has named. Guests may leave it that way. */
   fullName: string | null;
-  /** A "+1" or unnamed child: the guest types (and may change) this person's name. */
+  /** An open spot: an invite without a name (Invites is bigger than the names listed). */
   isSlot: boolean;
   isChild: boolean;
 };
@@ -71,6 +71,8 @@ export type PartyEvent = {
   partyId: string;
   eventId: EventId;
   maxGuests: number;
+  /** null: anyone in the party. Otherwise only these guests may come to this event. */
+  guestIds: string[] | null;
 };
 
 export type Rsvp = {
@@ -105,7 +107,7 @@ export type PartySummary = {
 /** Everything the RSVP form needs for one party (and nothing about anyone else). */
 export type RsvpPartyData = PartySummary & {
   guests: Guest[];
-  invitations: { eventId: EventId; maxGuests: number }[];
+  invitations: { eventId: EventId; maxGuests: number; guestIds: string[] | null }[];
   rsvps: Rsvp[];
   response: PartyResponse | null;
 };
@@ -113,7 +115,7 @@ export type RsvpPartyData = PartySummary & {
 /** What submitRsvp writes, after validation. */
 export type RsvpSubmission = {
   rsvps: { guestId: string; eventId: EventId; attending: boolean; dietaryNotes: string | null }[];
-  /** guestId -> name, for slot guests only. null clears an unused slot. */
+  /** guestId -> name, for open spots only. null: unused, or coming without a name. */
   slotNames: Record<string, string | null>;
   songRequest: string | null;
   message: string | null;

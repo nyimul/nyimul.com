@@ -6,13 +6,15 @@
  *
  * Try these names at /hridee/enter (any password set in WEDDING_PASSWORD):
  *   "Omar Rahman"    all three events
- *   "Farid Karim"    Gaye Holud + Reception, with an unnamed child slot
- *   "Sam Lee"        Reception only, with a +1 slot
+ *   "Farid Karim"    5 invites, 3 of them named: Holud + Reception for all, the Nikkah for Farid only
+ *   "Sam Lee"        Reception only, with one open spot (a +1)
  *   "Ayesha Rahman"  matches TWO parties, so you see the "which one are you?" picker
+ *                    (The Rahman Family has 2 seats for 3 people)
+ *   "Fareed Kareem"  no exact match, so the close spelling finds the Karims
  */
 import "server-only";
 import type { EventId, Guest, PartyResponse } from "../types";
-import { firstName, normalizeName } from "../names";
+import { firstName, normalizeName, pickMatches } from "../names";
 import type { AttemptKind, DbRsvp, GuestStore, Snapshot } from "./types";
 
 type DemoGuest = Guest & { sortOrder: number };
@@ -22,7 +24,7 @@ type DemoParty = {
   displayName: string;
   archived: boolean;
   guests: DemoGuest[];
-  invitations: { eventId: EventId; maxGuests: number }[];
+  invitations: { eventId: EventId; maxGuests: number; guestIds: string[] | null }[];
 };
 
 type DemoState = {
@@ -57,9 +59,9 @@ function seed(): DemoState {
         archived: false,
         guests: [named(201, 1, "Ayesha Rahman"), named(202, 2, "Omar Rahman")],
         invitations: [
-          { eventId: "nikkah", maxGuests: 2 },
-          { eventId: "holud", maxGuests: 2 },
-          { eventId: "reception", maxGuests: 2 },
+          { eventId: "nikkah", maxGuests: 2, guestIds: null },
+          { eventId: "holud", maxGuests: 2, guestIds: null },
+          { eventId: "reception", maxGuests: 2, guestIds: null },
         ],
       },
       {
@@ -70,11 +72,13 @@ function seed(): DemoState {
           named(211, 1, "Farid Karim"),
           named(212, 2, "Nadia Karim"),
           named(213, 3, "Samir Karim", true),
-          slot(214, 4, true),
+          slot(214, 4),
+          slot(215, 5),
         ],
         invitations: [
-          { eventId: "holud", maxGuests: 3 },
-          { eventId: "reception", maxGuests: 4 },
+          { eventId: "nikkah", maxGuests: 1, guestIds: [id(211)] },
+          { eventId: "holud", maxGuests: 5, guestIds: null },
+          { eventId: "reception", maxGuests: 5, guestIds: null },
         ],
       },
       {
@@ -82,14 +86,15 @@ function seed(): DemoState {
         displayName: "Sam Lee",
         archived: false,
         guests: [named(221, 1, "Sam Lee"), slot(222, 2)],
-        invitations: [{ eventId: "reception", maxGuests: 2 }],
+        invitations: [{ eventId: "reception", maxGuests: 2, guestIds: null }],
       },
       {
         id: id(104),
         displayName: "The Rahman Family",
         archived: false,
         guests: [named(231, 1, "Tariq Rahman"), named(232, 2, "Mina Rahman"), named(233, 3, "Ayesha Rahman")],
-        invitations: [{ eventId: "reception", maxGuests: 3 }],
+        // Fewer seats than people: any two of the three can come.
+        invitations: [{ eventId: "reception", maxGuests: 2, guestIds: null }],
       },
     ],
     rsvps: [],
@@ -110,8 +115,8 @@ const searchNames = (p: DemoParty) =>
 
 export const demoStore: GuestStore = {
   async findParties(query, limit) {
-    return active()
-      .filter((p) => searchNames(p).some((n) => ` ${n} `.includes(` ${query} `)))
+    const parties = [...active()].sort((a, b) => a.displayName.localeCompare(b.displayName));
+    return pickMatches(parties, searchNames, query)
       .slice(0, limit)
       .map((p) => ({
         partyId: p.id,
@@ -135,7 +140,7 @@ export const demoStore: GuestStore = {
       displayName: p.displayName,
       invitedEventIds: p.invitations.map((i) => i.eventId),
       guests: sorted(p.guests).map(({ id, fullName, isSlot, isChild }) => ({ id, fullName, isSlot, isChild })),
-      invitations: p.invitations.map((i) => ({ ...i })),
+      invitations: p.invitations.map((i) => ({ ...i, guestIds: i.guestIds && [...i.guestIds] })),
       rsvps: s.rsvps
         .filter((r) => guestIds.has(r.guestId))
         .map(({ guestId, eventId, attending, dietaryNotes }) => ({ guestId, eventId, attending, dietaryNotes })),
@@ -219,8 +224,8 @@ export const demoStore: GuestStore = {
     for (const u of plan.upsertInvitations) {
       const p = party(u.partyId);
       const existing = p.invitations.find((i) => i.eventId === u.eventId);
-      if (existing) existing.maxGuests = u.maxGuests;
-      else p.invitations.push({ eventId: u.eventId, maxGuests: u.maxGuests });
+      if (existing) Object.assign(existing, { maxGuests: u.maxGuests, guestIds: u.guestIds });
+      else p.invitations.push({ eventId: u.eventId, maxGuests: u.maxGuests, guestIds: u.guestIds });
     }
     for (const partyId of plan.archivePartyIds) party(partyId).archived = true;
   },

@@ -6,7 +6,7 @@
 import "server-only";
 import { supabaseAdmin } from "../supabase.server";
 import type { EventId, RsvpPartyData } from "../types";
-import { firstName } from "../names";
+import { firstName, pickMatches } from "../names";
 import type { GuestStore, Snapshot } from "./types";
 
 type GuestRow = {
@@ -25,19 +25,13 @@ function fail(what: string, error: { message: string }): never {
   throw new Error(`Database error while trying to ${what}`);
 }
 
-/** True when the query appears as whole words inside one of the names ("omar rahman" in "ayesha omar rahman"). */
-function matchesWords(searchName: string, query: string): boolean {
-  return searchName
-    .split(" | ")
-    .some((name) => ` ${name} `.includes(` ${query} `));
-}
-
 /** Supabase returns at most 1000 rows per request, so read big tables a page at a time. */
-async function selectAll<T>(table: string, columns: string, orderBy: string[]): Promise<T[]> {
+async function selectAll<T>(table: string, columns: string, orderBy: string[], activeOnly = false): Promise<T[]> {
   const pageSize = 1000;
   const all: T[] = [];
   for (let from = 0; ; from += pageSize) {
     let query = supabaseAdmin().from(table).select(columns);
+    if (activeOnly) query = query.is("archived_at", null);
     for (const col of orderBy) query = query.order(col);
     const { data, error } = await query.range(from, from + pageSize - 1);
     if (error) fail(`read ${table}`, error);
@@ -55,19 +49,16 @@ function chunks<T>(items: T[], size = 100): T[][] {
 
 export const supabaseStore: GuestStore = {
   async findParties(query, limit) {
-    const { data, error } = await supabaseAdmin()
-      .from("parties")
-      .select("id, display_name, search_name, guests(full_name, sort_order)")
-      .is("archived_at", null)
-      .ilike("search_name", `%${query}%`)
-      .order("display_name")
-      .limit(25);
-    if (error) fail("look up a name", error);
-
+    // A wedding has a few hundred invitations, so match in code: that allows typos and
+    // spelling variants, which a SQL LIKE can't do.
     type Row = { id: string; display_name: string; search_name: string; guests: Pick<GuestRow, "full_name" | "sort_order">[] };
-    return (data as Row[])
-      // ilike is a plain substring match ("ali" would find "Alison"); keep whole-name matches only.
-      .filter((p) => matchesWords(p.search_name, query))
+    const parties = await selectAll<Row>(
+      "parties",
+      "id, display_name, search_name, guests(full_name, sort_order)",
+      ["display_name", "id"],
+      true,
+    );
+    return pickMatches(parties, (p) => p.search_name.split(" | "), query)
       .slice(0, limit)
       .map((p) => ({
         partyId: p.id,
@@ -101,7 +92,7 @@ export const supabaseStore: GuestStore = {
     const { data, error } = await db
       .from("parties")
       .select(
-        "id, display_name, guests(id, full_name, is_slot, is_child, sort_order), party_events(event_id, max_guests), party_responses(song_request, message, submitted_at)",
+        "id, display_name, guests(id, full_name, is_slot, is_child, sort_order), party_events(event_id, max_guests, guest_ids), party_responses(song_request, message, submitted_at)",
       )
       .eq("id", partyId)
       .is("archived_at", null)
@@ -113,7 +104,7 @@ export const supabaseStore: GuestStore = {
       id: string;
       display_name: string;
       guests: GuestRow[];
-      party_events: { event_id: EventId; max_guests: number }[];
+      party_events: { event_id: EventId; max_guests: number; guest_ids: string[] | null }[];
       party_responses: ResponseRow | ResponseRow[] | null;
     };
     const guests = [...row.guests].sort((a, b) => a.sort_order - b.sort_order);
@@ -139,7 +130,7 @@ export const supabaseStore: GuestStore = {
       displayName: row.display_name,
       invitedEventIds: row.party_events.map((pe) => pe.event_id),
       guests: guests.map((g) => ({ id: g.id, fullName: g.full_name, isSlot: g.is_slot, isChild: g.is_child })),
-      invitations: row.party_events.map((pe) => ({ eventId: pe.event_id, maxGuests: pe.max_guests })),
+      invitations: row.party_events.map((pe) => ({ eventId: pe.event_id, maxGuests: pe.max_guests, guestIds: pe.guest_ids })),
       rsvps,
       response: response
         ? { songRequest: response.song_request, message: response.message, submittedAt: response.submitted_at }
@@ -206,9 +197,9 @@ export const supabaseStore: GuestStore = {
         ["id"],
       ),
       selectAll<GuestRow & { party_id: string }>("guests", "id, party_id, full_name, is_slot, is_child, sort_order", ["id"]),
-      selectAll<{ party_id: string; event_id: EventId; max_guests: number }>(
+      selectAll<{ party_id: string; event_id: EventId; max_guests: number; guest_ids: string[] | null }>(
         "party_events",
-        "party_id, event_id, max_guests",
+        "party_id, event_id, max_guests, guest_ids",
         ["party_id", "event_id"],
       ),
       selectAll<{ guest_id: string; event_id: EventId; attending: boolean; dietary_notes: string | null; updated_at: string | null }>(
@@ -228,7 +219,12 @@ export const supabaseStore: GuestStore = {
         isChild: g.is_child,
         sortOrder: g.sort_order,
       })),
-      invitations: invitations.map((i) => ({ partyId: i.party_id, eventId: i.event_id, maxGuests: i.max_guests })),
+      invitations: invitations.map((i) => ({
+        partyId: i.party_id,
+        eventId: i.event_id,
+        maxGuests: i.max_guests,
+        guestIds: i.guest_ids,
+      })),
       rsvps: rsvps.map((r) => ({
         guestId: r.guest_id,
         eventId: r.event_id,
@@ -299,12 +295,17 @@ export const supabaseStore: GuestStore = {
           sort_order: g.sortOrder,
         })),
       );
-      if (error) fail("save +1 slots", error);
+      if (error) fail("save open spots", error);
     }
 
     if (plan.upsertInvitations.length > 0) {
       const { error } = await db.from("party_events").upsert(
-        plan.upsertInvitations.map((i) => ({ party_id: i.partyId, event_id: i.eventId, max_guests: i.maxGuests })),
+        plan.upsertInvitations.map((i) => ({
+          party_id: i.partyId,
+          event_id: i.eventId,
+          max_guests: i.maxGuests,
+          guest_ids: i.guestIds,
+        })),
         { onConflict: "party_id,event_id" },
       );
       if (error) fail("save seats", error);

@@ -74,6 +74,9 @@ create table party_events (
   party_id    uuid not null references parties(id) on delete cascade,
   event_id    text not null references events(id) on delete cascade,
   max_guests  int  not null check (max_guests > 0),
+  -- null: anyone in the party can take these seats. Set: only these guests (e.g. the sheet says
+  -- "Farid Karim" under Nikkah, so only Farid sees the Nikkah on the RSVP form).
+  guest_ids   uuid[],
   primary key (party_id, event_id)
 );
 
@@ -203,6 +206,7 @@ join guests  g  on g.party_id = p.id
 left join rsvps r on r.guest_id = g.id and r.event_id = e.id
 left join party_responses pr on pr.party_id = p.id
 where p.archived_at is null
+  and (pe.guest_ids is null or g.id = any(pe.guest_ids))
 order by e.sort_order, p.display_name, g.sort_order;
 
 -- ---------------------------------------------------------------------------
