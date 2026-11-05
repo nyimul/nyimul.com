@@ -3,8 +3,8 @@
  *
  * The visitor already proved who they are at /hridee/enter, so there is no lookup here: the
  * party comes from the signed session, and the form shows one screen per event THEY are
- * invited to (party_events), then extras, then a review. Previous answers are pre-filled, so
- * changing an RSVP is just coming back to this page.
+ * invited to (party_events), with only the guests invited to that event, then extras, then a
+ * confirmation. Previous answers are pre-filled, so changing an RSVP is just coming back to this page.
  *
  * This page is a Server Component: it loads the party's data and passes only that party's
  * guests and events to RsvpForm (a Client Component, because it holds form state).
@@ -28,14 +28,16 @@ export default async function RsvpPage() {
   if (!party) redirect("/hridee/enter");
 
   const closed = isRsvpClosed(wedding.rsvpDeadline);
-  const seats = new Map(party.invitations.map((i) => [i.eventId, i.maxGuests]));
+  const invitations = new Map(party.invitations.map((i) => [i.eventId, i]));
+  const everyone = party.guests.map((g) => g.id);
   const events: RsvpEvent[] = eventsFor(party.invitedEventIds).map((e) => ({
     id: e.id,
     name: e.name,
     date: e.date,
     startTime: e.startTime,
     venueName: e.venue.name,
-    maxGuests: seats.get(e.id) ?? 0,
+    maxGuests: invitations.get(e.id)?.maxGuests ?? 0,
+    guestIds: invitations.get(e.id)?.guestIds ?? everyone,
   }));
 
   const initialAnswers: Record<string, boolean> = {};

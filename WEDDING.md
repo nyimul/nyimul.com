@@ -2,7 +2,7 @@
 
 The complete plan for the wedding site. Everything decided so far, everything still to decide, the full content checklist, and the rules the site has to follow. Read this before touching anything under `app/(wedding)/`.
 
-Status (Nov 2026): skeleton in place. The entrance (password + name), per-party pages, the RSVP form and the Google Sheet sync are built and tested against the demo guest list. Next: create the Supabase project (section 6) and the family's sheet (section 7). Most content is still TODO.
+Status (Nov 2026): skeleton in place. The entrance (password + name), per-party pages, the RSVP form and the Google Sheet sync are built, tested against the demo guest list, and live on Supabase with the family's sheet connected (sections 6 and 7). Most content is still TODO.
 
 ---
 
@@ -74,7 +74,7 @@ Caveats to remember:
 ### Running and deploying
 
 - `npm run dev` then open `http://localhost:3000/hridee`. You'll land on the entrance.
-- **Before Supabase exists:** `.env.local` has `WEDDING_DEMO_DATA=1` and `WEDDING_PASSWORD=demo`, so the site runs on a fake guest list (`_lib/store/demo.ts`). Try "Omar Rahman" (all three events), "Farid Karim" (Holud + Reception), "Sam Lee" (Reception only) and "Ayesha Rahman" (two matches, so you get the picker). Demo RSVPs vanish when the dev server restarts. The demo list refuses to run on Vercel.
+- **Without touching the real database:** set `WEDDING_DEMO_DATA=1` and `WEDDING_PASSWORD=demo` (in `.env.local`, or on the command line, which wins over the file), so the site runs on a fake guest list (`_lib/store/demo.ts`). Try "Omar Rahman" (all three events), "Farid Karim" (5 invites, 2 of them open spots, and the Nikkah for Farid only), "Sam Lee" (Reception only, with a +1), "Ayesha Rahman" (two matches, so you get the picker) and "Fareed Kareem" (a close spelling). Demo RSVPs vanish when the dev server restarts. The demo list refuses to run on Vercel.
 - Hosting: Vercel, same project as the portfolio. The wedding site is just more routes.
 - Env vars: Vercel > Project > Settings > Environment Variables. Set them for Production and Preview separately. Local dev uses `.env.local` (gitignored). `.env.example` lists them all.
 - Turn on **Deployment Protection** for Preview deployments in Vercel so half-finished versions of the wedding site aren't on a public URL.
@@ -165,9 +165,9 @@ Not everyone is invited to every event, so **invitations are per party per event
 
 ### The model (see `supabase/schema.sql`)
 - **party**: one invitation / household, which is one row of the family's Google Sheet (its Website ID is the party id). Has a `display_name` ("The Hoque Family"), a `search_name` used for lookup, and `archived_at`, set when the row leaves the sheet.
-- **guests**: the people in the party. Named people are rows with names. A "+1" or an un-named child is a **slot**: `is_slot = true`, `full_name = null`, and the guest types the name when they RSVP. Only slot names are editable by guests.
+- **guests**: the people in the party. Named people are rows with names. Every invite without a name (the sheet's Invites number minus the names listed) is an **open spot**: `is_slot = true`, `full_name = null`. On the RSVP form the family says how many of those are coming and may type their names. Only open spots' names are editable by guests.
 - **search_name** on parties is kept up to date by a trigger (display name plus every guest's name, normalised). Never edit it by hand.
-- **party_events**: one row per event the party is invited to, with `max_guests` = how many seats they have *at that event*. A couple gets 2. A family of five gets 5 at the reception, maybe 5 at the Holud, and no row for the Nikkah.
+- **party_events**: one row per event the party is invited to, with `max_guests` = how many seats they have *at that event*. A couple gets 2. A family of five gets 5 at the reception, maybe 5 at the Holud, and no row for the Nikkah. `guest_ids` is null when anyone in the party can take the seats, or lists the only guests invited to that event (the sheet had "Farid Karim" under Nikkah instead of an x).
 - **rsvps**: one row per guest per event (attending yes/no, meal, dietary).
 - **party_responses**: the once-per-party answers (song request, message).
 
@@ -175,15 +175,15 @@ This handles every case you described: couples (2 seats), families with kids (mo
 
 ### The entrance (`/hridee/enter`, one question per screen)
 1. **Password**: the word printed on the invitation. Case, spaces and punctuation are ignored. After 10 wrong tries per IP in 15 minutes, a "wait or email us" message.
-2. **Find**: "Your first and last name, as written on your invitation." Needs two words and matches whole words in `search_name`, so "Sa Lee" doesn't find "Sam Lee". Returns at most 5 parties and only `displayName` + first names. 30 searches per IP per 15 minutes. Zero matches shows a friendly "try the spelling on your invitation, or email us", never "you're not invited".
+2. **Find**: "Your first and last name, as written on your invitation." Needs two words. Each typed word must match a word of the same person's name (or the name on the invite), in any order, so middle names and "Karim Farid" work, and "Sa Lee" doesn't find "Sam Lee". If nothing matches exactly, close spellings count: one typo, two in long words ("Mohammed" / "Muhammad"), or the same consonants ("Chowdhury" / "Chaudhry", "Fareed" / "Farid"). An exact match always hides the close ones, so typing your name correctly never shows other families. The matching is `matchName` in `_lib/names.ts`. Returns at most 5 parties and only `displayName` + first names. 30 searches per IP per 15 minutes. Zero matches shows a friendly "try the spelling on your invitation, or email us", never "you're not invited".
 3. **Pick**: "Is this you?" or "Which one is you?", always shown, even for one match.
 4. The visitor now has a signed session cookie for that party, good for a year. Every page is their version. "Not {party}? Switch" in the footer signs out, for shared family phones.
 
 ### The RSVP flow (`/hridee/rsvp`)
 No lookup: the party comes from the session.
-1. **One screen per invited event**: Coming / Can't make it for each guest. Slots show a name field, start as "not coming", and need a name if coming. Buttons grey out once `max_guests` is reached; the server re-checks it anyway.
+1. **One screen per invited event**, showing only the guests invited to it: Coming / Can't make it for each named person, then one counter for the open spots ("How many others are coming? Up to 3") with optional name boxes. Buttons grey out once `max_guests` is reached; the server re-checks it, and who may come to which event, anyway.
 2. **Extras**: dietary needs for everyone coming, a song request, a message.
-3. **Review**, then **Send**, then a thank-you. Coming back later shows "You already replied" with every answer pre-filled.
+3. **Please confirm**: "You are RSVP'ing 4 people" for each event, with the names. Then **Confirm and send**, then a thank-you. Coming back later shows "You already replied" with every answer pre-filled.
 
 Still TODO: meal choice (once you know which events offer one), and the hotel block link on the thank-you screen.
 
@@ -194,7 +194,7 @@ Edge cases to decide:
 - Deadline: after `wedding.rsvpDeadline`, the form shows "RSVPs have closed, email us".
 
 ### Where the list comes from
-The family's Google Sheet (section 7). Every 10 minutes it sends the Guest List to `/hridee/sync`, which creates and updates parties, guests (slots with `is_slot = true`) and `party_events`. There is no import script and nothing to type into Supabase. Phone numbers, addresses and private notes stay in the sheet and never reach the database.
+The family's Google Sheet (section 7). Every 10 minutes it sends both families' guest lists to `/hridee/sync`, which creates and updates parties, guests (open spots with `is_slot = true`) and `party_events`. There is no import script and nothing to type into Supabase. Phone numbers, addresses and private notes stay in the sheet and never reach the database.
 
 ---
 
@@ -215,7 +215,7 @@ What it holds: the guest list as the sheet last sent it, plus everything guests 
 2. **Create the tables.** Left sidebar > **SQL Editor** > **New query**. Paste the whole of `supabase/schema.sql`, then click **Run**. You should see "Success. No rows returned". Run it only once. A second run fails with "already exists", which just means it already worked.
 3. **Check it.** Left sidebar > **Table Editor**. You should see 7 tables: `events` (with 3 rows: Nikkah, Gaye Holud, Reception), `parties`, `guests`, `party_events`, `rsvps`, `party_responses` and `lookup_attempts`. Then open **Advisors > Security Advisor**. There should be no errors. Notices saying "RLS Enabled No Policy" are expected, because having no policies is the design (section 8).
 4. **Copy two values.**
-   - **Project URL**: Project Settings > **Data API**, or the **Connect** button at the top. It looks like `https://abcdefghijkl.supabase.co`.
+   - **Project URL**: Project Settings > **Data API**, or the **Connect** button at the top. It looks like `https://abcdefghijkl.supabase.co`, with nothing after `.co`. If the dashboard shows it ending in `/rest/v1/`, leave that part off.
    - **Secret key**: Project Settings > **API Keys** > **Secret keys**, the one named `default`, starting with `sb_secret_`. If that page only offers a **Create new API keys** button, click it first. Don't use the publishable key. Don't use a legacy `service_role` key either: those stop working at the end of 2026.
 5. **Point your laptop at it.** In `.env.local`, fill in `SUPABASE_URL` and `SUPABASE_SECRET_KEY`, delete the `WEDDING_DEMO_DATA=1` line, and restart `npm run dev`. The site now uses the real database, which is empty. Nobody can sign in until the sheet sends invitations (section 7).
 6. **Give Vercel the same settings.** Vercel > your project > Settings > **Environment Variables**. Add these for **Production**, and for **Preview** too if you'll test on preview URLs:
@@ -248,11 +248,11 @@ Why Server Actions and not an API route for guests: a Server Action is a functio
 ### How it works
 
 ```
-Google Sheet ("Guest List" tab)
+Google Sheet ("Nyimul's Family" and "Hridee's Family" tabs)
   |  every 10 minutes, or Website > Publish now
   |  Apps Script (scripts/wedding-sheet.gs, pasted into the sheet)
-  |     POST https://nyimul.com/hridee/sync    Authorization: Bearer WEDDING_SHEET_SECRET
-  |     sends only: name on invite, guests, seats per event, Website ID
+  |     POST https://www.nyimul.com/hridee/sync    Authorization: Bearer WEDDING_SHEET_SECRET
+  |     sends only: family, name on invite, guest names, invites, the event cells, Website ID
   v
 app/(wedding)/_lib/sheet/: read each row, work out the changes, apply them to Supabase
   |  answers with a note per row, plus the Summary / RSVPs / Messages tabs
@@ -264,28 +264,31 @@ Tabs the script creates:
 
 | Tab | Who writes it | What it is |
 |---|---|---|
-| Read me | the script, once | the rules below, written for the family |
-| Guest List | the family | one row per invitation |
-| Summary | the website | a status line, then per event: invitations, seats, coming, not coming, children, replied, still waiting |
-| RSVPs | the website | one row per person per event: reply, child, dietary needs, date. Has a filter |
-| Messages | the website | song requests and notes to the two of you |
+| Read me | the script, once; then it's yours to edit | a short how-to for the parents |
+| Nyimul's Family | Nyimul's side | one row per invitation |
+| Hridee's Family | Hridee's side | one row per invitation, same columns |
+| Summary | the website | a status line, then one table per family and one for everyone: per event, invitations, replied, people invited, coming, not coming, no reply yet |
+| RSVPs | the website | one row per person per event, family first: reply, dietary needs, date. Has a filter |
+| Messages | the website | song requests and notes to the two of you, with the family |
 
-The Guest List columns can be in any order. The family can add their own columns, like Phone, Address or Invited by, and those never leave the sheet.
+The columns can be in any order. The family can add their own columns, like Phone, Address or Invited by, and those never leave the sheet.
 
-| Name on invite | Guests | Nikkah | Holud | Reception | Website notes | Website ID |
-|---|---|---|---|---|---|---|
-| The Karim Family | Farid Karim, Nadia Karim, Samir Karim (child), +1 child | | 3 | 4 | ✓ On the website | (automatic) |
-| Sam Lee | Sam Lee, +1 | | | 2 | ✓ On the website | (automatic) |
-| Ayesha & Omar Rahman | Ayesha Rahman, Omar Rahman | x | x | x | ✓ On the website | (automatic) |
+| Name on invite | Guest names | Invites | Nikkah | Holud | Reception | Website notes | Website ID |
+|---|---|---|---|---|---|---|---|
+| The Karim Family | Farid Karim, Nadia Karim | 5 | Farid Karim | x | x | ✓ On the website | (automatic) |
+| Sam Lee | Sam Lee | 2 | | | x | ✓ On the website | (automatic) |
+| Ayesha & Omar Rahman | Ayesha Rahman, Omar Rahman | | x | x | x | ✓ On the website | (automatic) |
 
-- **Guests**: first and last names, separated by commas.
-  - Write `(child)` after a child's name.
-  - For people without a name yet, use `+1`, `+2`, `+1 child` or `+2 kids`. The guest types the name when they RSVP.
-  - Everyone listed can find the invitation by searching their own name.
-- **Event columns**: the number of seats. Blank or 0 means not invited, so that party never sees that event anywhere on the site. `x`, `yes` or a ticked checkbox means "everyone listed".
+- **Guest names**: the people you know by name, first and last, separated by commas. Everyone named can find the invitation by searching their own name. `(child)` after a name marks a child.
+- **Invites**: how many people in total. The ones without a name are "open spots": the family says on the RSVP form how many of them are coming, and can name them if they like. Blank means just the people named.
+- **Event columns**:
+  - `x` (or `yes`, or a ticked checkbox): invited, with all their invites.
+  - Names, like `Farid Karim` or `Farid and Nadia`: only those people are invited to this event. A first name is enough if it's unique. `Farid Karim, +1` adds one open spot.
+  - A number, like `2`: that many seats, and the family picks who.
+  - Blank or 0: not invited, so that party never sees that event anywhere on the site.
 - **Website notes**:
   - `✓ On the website` means the row is live.
-  - `✓ ... Check:` means it's live, but something looks off: a one-word name, more seats than people, or more yeses than seats.
+  - `✓ ... Check:` means it's live, but something looks off: a one-word name, more seats than invites, fewer invites than names, or more yeses than seats.
   - `Not on the website yet:` or `Not updated:` means something must be fixed first. Until then, the website keeps the earlier version.
 - **Website ID**: the link between the row and the database. The script fills it in. Never type in it.
 
@@ -296,13 +299,17 @@ What happens when the family...
 | adds a row | creates the invitation; they can sign in within 10 minutes |
 | fixes a name's spelling | updates it and keeps that person's RSVP |
 | adds or removes a person | adds them, or removes them along with their RSVP |
-| changes seats | updates the cap, and warns if more people already said yes |
-| clears an event's seats | takes that event off their invitation and drops those RSVPs |
-| deletes a row, or clears its name and guests | hides the invitation, so they can't sign in, but keeps their RSVP. Bringing the row back restores everything, whether through File > Version history or by retyping the same name and a guest |
+| changes Invites | adds or removes open spots. Spots someone already used (named, or said yes) are kept first |
+| changes seats, or who an event is for | updates it, drops the RSVPs of people no longer invited to that event, and warns if more people already said yes than there are seats |
+| clears an event's cell | takes that event off their invitation and drops those RSVPs |
+| deletes a row, or clears its name and guest names | hides the invitation, so they can't sign in, but keeps their RSVP. Bringing the row back restores everything, whether through File > Version history or by retyping the same name and a guest |
 | deletes more than 10 rows at once | refuses and changes nothing, and the status line explains. Undo with Version history, or you use Website > Publish and allow removals |
-| copies a row to start a new one | gives the copy its own Website ID |
+| copies a row to start a new one (on either tab) | gives the copy its own Website ID |
+| moves a row to the other family's tab (cut and paste) | keeps the invitation and its RSVPs; it now counts for the other family |
 | sorts one column only, so IDs no longer match their rows | refuses those rows with a note saying to undo the sort; nothing changes |
-| renames or deletes a header | sends nothing; the status line names the missing header |
+| renames a header or a tab | sends nothing; the status line names what's missing |
+
+**Website > Publish and allow removals.** A normal publish refuses to take more than 10 invitations off the website at once, or to empty both lists, because that's almost always an accident (deleted block of rows, half-sorted sheet). This menu item publishes anyway, after a confirmation. Use it only when you really removed that many on purpose. RSVPs are kept even then.
 
 ### Set it up (one time, about 20 minutes)
 
@@ -320,10 +327,10 @@ You have two ways to deploy:
    - **Google hasn't verified this app** > **Advanced** > **Go to Wedding website (unsafe)** > **Allow**. This warning appears for every personal script. The script asks to edit this one spreadsheet, connect to an external service (your website), run while you're away (the 10-minute updates) and show dialogs.
    - If nothing else happens after you allow it, click **Website > Set up** again.
 5. **Answer the two questions.**
-   - **Website address**: `https://nyimul.com`, or the preview URL. If the site redirects, for example to `www.nyimul.com`, the status line says so. Then run Set up again with that address.
+   - **Website address**: `https://www.nyimul.com` (the bare `nyimul.com` redirects to www, and the sync can't follow redirects), or the preview URL. If the site ever redirects, the status line names the address to use.
    - **Sheet secret**: paste the same `WEDDING_SHEET_SECRET` you put in Vercel.
-6. **Check the first run.** The script creates the Read me, Guest List, Summary, RSVPs and Messages tabs, adds the 10-minute timer, and publishes once. The first line of the **Summary** tab should start with "✓ Up to date". If it starts with ⚠, the message says what's wrong (see the table below).
-7. **Add one real row: yours.** For example, "Nyimul & Hridee", your two names, and seats for all three events. Click **Website > Publish now**. The row's Website notes cell should say ✓ On the website.
+6. **Check the first run.** The script creates the Read me, Nyimul's Family, Hridee's Family, Summary, RSVPs and Messages tabs, adds the 10-minute timer, and publishes once. The first line of the **Summary** tab should start with "✓ Up to date". If it starts with ⚠, the message says what's wrong (see the table below).
+7. **Add one real row: yours.** For example, on Nyimul's Family: "Nyimul & Hridee", your two names, and an x under all three events. Click **Website > Publish now**. The row's Website notes cell should say ✓ On the website.
 8. **Test it end to end on your phone.**
    - Open nyimul.com/hridee, type the password, then your name. You should see your events.
    - Send an RSVP.
@@ -331,7 +338,19 @@ You have two ways to deploy:
    - This is also the first real test of the Supabase code.
 9. **Share it.** Use the **Share** button to add your fiancée and the four parents as **Editors**. Never choose "Anyone with the link": the sheet holds everyone's names, and later their dietary needs and messages. Tell the family to read the Read me tab. They never need the Website menu. If one of them clicks it, Google asks them for the same permissions, and they can just close that.
 
-You can fill in the Guest List before the website is deployed. The first publish sends everything.
+You can fill in the guest lists before the website is deployed. The first publish sends everything.
+
+### Changing the script later
+
+The sheet runs its own copy of the script, so a change to `scripts/wedding-sheet.gs` reaches it only when you paste it again:
+
+1. If the change touches both sides (like a new column), deploy the website first. Until you paste the new script, the old one is refused with "The sheet sent something the website couldn't read" and nothing changes, so that gap is harmless. The other order isn't: an old website ignores columns it doesn't know.
+2. In the sheet: **Extensions > Apps Script**, select everything in `Code.gs`, paste the new file, **Save**.
+3. Back in the sheet, click **Website > Set up** (leave both answers blank to keep them). That adds any new tabs or columns.
+
+Set up writes the Read me tab only when there isn't one, so your own wording is never overwritten. To get the script's latest text instead, delete the Read me tab and run Set up.
+
+The first version had a single "Guest List" tab. Set up turns it into Nyimul's Family (renaming Guests to Guest names and inserting Invites after it, keeping every row and Website ID) and adds an empty Hridee's Family tab. Move Hridee's family's rows there with cut and paste, which keeps their IDs and RSVPs.
 
 ### When the status line shows ⚠
 
@@ -344,6 +363,8 @@ You can fill in the Guest List before the website is deployed. The first publish
 | Couldn't reach ... / answered with an error (404) | Either the address is wrong, or the deployed site doesn't have `/hridee/sync` yet |
 | The website couldn't update its database | Check Supabase. Either the project is paused (click Restore), or the key in Vercel is wrong. Vercel > Logs shows the detail |
 | missing these column headers | Put the exact header text back in row 1, or run Set up to re-add it |
+| There is no "Hridee's Family" tab | A tab was renamed or deleted. Rename it back, or run Set up to create it |
+| The sheet sent something the website couldn't read | The script and the website are different versions. Deploy, then paste the latest script (see above) |
 | N invitations would be taken off the website | Undo with File > Version history, or use Website > Publish and allow removals if it's on purpose |
 
 To change the secret, set a new `WEDDING_SHEET_SECRET` in Vercel and redeploy. Then run Website > Set up and paste it. Anyone holding the secret can read every RSVP and rewrite the guest list, so keep it only in Vercel and the script.
@@ -443,7 +464,7 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 **Phase 4: gate + RSVP.**
 - [x] Password + name entrance, signed session, `proxy.ts`, per-party home page and FAQ.
 - [x] `submitRsvp` with zod validation, ownership and seat checks; `RsvpForm` (one screen per event, extras, review).
-- [x] Demo guest list for local preview. Tested: all three tiers, duplicate name, edit-after-submit, seat limit, tampered requests, rate limit.
+- [x] Demo guest list for local preview. Tested: all three tiers, duplicate name, close spellings, edit-after-submit, seat limit, an event for one person, open spots with and without names, the confirm step, tampered requests, rate limit.
 - [x] Google Sheet sync: `/hridee/sync`, `_lib/sheet/`, `scripts/wedding-sheet.gs`. Tested against the demo store (copied rows, cleared IDs, renames, removals, the mass-removal guard, bad cells, slot names), and with the Apps Script run against a fake Sheets API.
 - [ ] New Supabase project, run `schema.sql`, env vars (section 6).
 - [ ] Deploy, create the sheet (section 7), and do the end-to-end test in section 7, step 8, against the real database.
@@ -476,7 +497,7 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 - FAQ answers (the questions are already drafted in `content.ts`).
 - Hashtag. Contact email (a shared wedding inbox is handy). Whether the ceremony is unplugged.
 - Meal options per event (if any), so the RSVP form knows whether to ask.
-- The guest list, typed straight into the family's Google Sheet (section 7): name on invite, guests, seats per event, plus any private columns you like.
+- The guest list, typed straight into the family's Google Sheet (section 7), each family on its own tab: name on invite, guest names, invites, an x per event, plus any private columns you like.
 - 6-10 engagement photos for backdrops (landscape and portrait), 1 hero, story photos, gallery set.
 - RSVP deadline (typically 4-6 weeks before the first event, after talking to the caterers).
 

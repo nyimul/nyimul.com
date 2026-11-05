@@ -6,7 +6,7 @@
  * anyone's RSVP, which is why it matches carefully:
  *   - Each row carries a "Website ID" (the party id). The Apps Script fills it in for new rows.
  *   - People are matched by name, then by "close enough" (a typo fix keeps that person's RSVP).
- *   - +1 slots are matched by position, keeping any name a guest already typed in.
+ *   - Open spots (Invites beyond the names) are matched by position, keeping any name a guest typed in.
  *   - A row that disappears hides the party ("archived"); nothing is deleted, and putting the row
  *     back (Version history) brings it back with its RSVPs.
  *   - If many rows disappear at once, the sync refuses to run. Someone probably deleted a block of
@@ -14,16 +14,16 @@
  * Every problem becomes a sentence in that row's "Website notes" cell.
  */
 import "server-only";
-import { normalizeName } from "../names";
-import type { DbGuest, SheetPlan, Snapshot } from "../store/types";
+import { normalizeName, similarNames } from "../names";
+import type { DbGuest, DbInvitation, SheetPlan, Snapshot } from "../store/types";
 import type { EventId } from "../types";
-import { EVENT_IDS, SEAT_COLUMN, type ParsedGuest, type ParsedRow } from "./rows";
+import { EVENT_IDS, SEAT_COLUMN, type Family, type ParsedGuest, type ParsedRow } from "./rows";
 
 /** More removals than this in one sync needs "Publish and allow removals". */
 export const REMOVAL_LIMIT = 10;
 
-export type RowNote = { row: number; id: string; note: string };
-export type IdChange = { row: number; from: string; to: string };
+export type RowNote = { family: Family; row: number; id: string; note: string };
+export type IdChange = { family: Family; row: number; from: string; to: string };
 
 export type PlanResult =
   | { refused: true; message: string }
@@ -34,43 +34,15 @@ export type PlanResult =
       notes: RowNote[];
       /** Website IDs the Apps Script must rewrite (copied rows, reconnected rows). */
       idChanges: IdChange[];
+      /** Which family's tab each party in the sheet is on, for the Summary and RSVPs tabs. */
+      families: Map<string, Family>;
       published: number;
       needAttention: number;
       removed: string[];
     };
 
-// ---------- Name matching ----------
-
-function levenshtein(a: string, b: string): number {
-  if (a === b) return 0;
-  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= a.length; i++) {
-    const cur = [i];
-    for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-    }
-    prev = cur;
-  }
-  return prev[b.length];
-}
-
-const wordsWithin = (small: string, big: string) => {
-  const words = new Set(big.split(" "));
-  return small.split(" ").every((w) => words.has(w));
-};
-
-/**
- * Same person, spelled a little differently: "Nadia Karim" / "Nadiya Karim", "Omar Rahman" /
- * "Omar F Rahman". Short names get less slack, so "Sam Lee" and "Tom Lee" stay two people.
- */
-export function similarNames(a: string, b: string): boolean {
-  const x = normalizeName(a);
-  const y = normalizeName(b);
-  if (!x || !y) return false;
-  const len = Math.max(x.length, y.length);
-  const slack = len < 8 ? 1 : len < 14 ? 2 : 3;
-  return x === y || levenshtein(x, y) <= slack || wordsWithin(x, y) || wordsWithin(y, x);
-}
+const sameIds = (a: string[] | null, b: string[] | null) =>
+  a === null || b === null ? a === b : a.length === b.length && [...a].sort().join() === [...b].sort().join();
 
 const namedOf = (guests: ParsedGuest[]) =>
   guests.flatMap((g) => (g.kind === "named" ? [g.fullName] : []));
@@ -90,13 +62,14 @@ export function planSheetSync(
     guestsByParty.set(g.partyId, list);
   }
   for (const list of guestsByParty.values()) list.sort((a, b) => a.sortOrder - b.sortOrder);
-  const invitationsByParty = new Map<string, Map<EventId, number>>();
+  const invitationsByParty = new Map<string, Map<EventId, DbInvitation>>();
   for (const inv of snapshot.invitations) {
-    const m = invitationsByParty.get(inv.partyId) ?? new Map<EventId, number>();
-    m.set(inv.eventId, inv.maxGuests);
+    const m = invitationsByParty.get(inv.partyId) ?? new Map<EventId, DbInvitation>();
+    m.set(inv.eventId, inv);
     invitationsByParty.set(inv.partyId, m);
   }
   const attending = new Set(snapshot.rsvps.filter((r) => r.attending).map((r) => `${r.guestId}|${r.eventId}`));
+  const saidYes = new Set(snapshot.rsvps.filter((r) => r.attending).map((r) => r.guestId));
 
   const dbNamedOf = (partyId: string) =>
     (guestsByParty.get(partyId) ?? []).flatMap((g) => (!g.isSlot && g.fullName ? [g.fullName] : []));
@@ -123,7 +96,7 @@ export function planSheetSync(
     for (const r of group) {
       if (r === keeper) continue;
       const fresh = opts.newId();
-      idChanges.push({ row: r.row, from: r.id, to: fresh });
+      idChanges.push({ family: r.family, row: r.row, from: r.id, to: fresh });
       r.id = fresh;
       r.prefix = "Copied row, so it got its own Website ID. ";
     }
@@ -147,7 +120,7 @@ export function planSheetSync(
     const active = candidates.filter((p) => !p.archived);
     const pick = active.length === 1 ? active[0] : active.length === 0 && candidates.length === 1 ? candidates[0] : null;
     if (!pick) continue;
-    idChanges.push({ row: r.row, from: r.id, to: pick.id });
+    idChanges.push({ family: r.family, row: r.row, from: r.id, to: pick.id });
     sheetIds.delete(r.id);
     sheetIds.add(pick.id);
     reconnected.add(pick.id);
@@ -168,12 +141,13 @@ export function planSheetSync(
   };
   const notes: RowNote[] = [];
   const removed: string[] = [];
+  const families = new Map(rows.map((r) => [r.id, r.family]));
   let published = 0;
   let needAttention = 0;
 
   for (const r of rows) {
     const db = partiesById.get(r.id);
-    const note = (text: string) => notes.push({ row: r.row, id: r.id, note: r.prefix + text });
+    const note = (text: string) => notes.push({ family: r.family, row: r.row, id: r.id, note: r.prefix + text });
 
     if (r.errors.length > 0) {
       needAttention++;
@@ -200,9 +174,9 @@ export function planSheetSync(
       if (db && !db.archived) {
         plan.archivePartyIds.push(db.id);
         removed.push(db.displayName);
-        note("Taken off the website: no event has seats.");
+        note("Taken off the website: it isn't invited to any event.");
       } else {
-        note("Not on the website yet: give at least one event a number of seats.");
+        note("Not on the website yet: put an x under at least one event.");
       }
       continue;
     }
@@ -212,16 +186,28 @@ export function planSheetSync(
     if (!db || db.archived || db.displayName !== r.displayName) {
       plan.upsertParties.push({ id: r.id, displayName: r.displayName });
     }
-    const keptGuestIds = diffGuests(r.id, guestsByParty.get(r.id) ?? [], r.guests, plan, opts.newId);
+    const currentGuests = guestsByParty.get(r.id) ?? [];
+    const { namedIds, slotIds } = diffGuests(r.id, currentGuests, r.guests, plan, opts.newId, saidYes);
+    const keptGuestIds = [...namedIds, ...slotIds];
+    const keptSet = new Set(keptGuestIds);
 
     const warnings = [...r.warnings];
-    const had = invitationsByParty.get(r.id) ?? new Map<EventId, number>();
+    const had = invitationsByParty.get(r.id) ?? new Map<EventId, DbInvitation>();
     for (const eventId of EVENT_IDS) {
       const seats = r.seats[eventId];
       const before = had.get(eventId);
       if (seats !== undefined) {
-        if (before !== seats) plan.upsertInvitations.push({ partyId: r.id, eventId, maxGuests: seats });
-        const coming = keptGuestIds.filter((g) => attending.has(`${g}|${eventId}`)).length;
+        const only = r.only[eventId];
+        const guestIds = only ? [...only.named.map((i) => namedIds[i]), ...slotIds.slice(0, only.openSpots)] : null;
+        if (!before || before.maxGuests !== seats || !sameIds(before.guestIds, guestIds)) {
+          plan.upsertInvitations.push({ partyId: r.id, eventId, maxGuests: seats, guestIds });
+        }
+        // People who could come before but not any more (e.g. the Nikkah is now "Farid" only) lose that RSVP.
+        const allowed = new Set(guestIds ?? keptGuestIds);
+        const droppedOut = (before?.guestIds ?? currentGuests.map((g) => g.id)).filter((g) => keptSet.has(g) && !allowed.has(g));
+        if (before && droppedOut.length > 0) plan.deleteRsvps.push({ eventId, guestIds: droppedOut });
+
+        const coming = [...allowed].filter((g) => attending.has(`${g}|${eventId}`)).length;
         if (coming > seats) {
           warnings.push(
             `${coming} people already said yes to the ${SEAT_COLUMN[eventId]}, but it now has ${seats} ${seats === 1 ? "seat" : "seats"}.`,
@@ -251,7 +237,7 @@ export function planSheetSync(
     return {
       refused: true,
       message:
-        "The Guest List looks empty, so nothing was changed. If you really want to take every invitation off the website, use Website > Publish and allow removals.",
+        "Both guest lists look empty, so nothing was changed. If you really want to take every invitation off the website, use Website > Publish and allow removals.",
     };
   }
   if (!opts.allowRemovals && removed.length > REMOVAL_LIMIT) {
@@ -275,12 +261,12 @@ export function planSheetSync(
     plan.upsertInvitations.length +
     plan.archivePartyIds.length;
 
-  return { refused: false, plan, changes, notes, idChanges, published, needAttention, removed };
+  return { refused: false, plan, changes, notes, idChanges, families, published, needAttention, removed };
 }
 
 /**
  * Matches the row's people to the party's current guests and adds the differences to `plan`.
- * Returns the ids of the guests that remain (matched or new).
+ * Returns the guest id for each named person and each open spot, in the row's order.
  */
 function diffGuests(
   partyId: string,
@@ -288,8 +274,10 @@ function diffGuests(
   wanted: ParsedGuest[],
   plan: SheetPlan,
   newId: () => string,
-): string[] {
-  const kept: string[] = [];
+  /** Guests who said yes to something. */
+  coming: Set<string>,
+): { namedIds: string[]; slotIds: string[] } {
+  const namedIds: string[] = [];
   const used = new Set<string>();
 
   // Named people: exact name first, then close spellings (keeps a renamed person's RSVP).
@@ -319,23 +307,25 @@ function diffGuests(
     const m = match[i];
     if (!m) {
       const id = newId();
-      kept.push(id);
+      namedIds.push(id);
       plan.upsertNamedGuests.push({ id, partyId, fullName: g.fullName, isChild: g.isChild, sortOrder });
       return;
     }
-    kept.push(m.id);
+    namedIds.push(m.id);
     if (m.fullName !== g.fullName || m.isChild !== g.isChild || m.sortOrder !== sortOrder) {
       plan.upsertNamedGuests.push({ id: m.id, partyId, fullName: g.fullName, isChild: g.isChild, sortOrder });
     }
   });
 
-  // Slots (+1, unnamed child): by position within adults and within children. When there are
-  // fewer slots than before, the ones a guest already filled in are kept first.
+  // Open spots: by position within adults and within children. When there are fewer spots than
+  // before, the ones a guest already used (named, or said yes) are kept first.
   const slots = wanted.flatMap((g) => (g.kind === "slot" ? [g] : []));
+  const slotIds: string[] = [];
+  const unused = (g: DbGuest) => Number(!(g.fullName || coming.has(g.id)));
   for (const isChild of [false, true]) {
     const pool = current
       .filter((g) => g.isSlot && g.isChild === isChild)
-      .sort((a, b) => Number(!a.fullName) - Number(!b.fullName) || a.sortOrder - b.sortOrder);
+      .sort((a, b) => unused(a) - unused(b) || a.sortOrder - b.sortOrder);
     let k = 0;
     slots.forEach((s, j) => {
       if (s.isChild !== isChild) return;
@@ -343,16 +333,16 @@ function diffGuests(
       const m = pool[k++];
       if (!m) {
         const id = newId();
-        kept.push(id);
+        slotIds[j] = id;
         plan.upsertSlots.push({ id, partyId, isChild, sortOrder: order });
         return;
       }
       used.add(m.id);
-      kept.push(m.id);
+      slotIds[j] = m.id;
       if (m.sortOrder !== order) plan.upsertSlots.push({ id: m.id, partyId, isChild, sortOrder: order });
     });
   }
 
   for (const g of current) if (!used.has(g.id)) plan.deleteGuestIds.push(g.id);
-  return kept;
+  return { namedIds, slotIds };
 }

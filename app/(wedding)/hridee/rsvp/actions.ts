@@ -11,7 +11,7 @@
  * Rules (see WEDDING.md > Security):
  *   - Validate and trim all input with zod. Cap string lengths.
  *   - Every guestId / eventId must belong to the signed-in party and its invitations.
- *   - Enforce party_events.max_guests here, not just in the UI.
+ *   - Enforce party_events.max_guests and guest_ids (who may come to which event) here, not just in the UI.
  *   - Return plain objects ({ ok, error }), never raw DB errors.
  */
 import { z } from "zod";
@@ -58,13 +58,16 @@ export async function submitRsvp(input: RsvpInput): Promise<SubmitResult> {
 
     const guests = new Map(party.guests.map((g) => [g.id, g]));
     const seats = new Map(party.invitations.map((i) => [i.eventId, i.maxGuests]));
+    const allowed = new Map(party.invitations.map((i) => [i.eventId, i.guestIds ? new Set(i.guestIds) : null]));
 
     // Every answer must be about this party's guests and this party's events, once each,
-    // and every guest needs an answer for every event.
+    // and every guest needs an answer for every event. Only invited guests can say yes.
     const seen = new Set<string>();
     for (const a of answers) {
       const key = `${a.guestId}:${a.eventId}`;
       if (!guests.has(a.guestId) || !seats.has(a.eventId) || seen.has(key)) return fail("That RSVP doesn't match your invitation.");
+      const only = allowed.get(a.eventId);
+      if (a.attending && only && !only.has(a.guestId)) return fail("That RSVP doesn't match your invitation.");
       seen.add(key);
     }
     if (seen.size !== guests.size * seats.size) return fail("Please answer for everyone before sending.");
@@ -76,12 +79,11 @@ export async function submitRsvp(input: RsvpInput): Promise<SubmitResult> {
       if (coming > max) return fail(`You have ${max} ${max === 1 ? "seat" : "seats"} for one of the events. Please choose who is coming.`);
     }
 
+    // Names for open spots are optional. An unused spot loses any name it had.
     const attendingAny = (guestId: string) => answers.some((a) => a.guestId === guestId && a.attending);
     const finalSlotNames: RsvpSubmission["slotNames"] = {};
     for (const g of party.guests.filter((x) => x.isSlot)) {
-      const name = slotNames[g.id] ?? "";
-      if (attendingAny(g.id) && !name) return fail("Please add a name for each extra guest who is coming.");
-      finalSlotNames[g.id] = attendingAny(g.id) ? name : null;
+      finalSlotNames[g.id] = attendingAny(g.id) ? slotNames[g.id] || null : null;
     }
 
     await store.saveRsvp(party.partyId, {

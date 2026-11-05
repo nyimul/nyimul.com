@@ -2,7 +2,7 @@
  * One round trip between the family's Google Sheet and the website (called by
  * app/(wedding)/hridee/sync/route.ts, which checks the secret first):
  *   1. read the whole database,
- *   2. work out what the sheet's Guest List changes (plan.ts) and apply it,
+ *   2. work out what the sheet's two guest lists change (plan.ts) and apply it,
  *   3. send back a note per row plus fresh Summary / RSVPs / Messages tabs.
  */
 import "server-only";
@@ -41,6 +41,6 @@ export async function runSheetSync(store: GuestStore, request: SyncRequest): Pro
     changes: result.changes,
     notes: result.notes,
     idChanges: result.idChanges,
-    tables: buildTables(after),
+    tables: buildTables(after, result.families),
   };
 }
