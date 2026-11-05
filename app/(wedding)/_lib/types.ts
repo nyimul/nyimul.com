@@ -1,7 +1,7 @@
 /**
  * Shared TypeScript types for the wedding site.
- * The RSVP types mirror supabase/schema.sql one-to-one. If you change a table, change it here too
- * (later you can generate these automatically with `supabase gen types typescript`).
+ * The RSVP types mirror supabase/schema.sql. If you change a table, change it here and in
+ * _lib/store/types.ts too (or generate them with `supabase gen types typescript`).
  */
 
 // ---------- Content (static, lives in content.ts) ----------
@@ -34,7 +34,12 @@ export type WeddingEvent = {
   guestNotes?: string;
 };
 
-export type FaqItem = { question: string; answer: string };
+export type FaqItem = {
+  question: string;
+  answer: string;
+  /** Only show this to parties invited to at least one of these events. Omit to show everyone. */
+  eventIds?: EventId[];
+};
 
 export type WeddingPartyMember = {
   name: string;
@@ -45,20 +50,19 @@ export type WeddingPartyMember = {
 
 // ---------- RSVP data (mirrors supabase/schema.sql) ----------
 
-/** A household / invitation unit. Guests look themselves up by this. */
+/** A household / invitation unit (one row of the family's Google Sheet). Guests look themselves up by this. */
 export type Party = {
   id: string;
   displayName: string; // "The Hoque Family", "Ayesha & Omar"
   inviteCode?: string | null;
-  email?: string | null;
-  phone?: string | null;
 };
 
 export type Guest = {
   id: string;
-  partyId: string;
   /** null until a "+1" or unnamed child slot is filled in by the guest. */
   fullName: string | null;
+  /** A "+1" or unnamed child: the guest types (and may change) this person's name. */
+  isSlot: boolean;
   isChild: boolean;
 };
 
@@ -79,10 +83,9 @@ export type Rsvp = {
 
 /** One per party: things that are asked once, not per person. */
 export type PartyResponse = {
-  partyId: string;
-  songRequest?: string | null;
-  message?: string | null;
-  submittedAt?: string;
+  songRequest: string | null;
+  message: string | null;
+  submittedAt: string | null;
 };
 
 /** What the lookup step returns to the browser. Deliberately minimal (see WEDDING.md > Security). */
@@ -90,4 +93,28 @@ export type PartyLookupResult = {
   partyId: string;
   displayName: string;
   firstNames: string[];
+};
+
+/** The signed-in party, as every /hridee page sees it. Decides which events are shown. */
+export type PartySummary = {
+  partyId: string;
+  displayName: string;
+  invitedEventIds: EventId[];
+};
+
+/** Everything the RSVP form needs for one party (and nothing about anyone else). */
+export type RsvpPartyData = PartySummary & {
+  guests: Guest[];
+  invitations: { eventId: EventId; maxGuests: number }[];
+  rsvps: Rsvp[];
+  response: PartyResponse | null;
+};
+
+/** What submitRsvp writes, after validation. */
+export type RsvpSubmission = {
+  rsvps: { guestId: string; eventId: EventId; attending: boolean; dietaryNotes: string | null }[];
+  /** guestId -> name, for slot guests only. null clears an unused slot. */
+  slotNames: Record<string, string | null>;
+  songRequest: string | null;
+  message: string | null;
 };

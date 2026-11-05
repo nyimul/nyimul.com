@@ -5,14 +5,12 @@
  */
 import Link from "next/link";
 import { couple, wedding } from "../../_lib/content";
+import { formatDate } from "../../_lib/format";
 
 export default function RsvpCta() {
   return (
     <section id="rsvp" className="px-4 py-16 text-center">
-      <p className="text-lg">
-        {/* TODO: format date */}
-        Please RSVP by {wedding.rsvpDeadline}
-      </p>
+      <p className="text-lg">Please RSVP by {formatDate(wedding.rsvpDeadline)}</p>
       <Link
         href="/hridee/rsvp"
         className="mt-4 inline-block rounded-full bg-accent px-8 py-4 text-lg text-paper"

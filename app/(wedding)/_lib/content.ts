@@ -5,13 +5,18 @@
  *
  * Everything marked TODO is a placeholder. Fill it in with your fiancée before launch.
  * Guest-list data (who is invited, RSVPs) does NOT live here; that is in Supabase.
+ *
+ * Guests only see the events they are invited to. Anything event-specific (an FAQ answer
+ * about the Nikkah, say) gets an `eventIds` tag so it is hidden from everyone else.
+ * "server-only" makes the build fail if a Client Component imports this file, which would
+ * ship every event's details to every guest's browser.
  */
+import "server-only";
 import type { FaqItem, WeddingEvent, WeddingPartyMember } from "./types";
 
 export const couple = {
   // TODO: confirm spelling and the order you want displayed everywhere.
   names: ["Hridee", "Nyimul"] as const,
-  hashtag: "#TODO",
   /** Shown in the footer / FAQ so guests can reach you with questions. */
   contactEmail: "TODO@example.com",
 };
@@ -59,7 +64,7 @@ export const events: WeddingEvent[] = [
   {
     id: "reception",
     name: "Reception",
-    date: "2027-04-03", // TODO: confirm reception date
+    date: "2027-04-10", // TODO: confirm reception date
     startTime: "19:00",
     venue: {
       name: "Hilton Atlanta Northeast",
@@ -113,13 +118,13 @@ export const childcare = {
 export const faq: FaqItem[] = [
   // Suggested questions. TODO: write the answers.
   { question: "What should I wear to each event?", answer: "" },
-  { question: "I've never been to a Holud or a Nikkah. What should I expect?", answer: "" },
-  { question: "Can I bring a plus-one?", answer: "" },
-  { question: "Are children invited?", answer: "" },
-  { question: "Is there parking?", answer: "" },
-  { question: "Will there be alcohol?", answer: "" },
+  { question: "I've never been to a Nikkah. What should I expect?", answer: "", eventIds: ["nikkah"] },
+  { question: "I've never been to a Gaye Holud. What should I expect?", answer: "", eventIds: ["holud"] },
+  { question: "How many people can I bring? Can I bring a plus-one?", answer: "" },
+  { question: "Are children invited?", answer: "Yes" },
+  { question: "Is there parking?", answer: "Venues have on-site free parking." },
+  { question: "Will there be alcohol?", answer: "No, alcohol will not be served." },
   { question: "Is the ceremony unplugged? Can I take photos?", answer: "" },
   { question: "When is the RSVP deadline, and how do I change my RSVP?", answer: "" },
-  { question: "What is the wedding hashtag?", answer: couple.hashtag },
-  { question: "Who do I contact with questions?", answer: couple.contactEmail },
+  { question: "Who do I contact with questions?", answer: "Whoever invited you, or at "+ couple.contactEmail },
 ];
