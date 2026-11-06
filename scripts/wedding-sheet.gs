@@ -101,8 +101,10 @@ function publishAllowingRemovals() {
   var ui = SpreadsheetApp.getUi();
   var answer = ui.alert(
     "Allow removals?",
-    "This publishes the guest lists even if it takes many invitations off the website at once. " +
-      "Their RSVPs are kept, and putting the rows back restores them. Continue?",
+    "This publishes the guest lists even if it takes many invitations off the website at once, " +
+      "or removes people who already said yes.\n\n" +
+      "Invitations taken off keep their RSVPs, and putting the rows back restores them. " +
+      "People removed because a row has no room for them lose their RSVP for good.\n\nContinue?",
     ui.ButtonSet.YES_NO
   );
   if (answer === ui.Button.YES) publish_({ interactive: true, allowRemovals: true });
@@ -252,6 +254,16 @@ function setUpGuestTab_(sheet) {
   ["notes", "id"].forEach(function (key) {
     protectOnce_(sheet.getRange(1, cols[key] + 1, sheet.getMaxRows(), 1), "Filled in by the website");
   });
+
+  // Website notes: show the whole note, and turn "Not updated" / "Not on the website yet" red.
+  var notes = sheet.getRange(2, cols.notes + 1, sheet.getMaxRows() - 1, 1);
+  notes.setWrap(true);
+  var others = sheet.getConditionalFormatRules().filter(function (rule) {
+    var condition = rule.getBooleanCondition();
+    return !(condition && condition.getCriteriaType() === SpreadsheetApp.BooleanCriteria.TEXT_STARTS_WITH && condition.getCriteriaValues()[0] === "Not ");
+  });
+  var red = SpreadsheetApp.newConditionalFormatRule().whenTextStartsWith("Not ").setBackground("#f8d7da").setRanges([notes]).build();
+  sheet.setConditionalFormatRules(others.concat([red]));
 }
 
 function protectOnce_(range, description) {

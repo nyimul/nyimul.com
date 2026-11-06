@@ -291,7 +291,7 @@ The columns can be in any order. The family can add their own columns, like Phon
 - **Website notes**:
   - `✓ On the website` means the row is live.
   - `✓ ... Check:` means it's live, but something looks off: a one-word name, fewer invites than names (it then counts the names), or an x in Others need a named guest added after only the others said yes.
-  - `Not on the website yet:` or `Not updated:` means something must be fixed first. Until then, the website keeps the earlier version.
+  - `Not on the website yet:` or `Not updated:` means something must be fixed first, and the cell turns red. Until then, the website keeps the earlier version.
 - **Website ID**: the link between the row and the database. The script fills it in. Never type in it.
 
 What happens when the family...
@@ -301,7 +301,9 @@ What happens when the family...
 | adds a row | creates the invitation; they can sign in within 10 minutes |
 | fixes a name's spelling | updates it and keeps that person's RSVP |
 | adds or removes a person | adds them, or removes them along with their RSVP |
-| changes Invites | adds or removes open spots. Spots someone already used (named, or said yes) are kept first |
+| raises Invites | adds open spots |
+| lowers Invites | removes open spots nobody used. If that leaves too little room for people not in Guest names who already said yes, it refuses and removes nobody. The row's note turns red, stays until it's sorted out, and says the lowest Invites that fits. Once the family changes their RSVP, or Invites goes back up, the row updates by itself |
+| adds a name to Guest names that a guest already typed on their RSVP | treats them as the same person and keeps their RSVP, rather than counting them twice |
 | changes who an event is for | updates it and drops the RSVPs of people no longer invited to that event |
 | adds an x under Others need a named guest | applies it to the next RSVP. If only the others already said yes to an event, that answer stays and the row's note points it out |
 | clears an event's cell | takes that event off their invitation and drops those RSVPs |
@@ -312,7 +314,9 @@ What happens when the family...
 | sorts one column only, so IDs no longer match their rows | refuses those rows with a note saying to undo the sort; nothing changes |
 | renames a header or a tab | sends nothing; the status line names what's missing |
 
-**Website > Publish and allow removals.** A normal publish refuses to take more than 10 invitations off the website at once, or to empty both lists, because that's almost always an accident (deleted block of rows, half-sorted sheet). This menu item publishes anyway, after a confirmation. Use it only when you really removed that many on purpose. RSVPs are kept even then.
+**Website > Publish and allow removals.** A normal publish refuses to take more than 10 invitations off the website at once, or to empty both lists, because that's almost always an accident (deleted block of rows, half-sorted sheet). This menu item publishes anyway, after a confirmation. Use it only when you really removed that many on purpose. Invitations taken off keep their RSVPs.
+
+It also pushes through any row refused for lowering Invites, removing those people, and their RSVPs are gone for good. It applies to every row at that moment, so check for red notes first.
 
 ### Set it up (one time, about 20 minutes)
 
