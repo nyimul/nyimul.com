@@ -5,7 +5,8 @@
  * contact email on every step (WEDDING.md > Design > For older guests).
  *
  *   1. Password   the word printed on the invitation
- *   2. Name       "your first and last name, as on your invitation"
+ *   2. Name       their first and last name, or a family member's. Everyone gets the same
+ *                 evite, so nothing tells a guest how their name is spelled on our list.
  *   3. Pick       "Is this you?" (always shown, even for one match, so nobody lands in
  *                 someone else's version of the site by accident)
  */
@@ -103,10 +104,10 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
   return (
     <form action={lookupAction} className="mt-10">
       <label htmlFor="name" className="block text-lg">
-        Your first and last name
+        Enter your first and last name
       </label>
       <p id="name-help" className="text-muted">
-        As written on your invitation.
+        Or the name of someone in your family.
       </p>
       <input
         id="name"
@@ -125,7 +126,7 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
           lookup.status === "error"
             ? lookup.error
             : lookup.status === "none"
-              ? "We couldn't find that name. Try the name on your invitation, or a family member's name. Or email us and we'll sort it out."
+              ? "We couldn't find that name. Check the spelling, or try someone else in your family. Or email us and we'll sort it out."
               : undefined
         }
       />

@@ -12,20 +12,41 @@
  * ship every event's details to every guest's browser.
  */
 import "server-only";
-import type { FaqItem, WeddingEvent, WeddingPartyMember } from "./types";
+import type { EventId, Family, FaqItem, WeddingEvent, WeddingPartyMember } from "./types";
 
 export const couple = {
   // TODO: confirm spelling and the order you want displayed everywhere.
   names: ["Hridee", "Nyimul"] as const,
   /** Shown in the footer / FAQ so guests can reach you with questions. */
-  contactEmail: "TODO@example.com",
+  contactEmail: "hrideeandnyimul@gmail.com",
 };
 
 export const wedding = {
   city: "Atlanta, Georgia",
-  /** ISO date. Shown on the RSVP page and used to close the form after the deadline. */
-  rsvpDeadline: "2027-03-01", // TODO
+  /** ISO date. The RSVP form closes after this day. Change rsvpDeadlineText along with it. */
+  rsvpDeadline: "2027-02-15",
+  /** How the deadline reads on the site, as in "Please RSVP by ...". */
+  rsvpDeadlineText: "February 15th, right after Valentine's Day!",
   unpluggedCeremony: true, // TODO: decide (guide: say whether ceremony/reception are unplugged)
+};
+
+/**
+ * Colors to wear, shown on each event's card. Up to 5 per event, per family's side. A guest sees
+ * the list for the tab their row is on (Nyimul's Family or Hridee's Family).
+ * Paste any of these: "#F5EBE0", "F5EBE0", "rgb(245, 235, 224)".
+ * To give the sides different colors for the Nikkah or Reception, give each side its own list,
+ * the way the Holud does. An empty list hides the colors for that event.
+ */
+const nikkahColors = ["#F9DDE4", "#FBF0C4", "#D7EBD2", "#E3DAF0", "#D5E9F5"]; // blossom pink, butter yellow, mint, lilac, sky
+const receptionColors = ["#1F4E79", "#1E6F5C", "#5B3A70", "#C9A44C", "#E8D7C3"]; // sapphire, emerald, plum, gold, champagne
+
+export const eventColors: Record<EventId, Record<Family, string[]>> = {
+  nikkah: { nyimul: nikkahColors, hridee: nikkahColors },
+  holud: {
+    nyimul: ["#2563B8", "#7FB3E6", "#E75480", "#F7A8C4", "#F6C445"], // cobalt blue, sky blue, pink, soft pink, gold
+    hridee: ["#E8701A", "#F9A03F", "#2E8B57", "#A4C96A", "#F6C445"], // deep orange, orange, green, spring green, gold
+  },
+  reception: { nyimul: receptionColors, hridee: receptionColors },
 };
 
 export const events: WeddingEvent[] = [
@@ -110,13 +131,10 @@ export const registry: { name: string; url: string; note?: string }[] = [
   // TODO { name: "", url: "" }
 ];
 
-export const childcare = {
-  // TODO are children invited to each event? babysitter / kids' room details and who to contact
-  note: "",
-};
-
 export const faq: FaqItem[] = [
   // Suggested questions. TODO: write the answers.
+  // An answer that talks about one event belongs on a question tagged with that event's id;
+  // otherwise every guest reads about an event they may not be invited to.
   { question: "What should I wear to each event?", answer: "" },
   { question: "I've never been to a Nikkah. What should I expect?", answer: "", eventIds: ["nikkah"] },
   { question: "I've never been to a Gaye Holud. What should I expect?", answer: "", eventIds: ["holud"] },
@@ -124,7 +142,10 @@ export const faq: FaqItem[] = [
   { question: "Are children invited?", answer: "Yes" },
   { question: "Is there parking?", answer: "Venues have on-site free parking." },
   { question: "Will there be alcohol?", answer: "No, alcohol will not be served." },
-  { question: "Is the ceremony unplugged? Can I take photos?", answer: "" },
-  { question: "When is the RSVP deadline, and how do I change my RSVP?", answer: "" },
+  { question: "Is the ceremony unplugged? Can I take photos?", answer: "", eventIds: ["nikkah"] },
+  {
+    question: "When is the RSVP deadline, and how do I change my RSVP?",
+    answer: `${wedding.rsvpDeadlineText} To change your RSVP, come back to this site by then, sign in, and send it again.`,
+  },
   { question: "Who do I contact with questions?", answer: "Whoever invited you, or at "+ couple.contactEmail },
 ];

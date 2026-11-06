@@ -211,8 +211,8 @@ export function planSheetSync(
 
     // Publish this row.
     published++;
-    if (!db || db.archived || db.displayName !== r.displayName || db.othersNeedNamed !== r.othersNeedNamed) {
-      plan.upsertParties.push({ id: r.id, displayName: r.displayName, othersNeedNamed: r.othersNeedNamed });
+    if (!db || db.archived || db.displayName !== r.displayName || db.othersNeedNamed !== r.othersNeedNamed || db.family !== r.family) {
+      plan.upsertParties.push({ id: r.id, displayName: r.displayName, othersNeedNamed: r.othersNeedNamed, family: r.family });
     }
     plan.upsertNamedGuests.push(...diff.upsertNamedGuests);
     plan.upsertSlots.push(...diff.upsertSlots);

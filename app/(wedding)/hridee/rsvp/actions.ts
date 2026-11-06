@@ -87,7 +87,7 @@ export async function submitRsvp(input: RsvpInput): Promise<SubmitResult> {
         const namedInvited = party.guests.some((g) => !g.isSlot && (!only || only.has(g.id)));
         const coming = answers.filter((a) => a.eventId === eventId && a.attending).map((a) => guests.get(a.guestId));
         if (namedInvited && coming.length > 0 && coming.every((g) => g?.isSlot)) {
-          return fail("The others can only come with someone named on your invitation. Please check your answers.");
+          return fail("The others can only come with someone named on this RSVP. Please check your answers.");
         }
       }
     }

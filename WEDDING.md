@@ -110,7 +110,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [ ] **Accommodation**: hotel block(s), booking link, group code, cut-off date, Airbnb suggestions. `content.ts > accommodations`, `Travel`
 - [ ] **Transport**: shuttles/buses/rideshare between hotel and venues, how to book, times. `content.ts > transport`, `Travel`
 - [ ] **Wishing well / registry**: link(s) + a gentle sentence. `content.ts > registry`, `Registry`
-- [ ] **Childcare**: are kids invited (per event), babysitter details, who to contact. `content.ts > childcare`, `Travel`, FAQ
+- [x] **Childcare**: children are welcome at every event, so there's nothing beyond the FAQ answer. `content.ts > faq`
 - [ ] **FAQ section** (the guide calls it essential for large or complex weddings; three events, two venues qualifies). `content.ts > faq`, `Faq`
 
 ### Nice-to-haves ("hidden gems")
@@ -137,14 +137,14 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [ ] Share only **after the date and venues are locked**.
 - [ ] Keep the site **easy to update** when anything changes (that is what `content.ts` is for).
 - [ ] Put the URL on the **save-the-dates**, as a written link **or a QR code** pointing at `https://nyimul.com/hridee`.
-- [ ] Send save-the-dates **6-12 months before** the wedding. April 2027 means that window is open now.
+- [x] Send save-the-dates **6-12 months before** the wedding. Sent.
 
 ### Aligning your wedding style
 - [ ] Digital save-the-dates and thank-you cards can **match the website's design** (same fonts, palette, photo treatment), which saves time and money. Reuse the tokens from `wedding.css`.
 
 ### Extra, because this is a Bengali wedding across three events
 - [ ] A short, warm "what to expect" for each event for guests who have never been to a Holud or Nikkah: what happens, how long, when to arrive, seating.
-- [ ] Dress-code colours per event (Holud yellows/oranges? decide), modesty notes if any, where to buy/rent if you want to help non-Desi guests.
+- [ ] Colors to wear: up to 5 per event, per family's side, in `content.ts > eventColors` (hex or rgb). Starter palettes are in; final ones to come. Also: modesty notes if any, where to buy/rent if you want to help non-Desi guests.
 - [ ] Food: halal, vegetarian options, alcohol yes/no, per event.
 - [ ] Prayer space / timing around salah if relevant.
 - [ ] Gift etiquette if you want to say anything (registry vs. envelopes vs. "your presence is enough").
@@ -164,7 +164,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 Not everyone is invited to every event, so **invitations are per party per event**, each with its own seat count. The `party_events` rows decide what each guest sees on the site: no row for the Nikkah means the Nikkah never appears for that party, anywhere.
 
 ### The model (see `supabase/schema.sql`)
-- **party**: one invitation / household, which is one row of the family's Google Sheet (its Website ID is the party id). Has a `display_name` ("The Hoque Family"), a `search_name` used for lookup, `archived_at`, set when the row leaves the sheet, and `others_need_named`, the sheet's "Others need a named guest".
+- **party**: one invitation / household, which is one row of the family's Google Sheet (its Website ID is the party id). Has a `display_name` ("The Hoque Family"), a `search_name` used for lookup, `archived_at`, set when the row leaves the sheet, `others_need_named`, the sheet's "Others need a named guest", and `family`, the tab the row is on, which decides the event colors that party sees.
 - **guests**: the people in the party. Named people are rows with names. Every invite without a name (the sheet's Invites number minus the names listed) is an **open spot**: `is_slot = true`, `full_name = null`. On the RSVP form the family says how many of those are coming and may type their names. Only open spots' names are editable by guests.
 - **search_name** on parties is kept up to date by a trigger (display name plus every guest's name, normalised). Never edit it by hand.
 - **party_events**: one row per event the party is invited to, with `max_guests` = how many seats they have *at that event*. A couple gets 2. A family of five gets 5 at the reception, maybe 5 at the Holud, and no row for the Nikkah. `guest_ids` is null for the whole invitation, or lists the only guests invited to that event (the sheet had "Farid Karim" under Nikkah instead of an x). `max_guests` always equals the people invited to that event.
@@ -175,7 +175,7 @@ This handles every case you described: couples (2 seats), families with kids (mo
 
 ### The entrance (`/hridee/enter`, one question per screen)
 1. **Password**: the word printed on the invitation. Case, spaces and punctuation are ignored. After 10 wrong tries per IP in 15 minutes, a "wait or email us" message.
-2. **Find**: "Your first and last name, as written on your invitation." Needs two words. Each typed word must match a word of the same person's name (or the name on the invite), in any order, so middle names and "Karim Farid" work, and "Sa Lee" doesn't find "Sam Lee". If nothing matches exactly, close spellings count: one typo, two in long words ("Mohammed" / "Muhammad"), or the same consonants ("Chowdhury" / "Chaudhry", "Fareed" / "Farid"). An exact match always hides the close ones, so typing your name correctly never shows other families. The matching is `matchName` in `_lib/names.ts`. Returns at most 5 parties and only `displayName` + first names. 30 searches per IP per 15 minutes. Zero matches shows a friendly "try the name on your invitation, or a family member's name, or email us", never "you're not invited". A family member who isn't named on the row can't find it by their own name, but the name on the invite ("Karim Family") or a relative's name works.
+2. **Find**: "Enter your first and last name. Or the name of someone in your family." Everyone gets the same evite, with the site address and the password, so nothing tells a guest how the sheet spells their name. Needs two words. Each typed word must match a word of the same person's name (or the row's family name), in any order, so middle names and "Karim Farid" work, and "Sa Lee" doesn't find "Sam Lee". If nothing matches exactly, close spellings count: one typo, two in long words ("Mohammed" / "Muhammad"), or the same consonants ("Chowdhury" / "Chaudhry", "Fareed" / "Farid"). An exact match always hides the close ones, so typing your name correctly never shows other families. The matching is `matchName` in `_lib/names.ts`. Returns at most 5 parties and only `displayName` + first names. 30 searches per IP per 15 minutes. Zero matches shows a friendly "check the spelling, or try someone else in your family, or email us", never "you're not invited". Close spellings are handled, but nicknames aren't, and a family member who isn't named on the row can't find it by their own name. So list the names people actually go by, and as many of the family as you know: each name on a row is one more way to find it.
 3. **Pick**: "Is this you?" or "Which one is you?", always shown, even for one match.
 4. The visitor now has a signed session cookie for that party, good for a year. Every page is their version. "Not {party}? Switch" in the footer signs out, for shared family phones.
 
@@ -189,7 +189,6 @@ Still TODO: meal choice (once you know which events offer one), and the hotel bl
 
 Edge cases to decide:
 - Two parties with the same family name (two "Rahman Family"s): the picker shows first names under each. If that's not enough, add a hint to `display_name` ("The Rahman Family (Chicago)").
-- An optional **invite code** printed on the card gives an exact-match path for anyone the name search can't find.
 - Guests who RSVP for someone else in their party: allowed by design (one person per household usually does it).
 - Deadline: after `wedding.rsvpDeadline`, the form shows "RSVPs have closed, email us".
 
@@ -252,7 +251,7 @@ Google Sheet ("Nyimul's Family" and "Hridee's Family" tabs)
   |  every 10 minutes, or Website > Publish now
   |  Apps Script (scripts/wedding-sheet.gs, pasted into the sheet)
   |     POST https://www.nyimul.com/hridee/sync    Authorization: Bearer WEDDING_SHEET_SECRET
-  |     sends only: family, name on invite, guest names, invites, the event cells,
+  |     sends only: which tab, family name, guest names, invites, the event cells,
   |     "Others need a named guest", Website ID
   v
 app/(wedding)/_lib/sheet/: read each row, work out the changes, apply them to Supabase
@@ -274,12 +273,13 @@ Tabs the script creates:
 
 The columns can be in any order. The family can add their own columns, like Phone, Address or Invited by, and those never leave the sheet.
 
-| Name on invite | Guest names | Invites | Nikkah | Holud | Reception | Others need a named guest | Website notes | Website ID |
+| Family name | Guest names | Invites | Nikkah | Holud | Reception | Others need a named guest | Website notes | Website ID |
 |---|---|---|---|---|---|---|---|---|
 | The Karim Family | Farid Karim, Nadia Karim | 5 | Farid Karim | x | x | | ✓ On the website | (automatic) |
 | Sam Lee | Sam Lee | 2 | | | x | x | ✓ On the website | (automatic) |
 | Ayesha & Omar Rahman | Ayesha Rahman, Omar Rahman | | x | x | x | | ✓ On the website | (automatic) |
 
+- **Family name**: how the website greets them ("Welcome, The Karim Family"). Guests can also search it. For one person or a couple, use their names.
 - **Guest names**: the people you know by name, first and last, separated by commas. Everyone named can find the invitation by searching their own name. `(child)` after a name marks a child.
 - **Invites**: how many people in total. The ones without a name are "open spots": the family says on the RSVP form how many of them are coming, and can name them if they like. Blank means just the people named.
 - **Event columns**:
@@ -310,7 +310,7 @@ What happens when the family...
 | deletes a row, or clears its name and guest names | hides the invitation, so they can't sign in, but keeps their RSVP. Bringing the row back restores everything, whether through File > Version history or by retyping the same name and a guest |
 | deletes more than 10 rows at once | refuses and changes nothing, and the status line explains. Undo with Version history, or you use Website > Publish and allow removals |
 | copies a row to start a new one (on either tab) | gives the copy its own Website ID |
-| moves a row to the other family's tab (cut and paste) | keeps the invitation and its RSVPs; it now counts for the other family |
+| moves a row to the other family's tab (cut and paste) | keeps the invitation and its RSVPs; it now counts for the other family and sees that side's event colors |
 | sorts one column only, so IDs no longer match their rows | refuses those rows with a note saying to undo the sort; nothing changes |
 | renames a header or a tab | sends nothing; the status line names what's missing |
 
@@ -373,7 +373,7 @@ The sheet runs its own copy of the script, so a change to `scripts/wedding-sheet
 
 Set up writes the Read me tab only when there isn't one, so your own wording is never overwritten. To get the script's latest text instead, delete the Read me tab and run Set up.
 
-The first version had a single "Guest List" tab. Set up turns it into Nyimul's Family (renaming Guests to Guest names and inserting Invites after it, keeping every row and Website ID) and adds an empty Hridee's Family tab. Move Hridee's family's rows there with cut and paste, which keeps their IDs and RSVPs.
+The first version had a single "Guest List" tab. Set up turns it into Nyimul's Family (renaming Guests to Guest names and inserting Invites after it, keeping every row and Website ID) and adds an empty Hridee's Family tab. Move Hridee's family's rows there with cut and paste, which keeps their IDs and RSVPs. Set up also renames the old "Name on invite" header to "Family name". The rows under it don't change.
 
 ### When the status line shows ⚠
 
@@ -519,17 +519,15 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 - Registry links, or the wording you want instead.
 - Favourite Atlanta spots with one line each.
 - FAQ answers (the questions are already drafted in `content.ts`).
-- Hashtag. Contact email (a shared wedding inbox is handy). Whether the ceremony is unplugged.
+- Whether the ceremony is unplugged.
 - Meal options per event (if any), so the RSVP form knows whether to ask.
-- The guest list, typed straight into the family's Google Sheet (section 7), each family on its own tab: name on invite, guest names, invites, an x per event, plus any private columns you like.
+- The guest list, typed straight into the family's Google Sheet (section 7), each family on its own tab: family name, guest names, invites, an x per event, plus any private columns you like.
 - 6-10 engagement photos for backdrops (landscape and portrait), 1 hero, story photos, gallery set.
-- RSVP deadline (typically 4-6 weeks before the first event, after talking to the caterers).
 
 ---
 
 ## 12. Open decisions
 
-- Invite codes on the invitations: yes or no.
 - Which events offer a meal choice.
 - Whether to collect trivia questions / video messages / slideshow photos (guide's optional extras).
 - Confirmation emails: yes or no (adds an email provider).

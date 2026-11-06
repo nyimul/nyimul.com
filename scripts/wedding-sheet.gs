@@ -30,7 +30,7 @@ var OLD_GUEST_TAB = "Guest List"; // the first version's single tab; Set up rena
 // Guest list columns. Matched by header text (any order, any case). The event columns must match
 // SEAT_COLUMN in rows.ts.
 var COL = {
-  name: "Name on invite",
+  name: "Family name",
   guests: "Guest names",
   invites: "Invites",
   nikkah: "Nikkah",
@@ -41,11 +41,11 @@ var COL = {
   id: "Website ID",
 };
 var COL_ORDER = ["name", "guests", "invites", "nikkah", "holud", "reception", "needsNamed", "notes", "id"];
-var OLD_HEADERS = { guests: ["Guests"] }; // renamed by Set up
+var OLD_HEADERS = { name: ["Name on invite"], guests: ["Guests"] }; // renamed by Set up
 var EVENTS = ["nikkah", "holud", "reception"];
 
 var HEADER_NOTES = {
-  name: "Who the invitation is addressed to.\nExample: The Karim Family",
+  name: "How the website greets them.\nExample: The Karim Family, or Sam Lee",
   guests: "The people you know by name, with commas between them.\nExample: Farid Karim, Nadia Karim",
   invites: "How many people in total, counting the ones without a name.\nExample: 5\nBlank means just the names.",
   event: "x = invited. Blank = not invited.\nOnly some of them? Type their names instead, like: Farid Karim",
@@ -62,7 +62,7 @@ var READ_ME = [
   [""],
   ["One row is one invitation."],
   [""],
-  ["Name on invite: who it's addressed to, like The Karim Family."],
+  ["Family name: how the website greets them, like The Karim Family."],
   ["Guest names: the people you know by name, with commas, like Farid Karim, Nadia Karim."],
   ["Invites: how many people in total, like 5. They can add the rest when they RSVP."],
   ["Nikkah, Holud, Reception: an x if they're invited, blank if not."],

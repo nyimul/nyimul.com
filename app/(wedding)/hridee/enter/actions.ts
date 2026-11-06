@@ -69,7 +69,7 @@ export async function lookupParty(_prev: LookupState, formData: FormData): Promi
   const query = parsed.success ? parsed.data : "";
   const normalized = normalizeName(query);
   if (normalized.length < 3 || normalized.split(" ").length < 2) {
-    return { status: "error", query, error: "Please type your first and last name, as written on your invitation." };
+    return { status: "error", query, error: "Please type your first and last name." };
   }
 
   try {

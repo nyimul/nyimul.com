@@ -40,7 +40,7 @@ export default async function WeddingHome() {
       <PhotoBackdrop />
       <main className="relative">
         <Hero guestName={party.displayName} firstEvent={myEvents[0]} />
-        <Events events={myEvents} onlyFor={onlyFor} />
+        <Events events={myEvents} onlyFor={onlyFor} family={party.family} />
         <RsvpCta />
         <OurStory />
         <Travel />
