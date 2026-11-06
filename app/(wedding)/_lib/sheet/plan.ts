@@ -7,6 +7,8 @@
  *   - Each row carries a "Website ID" (the party id). The Apps Script fills it in for new rows.
  *   - People are matched by name, then by "close enough" (a typo fix keeps that person's RSVP).
  *   - Open spots (Invites beyond the names) are matched by position, keeping any name a guest typed in.
+ *   - A row that no longer has room for people who already said yes waits, with a note, instead
+ *     of removing them.
  *   - A row that disappears hides the party ("archived"); nothing is deleted, and putting the row
  *     back (Version history) brings it back with its RSVPs.
  *   - If many rows disappear at once, the sync refuses to run. Someone probably deleted a block of
@@ -39,7 +41,11 @@ export type PlanResult =
       published: number;
       needAttention: number;
       removed: string[];
+      /** Only with allowRemovals: invitations that lost people who had said yes. */
+      removedYes: string[];
     };
+
+const people = (n: number) => (n === 1 ? "1 person" : `${n} people`);
 
 const sameIds = (a: string[] | null, b: string[] | null) =>
   a === null || b === null ? a === b : a.length === b.length && [...a].sort().join() === [...b].sort().join();
@@ -141,6 +147,7 @@ export function planSheetSync(
   };
   const notes: RowNote[] = [];
   const removed: string[] = [];
+  const removedYes: string[] = [];
   const families = new Map(rows.map((r) => [r.id, r.family]));
   let published = 0;
   let needAttention = 0;
@@ -148,14 +155,13 @@ export function planSheetSync(
   for (const r of rows) {
     const db = partiesById.get(r.id);
     const note = (text: string) => notes.push({ family: r.family, row: r.row, id: r.id, note: r.prefix + text });
+    const refuse = (why: string) => {
+      needAttention++;
+      note(db && !db.archived ? `Not updated: ${why} The website still shows the earlier version.` : `Not on the website yet: ${why}`);
+    };
 
     if (r.errors.length > 0) {
-      needAttention++;
-      note(
-        db && !db.archived
-          ? `Not updated: ${r.errors.join(" ")} The website still shows the earlier version.`
-          : `Not on the website yet: ${r.errors.join(" ")}`,
-      );
+      refuse(r.errors.join(" "));
       continue;
     }
 
@@ -181,13 +187,36 @@ export function planSheetSync(
       continue;
     }
 
+    const currentGuests = guestsByParty.get(r.id) ?? [];
+    const diff = diffGuests(r.id, currentGuests, r.guests, opts.newId, saidYes);
+    const { namedIds, slotIds } = diff;
+
+    // Lowering Invites doesn't look like removing someone, so it never removes people who already
+    // said yes without asking. The row waits, with a note that stays until it's sorted out.
+    const openYes = currentGuests.filter((g) => g.isSlot && saidYes.has(g.id) && !namedIds.includes(g.id));
+    const wouldLose = openYes.filter((g) => diff.deleteGuestIds.includes(g.id)).length;
+    if (wouldLose > 0) {
+      if (!opts.allowRemovals) {
+        const room = openYes.length - wouldLose;
+        refuse(
+          `${people(openYes.length)} not listed in Guest names already said yes, but this row now has ` +
+            `${room === 0 ? "no room for them" : `room for only ${room} of them`}. ` +
+            `Set Invites to ${namedIds.length + openYes.length} or more to keep them, or ask the family to change their RSVP first.`,
+        );
+        continue;
+      }
+      r.prefix += `Removed ${people(wouldLose)} not listed in Guest names who had said yes. `;
+      removedYes.push(`${r.displayName} (${wouldLose})`);
+    }
+
     // Publish this row.
     published++;
     if (!db || db.archived || db.displayName !== r.displayName || db.othersNeedNamed !== r.othersNeedNamed) {
       plan.upsertParties.push({ id: r.id, displayName: r.displayName, othersNeedNamed: r.othersNeedNamed });
     }
-    const currentGuests = guestsByParty.get(r.id) ?? [];
-    const { namedIds, slotIds } = diffGuests(r.id, currentGuests, r.guests, plan, opts.newId, saidYes);
+    plan.upsertNamedGuests.push(...diff.upsertNamedGuests);
+    plan.upsertSlots.push(...diff.upsertSlots);
+    plan.deleteGuestIds.push(...diff.deleteGuestIds);
     const keptGuestIds = [...namedIds, ...slotIds];
     const keptSet = new Set(keptGuestIds);
 
@@ -260,23 +289,25 @@ export function planSheetSync(
     plan.upsertInvitations.length +
     plan.archivePartyIds.length;
 
-  return { refused: false, plan, changes, notes, idChanges, families, published, needAttention, removed };
+  return { refused: false, plan, changes, notes, idChanges, families, published, needAttention, removed, removedYes };
 }
 
 /**
- * Matches the row's people to the party's current guests and adds the differences to `plan`.
- * Returns the guest id for each named person and each open spot, in the row's order.
+ * Matches the row's people to the party's current guests and works out the differences, without
+ * applying them. Returns the guest id for each named person and each open spot, in the row's order.
  */
 function diffGuests(
   partyId: string,
   current: DbGuest[],
   wanted: ParsedGuest[],
-  plan: SheetPlan,
   newId: () => string,
   /** Guests who said yes to something. */
   coming: Set<string>,
-): { namedIds: string[]; slotIds: string[] } {
+) {
   const namedIds: string[] = [];
+  const slotIds: string[] = [];
+  const upsertNamedGuests: SheetPlan["upsertNamedGuests"] = [];
+  const upsertSlots: SheetPlan["upsertSlots"] = [];
   const used = new Set<string>();
 
   // Named people: exact name first, then close spellings (keeps a renamed person's RSVP).
@@ -299,6 +330,17 @@ function diffGuests(
       used.add(m.id);
     }
   });
+  // A name a guest typed on their RSVP, now added to Guest names: the same person, not a second
+  // one. They stop being an open spot and keep their RSVP.
+  const typedSpots = current.filter((g) => g.isSlot && g.fullName);
+  named.forEach((g, i) => {
+    if (match[i]) return;
+    const m = typedSpots.find((c) => !used.has(c.id) && similarNames(c.fullName!, g.fullName));
+    if (m) {
+      match[i] = m;
+      used.add(m.id);
+    }
+  });
 
   let sortOrder = 0;
   named.forEach((g, i) => {
@@ -307,23 +349,22 @@ function diffGuests(
     if (!m) {
       const id = newId();
       namedIds.push(id);
-      plan.upsertNamedGuests.push({ id, partyId, fullName: g.fullName, isChild: g.isChild, sortOrder });
+      upsertNamedGuests.push({ id, partyId, fullName: g.fullName, isChild: g.isChild, sortOrder });
       return;
     }
     namedIds.push(m.id);
-    if (m.fullName !== g.fullName || m.isChild !== g.isChild || m.sortOrder !== sortOrder) {
-      plan.upsertNamedGuests.push({ id: m.id, partyId, fullName: g.fullName, isChild: g.isChild, sortOrder });
+    if (m.isSlot || m.fullName !== g.fullName || m.isChild !== g.isChild || m.sortOrder !== sortOrder) {
+      upsertNamedGuests.push({ id: m.id, partyId, fullName: g.fullName, isChild: g.isChild, sortOrder });
     }
   });
 
   // Open spots: by position within adults and within children. When there are fewer spots than
   // before, the ones a guest already used (named, or said yes) are kept first.
   const slots = wanted.flatMap((g) => (g.kind === "slot" ? [g] : []));
-  const slotIds: string[] = [];
   const unused = (g: DbGuest) => Number(!(g.fullName || coming.has(g.id)));
   for (const isChild of [false, true]) {
     const pool = current
-      .filter((g) => g.isSlot && g.isChild === isChild)
+      .filter((g) => g.isSlot && g.isChild === isChild && !used.has(g.id))
       .sort((a, b) => unused(a) - unused(b) || a.sortOrder - b.sortOrder);
     let k = 0;
     slots.forEach((s, j) => {
@@ -333,15 +374,15 @@ function diffGuests(
       if (!m) {
         const id = newId();
         slotIds[j] = id;
-        plan.upsertSlots.push({ id, partyId, isChild, sortOrder: order });
+        upsertSlots.push({ id, partyId, isChild, sortOrder: order });
         return;
       }
       used.add(m.id);
       slotIds[j] = m.id;
-      if (m.sortOrder !== order) plan.upsertSlots.push({ id: m.id, partyId, isChild, sortOrder: order });
+      if (m.sortOrder !== order) upsertSlots.push({ id: m.id, partyId, isChild, sortOrder: order });
     });
   }
 
-  for (const g of current) if (!used.has(g.id)) plan.deleteGuestIds.push(g.id);
-  return { namedIds, slotIds };
+  const deleteGuestIds = current.filter((g) => !used.has(g.id)).map((g) => g.id);
+  return { namedIds, slotIds, upsertNamedGuests, upsertSlots, deleteGuestIds };
 }

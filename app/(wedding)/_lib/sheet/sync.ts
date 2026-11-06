@@ -34,6 +34,7 @@ export async function runSheetSync(store: GuestStore, request: SyncRequest): Pro
     parts.push(`${plural(result.needAttention, "row needs", "rows need")} a look (see Website notes).`);
   }
   if (result.removed.length > 0) parts.push(`Taken off the website: ${result.removed.join(", ")}.`);
+  if (result.removedYes.length > 0) parts.push(`Removed people who had said yes: ${result.removedYes.join(", ")}.`);
 
   return {
     ok: true,
