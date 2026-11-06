@@ -12,7 +12,7 @@
  * ship every event's details to every guest's browser.
  */
 import "server-only";
-import type { EventId, Family, FaqItem, WeddingEvent, WeddingPartyMember } from "./types";
+import type { Accommodation, EventId, Family, FaqItem, RecommendationGroup, WeddingEvent, WeddingPartyMember } from "./types";
 
 export const couple = {
   // TODO: confirm spelling and the order you want displayed everywhere.
@@ -38,7 +38,9 @@ export const wedding = {
  * the way the Holud does. An empty list hides the colors for that event.
  */
 const nikkahColors = ["#FFE4E1", "#FBF0C4", "#D0F0C0", "#E3DAF0", "#D5E9F5"]; // misty rose, butter yellow, tea green, lilac, sky
-const receptionColors = ["#64403e", "#413C58", "#6b4423", "#b8860b", "#f7e7ce", "#000000", "#FFFFFF"]; // chocolate plum, vintage grape, brown bark, dark goldenrod, champagne mist, black, white
+// Reception colors are off for now (an empty list hides the swatches). To bring them back,
+// uncomment this line and use `receptionColors` for both sides in `reception` below.
+// const receptionColors = ["#64403e", "#413C58", "#6b4423", "#b8860b", "#f7e7ce", "#000000", "#FFFFFF"]; // chocolate plum, vintage grape, brown bark, dark goldenrod, champagne mist, black, white
 
 export const eventColors: Record<EventId, Record<Family, string[]>> = {
   nikkah: { nyimul: nikkahColors, hridee: nikkahColors },
@@ -46,8 +48,14 @@ export const eventColors: Record<EventId, Record<Family, string[]>> = {
     nyimul: ["#191970", "#F77FBE", "#FFD700", "#DBB2D1", "#7FB3E6"], // midnight blue, bright pink, gold, soft pink, cool horizon
     hridee: ["#E8701A", "#2E8B57", "#FFD700", "#FFA000", "#50C878"], // deep orange, sea green, gold, amber, emerald
   },
-  reception: { nyimul: receptionColors, hridee: receptionColors },
+  reception: { nyimul: [], hridee: [] }, // no palette for now; see receptionColors above
 };
+
+/**
+ * The line above the swatches on each event card. It has to make clear that one of these
+ * colors is fine and so is a mix; nobody needs to wear all of them.
+ */
+export const colorsToWearLabel = "Wear any of these colors, or mix them";
 
 export const events: WeddingEvent[] = [
   {
@@ -110,9 +118,21 @@ export const weddingParty: WeddingPartyMember[] = [
   // TODO { name: "", role: "", bio: "", photo: "" },
 ];
 
-export const accommodations = [
-  // TODO hotel block(s): name, address, booking link/code, cut-off date, nightly rate, distance to venue
-  // { name: "Hilton Atlanta Northeast", bookingUrl: "", groupCode: "", cutoffDate: "", notes: "" },
+export const accommodations: Accommodation[] = [
+  {
+    name: "Hilton Atlanta Northeast",
+    address: "5993 Peachtree Industrial Blvd, Peachtree Corners, GA 30092",
+    // Hilton's direct link: the group code and the dates are already filled in; guests can change the dates.
+    bookingUrl:
+      "https://www.hilton.com/en/book/reservation/rooms/?ctyhocn=ATLHPHF&arrivalDate=2027-04-09&departureDate=2027-04-11&groupCode=HNW&room1NumAdults=1&cid=OM%2CWW%2CHILTONLINK%2CEN%2CDirectLink",
+    groupCode: "HNW",
+    // TODO: cutoffDate and nightlyRate once the hotel confirms them.
+    // Each line below is only shown to guests invited to one of its events.
+    eventNotes: [
+      { eventIds: ["reception"], text: "The reception is here." },
+      { eventIds: ["nikkah", "holud"], text: "TPC Sugarloaf is a short drive or Uber away." },
+    ],
+  },
 ];
 
 export const transport = {
@@ -123,8 +143,27 @@ export const transport = {
   rideshare: "",
 };
 
-export const thingsToDo: { name: string; blurb: string; url?: string }[] = [
-  // TODO your favourite Atlanta spots, ideally tied to your story (first date, go-to restaurant...)
+/**
+ * "While You're in Atlanta": your favorite places, mainly for out-of-town guests.
+ * The section stays hidden until at least one group has a place in it. Rename the group titles,
+ * add or remove groups, and add places as `{ name, blurb, url?, address? }`: `url` can be the
+ * place's website or a Google Maps link, and the blurb is one short line (why you love it).
+ */
+export const recommendations: RecommendationGroup[] = [
+  {
+    title: "Restaurants",
+    places: [
+      // { name: "", blurb: "", url: "", address: "" },
+    ],
+  },
+  {
+    title: "Cafes",
+    places: [],
+  },
+  {
+    title: "Things to do",
+    places: [],
+  },
 ];
 
 export const registry: { name: string; url: string; note?: string }[] = [

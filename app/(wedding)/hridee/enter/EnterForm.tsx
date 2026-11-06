@@ -12,6 +12,7 @@
  */
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { helpText, inputClass, primaryButton, textButton } from "../../_lib/ui";
 import { checkPassword, lookupParty, selectParty, type LookupState, type PasswordState } from "./actions";
 
 type Props = {
@@ -20,11 +21,6 @@ type Props = {
   contactEmail: string;
 };
 
-const inputClass =
-  "mt-2 block w-full rounded-xl border border-accent-soft bg-white px-4 py-3 text-lg text-ink outline-none focus:border-accent";
-const primaryButton =
-  "mt-6 w-full rounded-full bg-accent px-8 py-4 text-lg text-paper disabled:opacity-60";
-
 export default function EnterForm({ startAt, next, contactEmail }: Props) {
   const [pw, passwordAction] = useActionState<PasswordState, FormData>(checkPassword, { ok: false });
   const [lookup, lookupAction] = useActionState<LookupState, FormData>(lookupParty, { status: "idle" });
@@ -32,7 +28,7 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
   const [dismissedNonce, setDismissedNonce] = useState<number | null>(null);
 
   const help = (
-    <p className="mt-8 text-center text-sm text-muted">
+    <p className={helpText}>
       Need help? Email <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
     </p>
   );
@@ -40,8 +36,8 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
   // ---------- Step 1 ----------
   if (startAt === "password" && !pw.ok) {
     return (
-      <form action={passwordAction} className="mt-10">
-        <label htmlFor="password" className="block text-lg">
+      <form action={passwordAction} className="mt-8">
+        <label htmlFor="password" className="block text-lg font-semibold">
           Password
         </label>
         <p id="password-help" className="text-muted">
@@ -69,9 +65,9 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
 
   if (lookup.status === "expired") {
     return (
-      <div className="mt-10 text-center">
+      <div className="mt-8 text-center">
         <p className="text-lg">That took a little while, so we need the password again.</p>
-        <a href="/hridee/enter" className={`${primaryButton} inline-block no-underline`}>
+        <a href="/hridee/enter" className={`${primaryButton} mt-6`}>
           Start again
         </a>
         {help}
@@ -82,17 +78,13 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
   // ---------- Step 3 ----------
   if (lookup.status === "results" && lookup.nonce !== dismissedNonce) {
     return (
-      <div className="mt-10">
-        <h2 className="text-2xl">{lookup.matches.length === 1 ? "Is this you?" : "Which one is you?"}</h2>
-        <form action={selectParty} className="mt-6 space-y-3">
+      <div className="mt-8">
+        <h2 className="text-3xl">{lookup.matches.length === 1 ? "Is this you?" : "Which one is you?"}</h2>
+        <form action={selectParty} className="mt-5 space-y-3">
           <input type="hidden" name="next" value={next} />
           <PartyButtons matches={lookup.matches} />
         </form>
-        <button
-          type="button"
-          onClick={() => setDismissedNonce(lookup.nonce)}
-          className="mt-6 w-full py-3 text-center text-accent underline"
-        >
+        <button type="button" onClick={() => setDismissedNonce(lookup.nonce)} className={`${textButton} mt-5 w-full`}>
           No, search again
         </button>
         {help}
@@ -102,8 +94,8 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
 
   // ---------- Step 2 ----------
   return (
-    <form action={lookupAction} className="mt-10">
-      <label htmlFor="name" className="block text-lg">
+    <form action={lookupAction} className="mt-8">
+      <label htmlFor="name" className="block text-lg font-semibold">
         Enter your first and last name
       </label>
       <p id="name-help" className="text-muted">
@@ -139,7 +131,7 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={primaryButton}>
+    <button type="submit" disabled={pending} className={`${primaryButton} mt-5`}>
       {pending ? pendingLabel : label}
     </button>
   );
@@ -154,7 +146,7 @@ function PartyButtons({ matches }: { matches: Extract<LookupState, { status: "re
       name="partyId"
       value={m.partyId}
       disabled={pending}
-      className="block w-full rounded-2xl border border-accent-soft bg-white px-5 py-4 text-left disabled:opacity-60"
+      className="block w-full rounded-3xl border-2 border-accent-soft bg-white px-5 py-4 text-left transition-colors hover:border-accent disabled:opacity-60"
     >
       <span className="block font-display text-2xl">{m.displayName}</span>
       {m.firstNames.length > 0 && <span className="block text-muted">{m.firstNames.join(", ")}</span>}

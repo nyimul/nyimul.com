@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Testing on a phone over Wi-Fi: `npm run dev`, then open the "Network" URL it prints
+  // (http://<this computer's IP>:3000/hridee). In development Next refuses to serve the page's
+  // scripts to any origin but localhost unless it is listed here, and without them the page shows
+  // but nothing is interactive (no monogram animation, no reveals). Development only; if the
+  // computer's IP changes, update it here. Exact addresses only, no wildcards for IPs.
+  allowedDevOrigins: ["192.168.1.171"],
+
   images: {
     // Serve modern formats. Next generates them on demand from the files you commit.
     formats: ["image/avif", "image/webp"],

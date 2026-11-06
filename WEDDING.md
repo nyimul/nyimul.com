@@ -9,7 +9,7 @@ Status (Nov 2026): skeleton in place. The entrance (password + name), per-party 
 ## 1. Principles
 
 1. **Simple first.** The audience includes grandparents on old phones. If a feature makes the site harder to use, it loses. One long page plus a separate RSVP page. Big type, big buttons, few nav items.
-2. **Stunning second.** The engagement photos do the heavy lifting. Typography-led layout, one accent colour, lots of air. Two kinds of motion only: content fading in as you scroll, and photos crossfading behind it.
+2. **Stunning second.** The engagement photos do the heavy lifting. Typography-led layout, one accent colour, lots of air. Two kinds of motion only: content fading in as you scroll, and the monogram gliding from the hero into the corner.
 3. **Mobile first.** Design at 375px wide, then widen. Most guests will open the link from WhatsApp or a text.
 4. **Unlisted.** Not linked from nyimul.com, not indexed, not advertised anywhere except the invitations. `nyimul.com/hridee` is the home of all wedding things; the portfolio never mentions it and vice versa.
 5. **Secure.** Nothing under /hridee is visible without the invitation password and a name lookup. Guest data (names, emails, dietary needs, who is coming) never reaches the browser except the slice a guest needs to see their own party, and a guest never sees an event they aren't invited to. Secrets live on the server only.
@@ -37,6 +37,8 @@ app/
       content.ts                   ALL wedding copy/facts (names, events, venues, FAQ, registry...). server-only
       types.ts                     shared TS types; RSVP types mirror supabase/schema.sql
       format.ts                    formatDate / formatTime / isRsvpClosed
+      ui.ts                        shared button/input/card class strings (the look of every control)
+      calendar.ts                  builds the .ics for "Add to calendar" (Atlanta times -> UTC)
       names.ts                     name normaliser for the lookup (must match the SQL trigger)
       sessionToken.ts              sign/verify the session cookie (used by proxy.ts too)
       session.ts                   getSession / requirePartyId / start and end a session (server-only)
@@ -46,19 +48,24 @@ app/
       sheet/                       the Google Sheet sync: rows.ts (read a row), plan.ts (what changes),
                                    report.ts (Summary/RSVPs/Messages tabs), sync.ts (one round trip)
       supabase.server.ts           server-only Supabase client (secret key)
-    _hooks/useInView.ts            IntersectionObserver hook powering Reveal + PhotoBackdrop (TODO)
-    _photos/                       engagement photos + index.ts manifest (see README.md there)
+    _hooks/useInView.ts            IntersectionObserver hook powering Reveal (renders visible first, so no-JS is safe)
+    _hooks/monogramDock.ts         the hero's RSVP button telling Nav "dock the monogram now"
+    _photos/                       web-sized engagement photos + index.ts manifest (alt text, captions, focal points)
     hridee/
       page.tsx                     nyimul.com/hridee: composes the sections below
-      _components/                 one file per section: Nav, Hero, Events, RsvpCta, OurStory, Travel,
-                                   Faq, WeddingParty, ThingsToDo, Registry, Gallery, Footer,
-                                   PhotoBackdrop (scroll crossfade), Reveal (fade-in wrapper)
+      _components/                 one file per section: Nav (monogram + bar), Hero, Events, RsvpCta, OurStory,
+                                   Travel, Faq, WeddingParty, ThingsToDo, Registry, Gallery, ClosingPhoto, Footer;
+                                   plus Section (chapter photo + title), Photo (art-directed full-bleed photo),
+                                   Reveal (fade-in wrapper), SiteHeader (bar for the RSVP page), HeroRsvpButton
+      icon.png, apple-icon.png     the monogram on paper, as favicon
+      calendar/[file]/route.ts     GET /hridee/calendar/<event>.ics: "Add to calendar", invited events only
       enter/                       nyimul.com/hridee/enter: password, name, "is this you?" (the only open page)
       rsvp/page.tsx, RsvpForm.tsx  nyimul.com/hridee/rsvp: one screen per invited event, extras, review
       rsvp/actions.ts              Server Action submitRsvp (the party comes from the session, never the browser)
       sync/route.ts                POST nyimul.com/hridee/sync: the Google Sheet's door (secret, not session)
 proxy.ts                           sends anyone without a guest session to /hridee/enter
 scripts/wedding-sheet.gs           Apps Script pasted into the family's Google Sheet (section 7)
+scripts/export-wedding-photos.py   makes the web-sized, metadata-free photos in _photos/ from the originals
 supabase/schema.sql                database schema: tables, search_name triggers, grants, RLS locked down
 .env.example                       every env var the site uses; copy to .env.local
 next.config.ts                     X-Robots-Tag noindex for /hridee + baseline security headers + image formats
@@ -74,6 +81,7 @@ Caveats to remember:
 ### Running and deploying
 
 - `npm run dev` then open `http://localhost:3000/hridee`. You'll land on the entrance.
+- **On your phone**, open the "Network" URL the dev server prints (`http://192.168.1.171:3000/hridee` on this Wi-Fi). The computer's IP must be listed in `allowedDevOrigins` in `next.config.ts`, otherwise Next serves the page but blocks its scripts for that origin and nothing is interactive (the monogram never docks, sections never fade in). If the IP changes, update it there.
 - **Without touching the real database:** set `WEDDING_DEMO_DATA=1` and `WEDDING_PASSWORD=demo` (in `.env.local`, or on the command line, which wins over the file), so the site runs on a fake guest list (`_lib/store/demo.ts`). Try "Omar Rahman" (all three events), "Farid Karim" (5 invites, 2 of them open spots, and the Nikkah for Farid only), "Sam Lee" (Reception only, with a +1 who can only come with Sam), "Ayesha Rahman" (two matches, so you get the picker) and "Fareed Kareem" (a close spelling). Demo RSVPs vanish when the dev server restarts. The demo list refuses to run on Vercel.
 - Hosting: Vercel, same project as the portfolio. The wedding site is just more routes.
 - Env vars: Vercel > Project > Settings > Environment Variables. Set them for Production and Preview separately. Local dev uses `.env.local` (gitignored). `.env.example` lists them all.
@@ -86,10 +94,12 @@ Caveats to remember:
 
 Full guidance is in `app/(wedding)/_photos/README.md`. The short version:
 
-- Put design photos in `app/(wedding)/_photos/` and register them in `index.ts`. Import them (`import hero from "./hero.jpg"`) rather than putting them in `public/`: you get intrinsic sizes (no layout jumps), automatic blur placeholders, forever-cached URLs and on-demand AVIF/WebP resizing from `next/image`.
-- Export at 2400px long edge (full-bleed) or 1600px (gallery/story), JPEG ~80. 300-800 KB each. `next/image` scales down, never up, so camera originals are wasted bytes.
-- **Strip EXIF before committing** (GPS coordinates of the shoot location, camera serials). Export without metadata or run `exiftool -all= -tagsfromfile @ -icc_profile *.jpg`.
-- Only the hero gets `priority`. Every `<Image>` gets a real `alt` and a correct `sizes`.
+- The originals live outside the repo (the "Wedding Website Pics" folder on the desktop) and never go in git: 12-38 MB each, and the phone photos carry GPS coordinates.
+- `scripts/export-wedding-photos.py` makes the web copies in `app/(wedding)/_photos/`: 2400px long edge for full-bleed photos, 1600px for story/gallery, JPEG ~82, every EXIF/XMP/GPS tag dropped, colour profile kept, named by purpose (`hero-a.jpg`, `events.jpg`, `gallery-01.jpg`...). It checks its own output. To add or swap a photo: one line in its PLAN, re-run it, then point `_photos/index.ts` at the file.
+- `_photos/index.ts` is the only place photos are imported. It also holds the alt text, the gallery captions (the month each photo was taken) and the focal point per breakpoint (`position` / `positionDesktop`).
+- Importing (`import hero from "./hero-a.jpg"`) rather than using `public/` gives intrinsic sizes (no layout jumps), blur placeholders, forever-cached URLs and on-demand AVIF/WebP resizing from `next/image`.
+- Only the hero and the entrance photo load eagerly (`loading="eager"` + `fetchPriority="high"`; Next 16 deprecated `priority`). Everything else lazy-loads, with a real `alt` and a correct `sizes`.
+- Phones get portrait files and wide screens landscape ones where a pair exists (`Photo.tsx` builds a `<picture>` from `getImageProps`).
 - Watch Vercel's image optimization quota if the gallery grows large; move a big gallery to Supabase Storage + `images.remotePatterns` if needed.
 
 ---
@@ -114,7 +124,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [ ] **FAQ section** (the guide calls it essential for large or complex weddings; three events, two venues qualifies). `content.ts > faq`, `Faq`
 
 ### Nice-to-haves ("hidden gems")
-- [ ] **Local recommendations**: favourite spots, ideally tied to your relationship. `content.ts > thingsToDo`, `ThingsToDo`
+- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. `content.ts > recommendations` (grouped, hidden until filled), `ThingsToDo`
 - [ ] **Video message**: a personal welcome. Optional; a short muted loop or a private YouTube embed in `Hero`/`OurStory`
 - [ ] **Photo gallery**: milestones, engagement photos, a "then and now". `_photos/index.ts > galleryPhotos`, `Gallery`
 - [ ] **Wedding party introductions**: photos + short bios. `content.ts > weddingParty`, `WeddingParty`
@@ -445,28 +455,34 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 
 ## 9. Design direction: simple but stunning
 
-**Look.** Paper-light background, near-black ink, one warm accent, a display serif for names and headings, a quiet sans for everything else (placeholders are Cormorant Garamond + Inter; pick the real pair with your fiancée, ideally matching the invitations). Text column max ~720px. Full-bleed photo bands between text sections. The photos *are* the design; the UI gets out of the way.
+Built in Nov 2026 (the direction mockup is `design-direction.html` next to the photo originals). Everything below is what is live under `app/(wedding)/`.
+
+**Look.** Warm paper background (`#FBF8F3`), navy ink (`#1E2130`), one accent: the navy of Nyimul's kurta (`#2B3261`) for buttons, links and selected states, with a sage tint from Hridee's saree (`#E3E9DF`) for borders and soft fills, and sage (`#8FA58A`) for the italic "&" only. All text passes 4.5:1 on paper. Fonts: Playfair Display for names and headings (it echoes the high-contrast serif of the monogram) and Source Sans 3 for everything else, both self-hosted through `next/font`. Tokens live in `wedding.css`; the shared button, input and card classes in `_lib/ui.ts`. Text column max ~672px. The photos *are* the design; the UI gets out of the way.
+
+**The monogram.** Ink on light backgrounds everywhere. On the home page it starts big and centred in the sky of the hero photo; when the hero scrolls away, or the hero's RSVP button is tapped, it glides into the top-left corner and the bar (Events, Travel, FAQ, RSVP) fades in behind it. One fixed element and one transform transition (`.monogram-dock` in `wedding.css`, driven by `Nav.tsx`). The RSVP page and the footer keep it small, the entrance shows it as a crest under the photo, and `hridee/icon.png` + `apple-icon.png` make it the favicon.
+
+**Chapters, not backdrops.** Each section of the home page opens with one full-width photo that carries its title (`Section.tsx`), then its content on solid paper. This replaced the earlier idea of a fixed crossfading photo layer behind translucent panels: the same feeling while scrolling, but text is always on paper (readable for older eyes) and there is no fixed full-screen layer to stutter on old phones. Order: hero, Events, the RSVP band (deadline and button written in the sky above the two of you), Our Story, Travel & Stay, Questions, then Wedding Party, While You're in Atlanta and Registry (hidden until there is content), Gallery (oldest first, month captions), the waving photo, footer.
 
 **Motion rules.**
-- Exactly two effects: `Reveal` (content fades in and rises 16px as it enters the viewport, 500-700ms, ease-out, once) and `PhotoBackdrop` (a fixed photo layer behind the content that crossfades to the next photo as each section passes, ~1s). Both built on `useInView`, no animation library (consistent with the portfolio decision).
-- Nothing bounces, nothing parallaxes on mobile (it stutters), no scroll hijacking, no autoplaying video with sound, no loading screens.
-- Everything honours `prefers-reduced-motion` (already in `wedding.css`; `useInView` should return `true` immediately for those users).
+- Exactly two effects: `Reveal` (content fades in and rises 16px as it enters the viewport, 700ms, ease-out, once) and the monogram docking above. No animation library. `useInView` renders everything visible on the server and only hides below-the-fold blocks after JavaScript runs, so a slow phone never stares at an empty page.
+- Nothing bounces, nothing parallaxes, no scroll hijacking, no autoplaying video, no loading screens. The hero and the forms are never inside a `Reveal`.
+- Everything honours `prefers-reduced-motion` (`wedding.css` zeroes every transition; `useInView` and the hero button check it too).
 - Opacity and transform only. Never animate `top`/`height`/`width`.
 
-**Photo transitions on scroll (your "slowly transition as we scroll" idea).** `PhotoBackdrop` renders 6-10 photos stacked in a `fixed inset-0 -z-10` layer. Each content section carries a photo index; when a section crosses 50% of the viewport, that index becomes active and its photo fades to `opacity-100` while the previous fades out. Sections sit on translucent paper panels so text stays readable over any photo. On phones use portrait crops. Load only the active and next photo eagerly. The no-JS alternative, CSS scroll-driven animations (`animation-timeline: view()`), is lovely but patchy on older phones, so the observer approach is the default.
-
 **For older guests specifically.**
-- Base font 17px+, line-height 1.6, contrast at least 4.5:1 (check the accent on paper).
-- Tap targets 44px minimum, generous spacing between them, no hover-only interactions, no carousels that need swiping to see information.
-- Nav: 3 anchor links + one RSVP button. Consider a fixed bottom bar on mobile (thumb reach).
-- RSVP: one question per screen, visible labels (not placeholders), a big Next button, a plain-language confirmation, and the contact email on every step.
-- Dates written out ("Saturday, April 3, 2027 at 6:00 PM"), never `04/03`.
-- "Add to calendar" and "Get directions" as buttons, because those are the two things people come back for.
+- Base font 18px, line-height 1.55, contrast at least 4.5:1.
+- Buttons and inputs 56px tall and full width on phones, the two card buttons 48px, bar links 44px. No hover-only interactions, no carousels.
+- Nav: 3 anchor links + one RSVP button, shown once the hero has scrolled away.
+- RSVP: one question per screen with a "Step 2 of 5" line and a progress bar, visible labels, Coming / Can't make it as two big toggles with a check mark on the chosen one, a big Next button, a plain-language confirmation, and the contact email on every step.
+- Dates written out ("Friday, April 9, 2027"), never `04/09`.
+- "Get directions" (a Google Maps search for the address, or `venue.mapsUrl` when set) and "Add to calendar" (an .ics from `/hridee/calendar/<event>.ics`, served only for events the party is invited to, 3 hours long unless `endTime` is set) on every event card.
 - FAQ with native `<details>` so it works everywhere, including with JS off.
 
-**Performance budget.** Hero visible under 2.5s on 4G: `priority` on the hero image only, `sizes` on every image, `display: swap` on fonts, no component libraries. Check with Lighthouse on a throttled mobile profile before launch.
+**Performance budget.** Hero visible under 2.5s on 4G: eager loading on the hero image only, `sizes` on every image, `display: swap` on fonts, no component libraries. Check with Lighthouse on a throttled mobile profile before launch.
 
-**Test on real devices**: an older iPhone, a budget Android, and one parent.
+**Test on real devices**: an older iPhone, a budget Android, and one parent. Headless screenshots of every demo guest at 375px and 1440px were checked on Nov 6 2026.
+
+**If styles look stale in dev** (old colours after a CSS change), stop the server and delete `.next/dev`: Turbopack's cache once kept serving the previous `wedding.css`.
 
 ---
 
@@ -475,14 +491,15 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 **Phase 1: skeleton (done).** Route groups, wedding root layout, section stubs, content file, schema draft, this document.
 
 **Phase 2: static content.**
-- Fill `content.ts` (names, dates, venues, dress codes, FAQ answers). Confirm every TODO.
-- Implement `useInView`, `Reveal`, then `Hero`, `Events` (with map link, venue link, add-to-calendar), `RsvpCta`, `OurStory`, `Travel`, `Faq`, `Footer`.
-- Pick fonts and palette; set them in `wedding.css` and `layout.tsx`.
+- [ ] Fill `content.ts` (names, dates, venues, dress codes, FAQ answers, story, things to do). Confirm every TODO.
+- [x] `useInView`, `Reveal`, `Hero`, `Events` (map link, venue link, add-to-calendar), `RsvpCta`, `OurStory`, `Travel`, `Faq`, `Footer`.
+- [x] Fonts and palette in `wedding.css` and `layout.tsx` (section 9).
 
 **Phase 3: photos and polish.**
-- Prepare and commit photos (`_photos/README.md`), register in `index.ts`.
-- `PhotoBackdrop`, `Gallery`, `WeddingParty`, `ThingsToDo`, `Registry`.
-- Mobile pass at 375px; reduced-motion pass; Lighthouse pass.
+- [x] Photos exported and registered (`scripts/export-wedding-photos.py`, `_photos/index.ts`).
+- [x] `Section` chapter openers (instead of `PhotoBackdrop`), `Gallery`, `WeddingParty`, `ThingsToDo`, `Registry`, `ClosingPhoto`, the monogram docking.
+- [x] Mobile pass at 375px (headless screenshots of each demo guest, both families' sides).
+- [ ] Reduced-motion pass on a device; Lighthouse pass; the three real devices in section 9.
 
 **Phase 4: gate + RSVP.**
 - [x] Password + name entrance, signed session, `proxy.ts`, per-party home page and FAQ.
@@ -522,7 +539,7 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 - Whether the ceremony is unplugged.
 - Meal options per event (if any), so the RSVP form knows whether to ask.
 - The guest list, typed straight into the family's Google Sheet (section 7), each family on its own tab: family name, guest names, invites, an x per event, plus any private columns you like.
-- 6-10 engagement photos for backdrops (landscape and portrait), 1 hero, story photos, gallery set.
+- [x] Engagement photos, hero, story photos, gallery set (section 3). Still wanted: a photo of each wedding party member.
 
 ---
 
@@ -531,7 +548,7 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 - Which events offer a meal choice.
 - Whether to collect trivia questions / video messages / slideshow photos (guide's optional extras).
 - Confirmation emails: yes or no (adds an email provider).
-- Fonts and palette.
+- How long each event runs (`endTime` in `content.ts`); the calendar entries assume 3 hours until then.
 
 ---
 

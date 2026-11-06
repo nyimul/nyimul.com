@@ -51,6 +51,34 @@ export type WeddingPartyMember = {
   photo?: string; // key into _photos/index.ts
 };
 
+/** One recommended place: a restaurant, cafe, park... `url` can be its website or a Google Maps link. */
+export type Recommendation = {
+  name: string;
+  blurb: string;
+  url?: string;
+  address?: string;
+};
+
+/** A group of recommendations under one heading ("Restaurants", "Cafes"...). */
+export type RecommendationGroup = {
+  title: string;
+  places: Recommendation[];
+};
+
+/** A hotel block. Only `name` is required; the Travel section shows whatever is filled in. */
+export type Accommodation = {
+  name: string;
+  address?: string;
+  bookingUrl?: string;
+  groupCode?: string;
+  cutoffDate?: string;
+  nightlyRate?: string;
+  /** Shown to everyone. */
+  notes?: string;
+  /** Lines shown only to parties invited to one of the listed events (e.g. how far a venue is). */
+  eventNotes?: { eventIds: EventId[]; text: string }[];
+};
+
 // ---------- RSVP data (mirrors supabase/schema.sql) ----------
 
 /** A household / invitation unit (one row of the family's Google Sheet). Guests look themselves up by this. */

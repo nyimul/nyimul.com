@@ -6,7 +6,8 @@
  * own page (/hridee/rsvp) so it is focused and free of distractions.
  *
  * Section order below is deliberate: the things every guest needs (when, where, RSVP)
- * come first; the "hidden gems" from the sayi.do guide come later.
+ * come first; the "hidden gems" from the sayi.do guide come later. Each chapter opens with a
+ * full-width photo carrying its title (see _components/Section.tsx); the photos are the design.
  * Every section is its own file in ./_components so you can build and style them one at a time.
  *
  * PERSONALISED: this renders on the server for the signed-in party (see /hridee/enter).
@@ -25,8 +26,8 @@ import Registry from "./_components/Registry";
 import Faq from "./_components/Faq";
 import Gallery from "./_components/Gallery";
 import RsvpCta from "./_components/RsvpCta";
+import ClosingPhoto from "./_components/ClosingPhoto";
 import Footer from "./_components/Footer";
-import PhotoBackdrop from "./_components/PhotoBackdrop";
 
 export default async function WeddingHome() {
   const party = await requireParty();
@@ -36,19 +37,18 @@ export default async function WeddingHome() {
   return (
     <>
       <Nav />
-      {/* Sits behind everything and crossfades engagement photos as the page scrolls. */}
-      <PhotoBackdrop />
       <main className="relative">
         <Hero guestName={party.displayName} firstEvent={myEvents[0]} />
         <Events events={myEvents} onlyFor={onlyFor} family={party.family} />
         <RsvpCta />
         <OurStory />
-        <Travel />
+        <Travel invitedEventIds={party.invitedEventIds} />
         <Faq invitedEventIds={party.invitedEventIds} />
         <WeddingParty />
         <ThingsToDo />
         <Registry />
         <Gallery />
+        <ClosingPhoto />
       </main>
       <Footer guestName={party.displayName} />
     </>

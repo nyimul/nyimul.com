@@ -15,11 +15,14 @@
  *
  * It only ever receives the signed-in party's guests and events (see page.tsx). Seats always
  * equal the people shown, so there's nothing to run out of here; submitRsvp re-checks anyway.
+ *
+ * Styling only lives in class names (shared ones in _lib/ui.ts); the logic above is unchanged.
  */
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { formatDate, formatTime, joinList, whoFor } from "../../_lib/format";
 import type { EventId, Guest } from "../../_lib/types";
+import { cardClass, choiceButton, helpText, inputClass, primaryButton, roundButton, secondaryButton } from "../../_lib/ui";
 import { submitRsvp } from "./actions";
 
 export type RsvpEvent = {
@@ -50,12 +53,6 @@ const key = (guestId: string, eventId: EventId) => `${guestId}:${eventId}`;
 const namedFor = (guests: Guest[], e: RsvpEvent) => guests.filter((g) => !g.isSlot && e.guestIds.includes(g.id));
 const spotsFor = (guests: Guest[], e: RsvpEvent) => guests.filter((g) => g.isSlot && e.guestIds.includes(g.id));
 const people = (n: number) => (n === 1 ? "1 person" : `${n} people`);
-
-const primaryButton = "w-full rounded-full bg-accent px-8 py-4 text-lg text-paper disabled:opacity-60";
-const secondaryButton = "w-full rounded-full border border-accent px-8 py-4 text-lg text-accent";
-const roundButton = "h-14 w-14 rounded-full border border-accent text-3xl leading-none text-accent disabled:opacity-30";
-const inputClass =
-  "mt-1 block w-full rounded-xl border border-accent-soft bg-white px-4 py-3 text-lg text-ink outline-none focus:border-accent";
 
 export default function RsvpForm(props: Props) {
   const { guests, events, contactEmail } = props;
@@ -129,7 +126,7 @@ export default function RsvpForm(props: Props) {
   }
 
   const help = (
-    <p className="mt-8 text-center text-sm text-muted">
+    <p className={helpText}>
       Questions? Email <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
     </p>
   );
@@ -138,11 +135,11 @@ export default function RsvpForm(props: Props) {
     const comingToSomething = guests.some(attendingAny);
     return (
       <div className="mt-10 text-center">
-        <h2 className="text-3xl">{comingToSomething ? "Thank you! We can't wait to see you." : "Thank you for letting us know."}</h2>
+        <h2 className="text-3xl md:text-4xl">{comingToSomething ? "Thank you! We can't wait to see you." : "Thank you for letting us know."}</h2>
         <p className="mt-4 text-lg text-muted">
           Your RSVP is saved. You can change it any time until {formatDate(props.deadline, { weekday: false })} by coming back to this page.
         </p>
-        <Link href="/hridee" className={`${primaryButton} mt-8 inline-block no-underline`}>
+        <Link href="/hridee" className={`${primaryButton} mt-8`}>
           Back to the wedding page
         </Link>
         {help}
@@ -161,43 +158,43 @@ export default function RsvpForm(props: Props) {
     return (
       <div className="mt-8">
         {step === 0 && props.submittedAt && (
-          <p className="mb-6 rounded-xl bg-accent-soft px-4 py-3">
+          <p className="mb-6 rounded-2xl bg-accent-soft px-4 py-3">
             You already replied on {formatDate(props.submittedAt.slice(0, 10), { weekday: false })}. Change anything you like and send it again.
           </p>
         )}
-        <p className="text-sm text-muted">
-          Step {step + 1} of {reviewStep + 1}
-        </p>
-        <h2 className="text-3xl">{e.name}</h2>
-        <p className="text-muted">
+        <StepIndicator step={step} total={reviewStep + 1} />
+        <h2 className="mt-3 text-3xl md:text-4xl">{e.name}</h2>
+        <p className="mt-1 text-muted">
           {formatDate(e.date)} at {formatTime(e.startTime)}, {e.venueName}
         </p>
-        <p className="mt-2">
+        <p className="mt-3">
           We&apos;ve saved {e.maxGuests} {e.maxGuests === 1 ? "seat" : "seats"} for{" "}
           {onlySome ? whoFor(named.map(nameOf), spots.length) : "you"}.
         </p>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-5">
           {named.map((g) => {
             const value = answers[key(g.id, e.id)];
             return (
-              <fieldset key={g.id} className="rounded-2xl border border-accent-soft p-4">
-                <legend className="px-1 text-lg">{nameOf(g)}</legend>
-                <div className="grid grid-cols-2 gap-3">
+              <fieldset key={g.id} className={cardClass}>
+                <legend className="px-1 text-lg font-semibold">{nameOf(g)}</legend>
+                <div className="mt-2 grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     aria-pressed={value === true}
                     onClick={() => setAnswers({ ...answers, [key(g.id, e.id)]: true })}
-                    className={`rounded-xl border px-4 py-3 text-lg ${value === true ? "border-accent bg-accent text-paper" : "border-accent-soft bg-white"}`}
+                    className={choiceButton(value === true)}
                   >
+                    {value === true && <CheckIcon />}
                     Coming
                   </button>
                   <button
                     type="button"
                     aria-pressed={value === false}
                     onClick={() => setAnswers({ ...answers, [key(g.id, e.id)]: false })}
-                    className={`rounded-xl border px-4 py-3 text-lg ${value === false ? "border-accent bg-accent text-paper" : "border-accent-soft bg-white"}`}
+                    className={choiceButton(value === false)}
                   >
+                    {value === false && <CheckIcon />}
                     Can&apos;t make it
                   </button>
                 </div>
@@ -206,12 +203,12 @@ export default function RsvpForm(props: Props) {
           })}
 
           {spots.length > 0 && (
-            <fieldset className="rounded-2xl border border-accent-soft p-4">
-              <legend className="px-1 text-lg">{named.length > 0 ? "How many others are coming?" : "How many people are coming?"}</legend>
-              <p className="text-sm text-muted">
+            <fieldset className={cardClass}>
+              <legend className="px-1 text-lg font-semibold">{named.length > 0 ? "How many others are coming?" : "How many people are coming?"}</legend>
+              <p className="mt-1 text-[15px] text-muted">
                 {locked ? "You can add others once someone above is coming." : `Up to ${spots.length}`}
               </p>
-              <div className="mt-3 flex items-center justify-center gap-6">
+              <div className="mt-4 flex items-center justify-center gap-6">
                 <button
                   type="button"
                   aria-label="One fewer"
@@ -221,7 +218,7 @@ export default function RsvpForm(props: Props) {
                 >
                   &minus;
                 </button>
-                <output aria-live="polite" className="w-12 text-center text-3xl">
+                <output aria-live="polite" className="w-12 text-center font-display text-4xl">
                   {count}
                 </output>
                 <button
@@ -236,7 +233,7 @@ export default function RsvpForm(props: Props) {
               </div>
               {count > 0 && (
                 <div className="mt-4">
-                  <p className="text-sm text-muted">Their names, if you&apos;d like to tell us (optional)</p>
+                  <p className="text-[15px] text-muted">Their names, if you&apos;d like to tell us (optional)</p>
                   {spots.slice(0, count).map((g) => (
                     <input
                       key={g.id}
@@ -246,7 +243,7 @@ export default function RsvpForm(props: Props) {
                       placeholder={`Extra guest ${slots.indexOf(g) + 1}`}
                       value={slotNames[g.id] ?? ""}
                       onChange={(ev) => setSlotNames({ ...slotNames, [g.id]: ev.target.value })}
-                      className={`${inputClass} mt-2`}
+                      className={inputClass}
                     />
                   ))}
                 </div>
@@ -276,13 +273,11 @@ export default function RsvpForm(props: Props) {
     const coming = guests.filter(attendingAny);
     return (
       <div className="mt-8">
-        <p className="text-sm text-muted">
-          Step {step + 1} of {reviewStep + 1}
-        </p>
-        <h2 className="text-3xl">A few more things</h2>
+        <StepIndicator step={step} total={reviewStep + 1} />
+        <h2 className="mt-3 text-3xl md:text-4xl">A few more things</h2>
         {coming.length > 0 && (
           <div className="mt-6 space-y-4">
-            <p className="text-lg">Any allergies or dietary needs?</p>
+            <p className="text-lg font-semibold">Any allergies or dietary needs?</p>
             {coming.map((g) => (
               <label key={g.id} className="block">
                 {nameOf(g)}
@@ -298,13 +293,13 @@ export default function RsvpForm(props: Props) {
             ))}
           </div>
         )}
-        <label className="mt-6 block text-lg">
+        <label className="mt-8 block text-lg font-semibold">
           A song that will get you dancing (optional)
-          <input type="text" maxLength={200} value={songRequest} onChange={(ev) => setSongRequest(ev.target.value)} className={inputClass} />
+          <input type="text" maxLength={200} value={songRequest} onChange={(ev) => setSongRequest(ev.target.value)} className={`${inputClass} font-normal`} />
         </label>
-        <label className="mt-6 block text-lg">
+        <label className="mt-6 block text-lg font-semibold">
           A message for us (optional)
-          <textarea rows={4} maxLength={1000} value={message} onChange={(ev) => setMessage(ev.target.value)} className={inputClass} />
+          <textarea rows={4} maxLength={1000} value={message} onChange={(ev) => setMessage(ev.target.value)} className={`${inputClass} font-normal`} />
         </label>
         <div className="mt-8 space-y-3">
           <button type="button" onClick={() => go(reviewStep)} className={primaryButton}>
@@ -322,19 +317,17 @@ export default function RsvpForm(props: Props) {
   // ---------- Confirm ----------
   return (
     <div className="mt-8">
-      <p className="text-sm text-muted">
-        Step {step + 1} of {reviewStep + 1}
-      </p>
-      <h2 className="text-3xl">Please confirm</h2>
+      <StepIndicator step={step} total={reviewStep + 1} />
+      <h2 className="mt-3 text-3xl md:text-4xl">Please confirm</h2>
       <ul className="mt-6 space-y-4">
         {events.map((e) => {
           const coming = comingTo(e);
           const names = coming.flatMap((g) => (g.isSlot ? (slotNames[g.id]?.trim() ? [slotNames[g.id].trim()] : []) : [nameOf(g)]));
           const unnamed = coming.length - names.length;
           return (
-            <li key={e.id} className="rounded-2xl border border-accent-soft p-4">
+            <li key={e.id} className={cardClass}>
               <p className="font-display text-2xl">{e.name}</p>
-              <p className="text-lg">
+              <p className="mt-1 text-lg">
                 {coming.length === 0 ? "No one from your party is coming." : `You are RSVP'ing ${people(coming.length)}.`}
               </p>
               {names.length > 0 && (
@@ -355,6 +348,28 @@ export default function RsvpForm(props: Props) {
       </div>
       {help}
     </div>
+  );
+}
+
+/** "Step 2 of 4" plus a thin progress bar. */
+function StepIndicator({ step, total }: { step: number; total: number }) {
+  return (
+    <div>
+      <p className="text-[15px] font-semibold text-muted">
+        Step {step + 1} of {total}
+      </p>
+      <div aria-hidden="true" className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-accent-soft">
+        <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${((step + 1) / total) * 100}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg aria-hidden="true" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="none">
+      <path d="M4 10.5l4 4 8-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

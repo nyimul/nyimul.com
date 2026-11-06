@@ -11,13 +11,13 @@
  * After wedding.rsvpDeadline it shows a "RSVPs have closed" message instead.
  */
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { couple, wedding } from "../../_lib/content";
 import { isRsvpClosed } from "../../_lib/format";
 import { eventsFor } from "../../_lib/party";
 import { requirePartyId } from "../../_lib/session";
 import { guestStore } from "../../_lib/store";
+import SiteHeader from "../_components/SiteHeader";
 import RsvpForm, { type RsvpEvent } from "./RsvpForm";
 
 export const metadata: Metadata = { title: "RSVP" };
@@ -48,38 +48,38 @@ export default async function RsvpPage() {
   }
 
   return (
-    <main className="mx-auto max-w-xl px-4 py-16">
-      <Link href="/hridee" className="text-sm">
-        &larr; Back
-      </Link>
-      <h1 className="mt-6 font-display text-4xl">RSVP for {party.displayName}</h1>
-      {closed ? (
-        <p className="mt-4 text-lg">
-          RSVPs have closed. If your plans have changed, please email{" "}
-          <a href={`mailto:${couple.contactEmail}`}>{couple.contactEmail}</a>.
-        </p>
-      ) : events.length === 0 ? (
-        <p className="mt-4 text-lg">
-          Your invitation details are on their way. Questions? Email{" "}
-          <a href={`mailto:${couple.contactEmail}`}>{couple.contactEmail}</a>.
-        </p>
-      ) : (
-        <>
-          <p className="mt-2 text-muted">Please reply by {wedding.rsvpDeadlineText}</p>
-          <RsvpForm
-            guests={party.guests}
-            events={events}
-            othersNeedNamed={party.othersNeedNamed}
-            initialAnswers={initialAnswers}
-            initialDietary={initialDietary}
-            initialSongRequest={party.response?.songRequest ?? ""}
-            initialMessage={party.response?.message ?? ""}
-            submittedAt={party.response?.submittedAt ?? null}
-            deadline={wedding.rsvpDeadline}
-            contactEmail={couple.contactEmail}
-          />
-        </>
-      )}
-    </main>
+    <>
+      <SiteHeader backHref="/hridee" />
+      <main className="mx-auto max-w-xl px-4 pb-16 pt-24">
+        <h1 className="text-4xl md:text-5xl">RSVP for {party.displayName}</h1>
+        {closed ? (
+          <p className="mt-4 text-lg">
+            RSVPs have closed. If your plans have changed, please email{" "}
+            <a href={`mailto:${couple.contactEmail}`}>{couple.contactEmail}</a>.
+          </p>
+        ) : events.length === 0 ? (
+          <p className="mt-4 text-lg">
+            Your invitation details are on their way. Questions? Email{" "}
+            <a href={`mailto:${couple.contactEmail}`}>{couple.contactEmail}</a>.
+          </p>
+        ) : (
+          <>
+            <p className="mt-2 text-muted">Please reply by {wedding.rsvpDeadlineText}</p>
+            <RsvpForm
+              guests={party.guests}
+              events={events}
+              othersNeedNamed={party.othersNeedNamed}
+              initialAnswers={initialAnswers}
+              initialDietary={initialDietary}
+              initialSongRequest={party.response?.songRequest ?? ""}
+              initialMessage={party.response?.message ?? ""}
+              submittedAt={party.response?.submittedAt ?? null}
+              deadline={wedding.rsvpDeadline}
+              contactEmail={couple.contactEmail}
+            />
+          </>
+        )}
+      </main>
+    </>
   );
 }
