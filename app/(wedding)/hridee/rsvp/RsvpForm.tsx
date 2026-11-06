@@ -8,6 +8,8 @@
  * invites without a name ("open spots") are one counter: "How many others are coming?", with
  * optional name boxes. The two never affect each other: a named person's seat is theirs, so
  * "Can't make it" doesn't free it up for someone else, and the counter's limit never moves.
+ * The one exception is a row marked "Others need a named guest": there the counter stays locked
+ * at 0 for an event until someone named says Coming.
  * An event can be for only some of the party (the sheet named them under it), so each screen
  * shows only the guests in event.guestIds.
  *
@@ -34,6 +36,7 @@ export type RsvpEvent = {
 type Props = {
   guests: Guest[];
   events: RsvpEvent[];
+  othersNeedNamed: boolean;
   initialAnswers: Record<string, boolean>; // `${guestId}:${eventId}` -> attending
   initialDietary: Record<string, string>;
   initialSongRequest: string;
@@ -81,9 +84,15 @@ export default function RsvpForm(props: Props) {
 
   const nameOf = (g: Guest) => (g.isSlot ? slotNames[g.id]?.trim() || `Extra guest ${slots.indexOf(g) + 1}` : (g.fullName ?? "Guest"));
 
+  /** "Others need a named guest", and no one named has said Coming to this event yet. */
+  const othersLocked = (e: RsvpEvent) => {
+    const named = namedFor(guests, e);
+    return props.othersNeedNamed && named.length > 0 && !named.some((g) => answers[key(g.id, e.id)]);
+  };
+  const extrasComing = (e: RsvpEvent) => (othersLocked(e) ? 0 : Math.min(extras[e.id] ?? 0, spotsFor(guests, e).length));
   const comingTo = (e: RsvpEvent) => [
     ...namedFor(guests, e).filter((g) => answers[key(g.id, e.id)]),
-    ...spotsFor(guests, e).slice(0, extras[e.id] ?? 0),
+    ...spotsFor(guests, e).slice(0, extrasComing(e)),
   ];
   const attendingAny = (g: Guest) => events.some((e) => comingTo(e).includes(g));
 
@@ -146,7 +155,8 @@ export default function RsvpForm(props: Props) {
     const e = events[step];
     const named = namedFor(guests, e);
     const spots = spotsFor(guests, e);
-    const count = Math.min(extras[e.id] ?? 0, spots.length);
+    const locked = othersLocked(e);
+    const count = extrasComing(e);
     const onlySome = named.length + spots.length < guests.length;
     return (
       <div className="mt-8">
@@ -198,7 +208,9 @@ export default function RsvpForm(props: Props) {
           {spots.length > 0 && (
             <fieldset className="rounded-2xl border border-accent-soft p-4">
               <legend className="px-1 text-lg">{named.length > 0 ? "How many others are coming?" : "How many people are coming?"}</legend>
-              <p className="text-sm text-muted">Up to {spots.length}</p>
+              <p className="text-sm text-muted">
+                {locked ? "You can add others once someone above is coming." : `Up to ${spots.length}`}
+              </p>
               <div className="mt-3 flex items-center justify-center gap-6">
                 <button
                   type="button"
@@ -209,13 +221,13 @@ export default function RsvpForm(props: Props) {
                 >
                   &minus;
                 </button>
-                <output aria-live="polite" className="w-12 text-center font-display text-4xl">
+                <output aria-live="polite" className="w-12 text-center text-3xl">
                   {count}
                 </output>
                 <button
                   type="button"
                   aria-label="One more"
-                  disabled={count >= spots.length}
+                  disabled={locked || count >= spots.length}
                   onClick={() => setExtras({ ...extras, [e.id]: count + 1 })}
                   className={roundButton}
                 >

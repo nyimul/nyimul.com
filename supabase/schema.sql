@@ -41,6 +41,9 @@ create table parties (
   -- Set when the party's row leaves the Google Sheet. The site then ignores the party, but its
   -- guests and RSVPs stay, so putting the row back restores everything.
   archived_at   timestamptz,
+  -- The sheet's "Others need a named guest": open spots can't come to an event unless someone
+  -- named on the invitation is coming to it. Off by default.
+  others_need_named  boolean not null default false,
   created_at    timestamptz not null default now()
   -- Phone numbers, addresses and private notes live in the Google Sheet only, never here.
 );

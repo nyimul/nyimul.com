@@ -74,7 +74,7 @@ Caveats to remember:
 ### Running and deploying
 
 - `npm run dev` then open `http://localhost:3000/hridee`. You'll land on the entrance.
-- **Without touching the real database:** set `WEDDING_DEMO_DATA=1` and `WEDDING_PASSWORD=demo` (in `.env.local`, or on the command line, which wins over the file), so the site runs on a fake guest list (`_lib/store/demo.ts`). Try "Omar Rahman" (all three events), "Farid Karim" (5 invites, 2 of them open spots, and the Nikkah for Farid only), "Sam Lee" (Reception only, with a +1), "Ayesha Rahman" (two matches, so you get the picker) and "Fareed Kareem" (a close spelling). Demo RSVPs vanish when the dev server restarts. The demo list refuses to run on Vercel.
+- **Without touching the real database:** set `WEDDING_DEMO_DATA=1` and `WEDDING_PASSWORD=demo` (in `.env.local`, or on the command line, which wins over the file), so the site runs on a fake guest list (`_lib/store/demo.ts`). Try "Omar Rahman" (all three events), "Farid Karim" (5 invites, 2 of them open spots, and the Nikkah for Farid only), "Sam Lee" (Reception only, with a +1 who can only come with Sam), "Ayesha Rahman" (two matches, so you get the picker) and "Fareed Kareem" (a close spelling). Demo RSVPs vanish when the dev server restarts. The demo list refuses to run on Vercel.
 - Hosting: Vercel, same project as the portfolio. The wedding site is just more routes.
 - Env vars: Vercel > Project > Settings > Environment Variables. Set them for Production and Preview separately. Local dev uses `.env.local` (gitignored). `.env.example` lists them all.
 - Turn on **Deployment Protection** for Preview deployments in Vercel so half-finished versions of the wedding site aren't on a public URL.
@@ -164,7 +164,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 Not everyone is invited to every event, so **invitations are per party per event**, each with its own seat count. The `party_events` rows decide what each guest sees on the site: no row for the Nikkah means the Nikkah never appears for that party, anywhere.
 
 ### The model (see `supabase/schema.sql`)
-- **party**: one invitation / household, which is one row of the family's Google Sheet (its Website ID is the party id). Has a `display_name` ("The Hoque Family"), a `search_name` used for lookup, and `archived_at`, set when the row leaves the sheet.
+- **party**: one invitation / household, which is one row of the family's Google Sheet (its Website ID is the party id). Has a `display_name` ("The Hoque Family"), a `search_name` used for lookup, `archived_at`, set when the row leaves the sheet, and `others_need_named`, the sheet's "Others need a named guest".
 - **guests**: the people in the party. Named people are rows with names. Every invite without a name (the sheet's Invites number minus the names listed) is an **open spot**: `is_slot = true`, `full_name = null`. On the RSVP form the family says how many of those are coming and may type their names. Only open spots' names are editable by guests.
 - **search_name** on parties is kept up to date by a trigger (display name plus every guest's name, normalised). Never edit it by hand.
 - **party_events**: one row per event the party is invited to, with `max_guests` = how many seats they have *at that event*. A couple gets 2. A family of five gets 5 at the reception, maybe 5 at the Holud, and no row for the Nikkah. `guest_ids` is null for the whole invitation, or lists the only guests invited to that event (the sheet had "Farid Karim" under Nikkah instead of an x). `max_guests` always equals the people invited to that event.
@@ -181,7 +181,7 @@ This handles every case you described: couples (2 seats), families with kids (mo
 
 ### The RSVP flow (`/hridee/rsvp`)
 No lookup: the party comes from the session.
-1. **One screen per invited event**, showing only the guests invited to it: Coming / Can't make it for each named person, then one counter for the open spots ("How many others are coming? Up to 3") with optional name boxes. The two never affect each other: a named person's seat is theirs, so "Can't make it" doesn't free it up for someone else, and the counter's limit is the same whatever anyone answers. An event for only some of the party says so: "We've saved 1 seat for Farid Karim." The server re-checks who may come to which event, and `max_guests`, anyway.
+1. **One screen per invited event**, showing only the guests invited to it: Coming / Can't make it for each named person, then one counter for the open spots ("How many others are coming? Up to 3") with optional name boxes. The two never affect each other: a named person's seat is theirs, so "Can't make it" doesn't free it up for someone else, and the counter's limit is the same whatever anyone answers. So by default, if everyone named says no, the family can still send others. The exception is a row marked "Others need a named guest": for each event, the counter stays locked at 0 until someone named says Coming, and the server enforces that too. An event for only some of the party says so: "We've saved 1 seat for Farid Karim." The server re-checks who may come to which event, and `max_guests`, anyway.
 2. **Extras**: dietary needs for everyone coming, a song request, a message.
 3. **Please confirm**: "You are RSVP'ing 4 people" for each event, with the names. Then **Confirm and send**, then a thank-you. Coming back later shows "You already replied" with every answer pre-filled.
 
@@ -252,7 +252,8 @@ Google Sheet ("Nyimul's Family" and "Hridee's Family" tabs)
   |  every 10 minutes, or Website > Publish now
   |  Apps Script (scripts/wedding-sheet.gs, pasted into the sheet)
   |     POST https://www.nyimul.com/hridee/sync    Authorization: Bearer WEDDING_SHEET_SECRET
-  |     sends only: family, name on invite, guest names, invites, the event cells, Website ID
+  |     sends only: family, name on invite, guest names, invites, the event cells,
+  |     "Others need a named guest", Website ID
   v
 app/(wedding)/_lib/sheet/: read each row, work out the changes, apply them to Supabase
   |  answers with a note per row, plus the Summary / RSVPs / Messages tabs
@@ -273,11 +274,11 @@ Tabs the script creates:
 
 The columns can be in any order. The family can add their own columns, like Phone, Address or Invited by, and those never leave the sheet.
 
-| Name on invite | Guest names | Invites | Nikkah | Holud | Reception | Website notes | Website ID |
-|---|---|---|---|---|---|---|---|
-| The Karim Family | Farid Karim, Nadia Karim | 5 | Farid Karim | x | x | ✓ On the website | (automatic) |
-| Sam Lee | Sam Lee | 2 | | | x | ✓ On the website | (automatic) |
-| Ayesha & Omar Rahman | Ayesha Rahman, Omar Rahman | | x | x | x | ✓ On the website | (automatic) |
+| Name on invite | Guest names | Invites | Nikkah | Holud | Reception | Others need a named guest | Website notes | Website ID |
+|---|---|---|---|---|---|---|---|---|
+| The Karim Family | Farid Karim, Nadia Karim | 5 | Farid Karim | x | x | | ✓ On the website | (automatic) |
+| Sam Lee | Sam Lee | 2 | | | x | x | ✓ On the website | (automatic) |
+| Ayesha & Omar Rahman | Ayesha Rahman, Omar Rahman | | x | x | x | | ✓ On the website | (automatic) |
 
 - **Guest names**: the people you know by name, first and last, separated by commas. Everyone named can find the invitation by searching their own name. `(child)` after a name marks a child.
 - **Invites**: how many people in total. The ones without a name are "open spots": the family says on the RSVP form how many of them are coming, and can name them if they like. Blank means just the people named.
@@ -285,10 +286,11 @@ The columns can be in any order. The family can add their own columns, like Phon
   - `x` (or `yes`, or a ticked checkbox): invited, with all their invites.
   - Names, like `Farid Karim` or `Farid and Nadia`: only those people are invited to this event. A first name is enough if it's unique. `Farid Karim, +1` adds one open spot.
   - A number isn't accepted, because it doesn't say who. The row's note explains.
+- **Others need a named guest**: usually blank, which lets a family send others even if everyone named says no. An x means the others can only come to an event if someone named is coming to it. It applies to every event on that row, checked event by event.
   - Blank or 0: not invited, so that party never sees that event anywhere on the site.
 - **Website notes**:
   - `✓ On the website` means the row is live.
-  - `✓ ... Check:` means it's live, but something looks off: a one-word name, or fewer invites than names (it then counts the names).
+  - `✓ ... Check:` means it's live, but something looks off: a one-word name, fewer invites than names (it then counts the names), or an x in Others need a named guest added after only the others said yes.
   - `Not on the website yet:` or `Not updated:` means something must be fixed first. Until then, the website keeps the earlier version.
 - **Website ID**: the link between the row and the database. The script fills it in. Never type in it.
 
@@ -301,6 +303,7 @@ What happens when the family...
 | adds or removes a person | adds them, or removes them along with their RSVP |
 | changes Invites | adds or removes open spots. Spots someone already used (named, or said yes) are kept first |
 | changes who an event is for | updates it and drops the RSVPs of people no longer invited to that event |
+| adds an x under Others need a named guest | applies it to the next RSVP. If only the others already said yes to an event, that answer stays and the row's note points it out |
 | clears an event's cell | takes that event off their invitation and drops those RSVPs |
 | deletes a row, or clears its name and guest names | hides the invitation, so they can't sign in, but keeps their RSVP. Bringing the row back restores everything, whether through File > Version history or by retyping the same name and a guest |
 | deletes more than 10 rows at once | refuses and changes nothing, and the status line explains. Undo with Version history, or you use Website > Publish and allow removals |

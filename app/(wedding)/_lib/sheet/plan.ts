@@ -17,7 +17,7 @@ import "server-only";
 import { normalizeName, similarNames } from "../names";
 import type { DbGuest, DbInvitation, SheetPlan, Snapshot } from "../store/types";
 import type { EventId } from "../types";
-import { EVENT_IDS, type Family, type ParsedGuest, type ParsedRow } from "./rows";
+import { EVENT_IDS, SEAT_COLUMN, type Family, type ParsedGuest, type ParsedRow } from "./rows";
 
 /** More removals than this in one sync needs "Publish and allow removals". */
 export const REMOVAL_LIMIT = 10;
@@ -69,6 +69,7 @@ export function planSheetSync(
     invitationsByParty.set(inv.partyId, m);
   }
   const saidYes = new Set(snapshot.rsvps.filter((r) => r.attending).map((r) => r.guestId));
+  const attending = new Set(snapshot.rsvps.filter((r) => r.attending).map((r) => `${r.guestId}|${r.eventId}`));
 
   const dbNamedOf = (partyId: string) =>
     (guestsByParty.get(partyId) ?? []).flatMap((g) => (!g.isSlot && g.fullName ? [g.fullName] : []));
@@ -182,15 +183,15 @@ export function planSheetSync(
 
     // Publish this row.
     published++;
-    if (!db || db.archived || db.displayName !== r.displayName) {
-      plan.upsertParties.push({ id: r.id, displayName: r.displayName });
+    if (!db || db.archived || db.displayName !== r.displayName || db.othersNeedNamed !== r.othersNeedNamed) {
+      plan.upsertParties.push({ id: r.id, displayName: r.displayName, othersNeedNamed: r.othersNeedNamed });
     }
     const currentGuests = guestsByParty.get(r.id) ?? [];
     const { namedIds, slotIds } = diffGuests(r.id, currentGuests, r.guests, plan, opts.newId, saidYes);
     const keptGuestIds = [...namedIds, ...slotIds];
     const keptSet = new Set(keptGuestIds);
 
-    const warnings = r.warnings;
+    const warnings = [...r.warnings];
     const had = invitationsByParty.get(r.id) ?? new Map<EventId, DbInvitation>();
     for (const eventId of EVENT_IDS) {
       const seats = r.seats[eventId];
@@ -205,6 +206,12 @@ export function planSheetSync(
         const allowed = new Set(guestIds ?? keptGuestIds);
         const droppedOut = (before?.guestIds ?? currentGuests.map((g) => g.id)).filter((g) => keptSet.has(g) && !allowed.has(g));
         if (before && droppedOut.length > 0) plan.deleteRsvps.push({ eventId, guestIds: droppedOut });
+
+        // The x went in after they replied. Their answer stays, so say so rather than hide it.
+        const comes = (g: string) => allowed.has(g) && attending.has(`${g}|${eventId}`);
+        if (r.othersNeedNamed && namedIds.some((g) => allowed.has(g)) && !namedIds.some(comes) && slotIds.some(comes)) {
+          warnings.push(`Only the others said yes to the ${SEAT_COLUMN[eventId]}, with no one named coming. That still counts until they change it.`);
+        }
       } else if (before !== undefined) {
         plan.deleteInvitations.push({ partyId: r.id, eventId });
         const guestIds = (guestsByParty.get(r.id) ?? []).map((g) => g.id);

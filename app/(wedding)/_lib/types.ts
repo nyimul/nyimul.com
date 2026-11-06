@@ -106,6 +106,8 @@ export type PartySummary = {
 
 /** Everything the RSVP form needs for one party (and nothing about anyone else). */
 export type RsvpPartyData = PartySummary & {
+  /** Open spots can't come to an event unless someone named is coming to it. */
+  othersNeedNamed: boolean;
   guests: Guest[];
   invitations: { eventId: EventId; maxGuests: number; guestIds: string[] | null }[];
   rsvps: Rsvp[];

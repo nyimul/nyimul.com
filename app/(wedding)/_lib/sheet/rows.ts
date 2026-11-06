@@ -13,6 +13,8 @@
  *   Event cells  x = everyone on the invitation; names = only those people ("Farid Karim", or
  *                "Farid Karim, +1"); blank = not invited. There are no seat numbers: a number
  *                doesn't say who, and seats always equal the people invited to that event.
+ *   Others need a named guest  usually blank. x = open spots can't come to an event unless
+ *                someone named is coming to it. Applies to every event on the row.
  *
  * The column names and tab names here must match the ones in scripts/wedding-sheet.gs.
  */
@@ -47,6 +49,7 @@ export const syncRequestSchema = z.object({
         name: cell,
         guests: cell,
         invites: cell.optional(),
+        needsNamed: cell.optional(),
         seats: z.object({ nikkah: cell.optional(), holud: cell.optional(), reception: cell.optional() }),
       }),
     )
@@ -73,6 +76,8 @@ export type ParsedRow = {
   seats: Partial<Record<EventId, number>>;
   /** Events where only some of the party is invited. Indexes are into the named guests. */
   only: Partial<Record<EventId, OnlyFor>>;
+  /** Open spots can't come to an event unless someone named is coming to it. */
+  othersNeedNamed: boolean;
   /** Anything here keeps the row off the website (or keeps the website's previous version). */
   errors: string[];
   /** Published anyway, but worth a look. */
@@ -161,6 +166,11 @@ export function parseRow(input: SyncRequest["rows"][number]): ParsedRow {
     ...Array.from({ length: spotCount }, (_, i) => ({ kind: "slot" as const, isChild: plusSpots[i] ?? false })),
   ];
 
+  // ---- Others need a named guest: usually blank.
+  const flag = input.needsNamed === true ? "x" : text(input.needsNamed).toLowerCase();
+  const othersNeedNamed = YES.has(flag);
+  if (!othersNeedNamed && !NO.has(flag)) errors.push("Others need a named guest: put an x, or leave it blank.");
+
   // ---- Events: x for everyone, some names, or blank for not invited.
   const seats: Partial<Record<EventId, number>> = {};
   const only: Partial<Record<EventId, OnlyFor>> = {};
@@ -192,7 +202,7 @@ export function parseRow(input: SyncRequest["rows"][number]): ParsedRow {
     }
   }
 
-  return { family: input.family, row: input.row, id: input.id, displayName, guests, seats, only, errors, warnings };
+  return { family: input.family, row: input.row, id: input.id, displayName, guests, seats, only, othersNeedNamed, errors, warnings };
 }
 
 /**
