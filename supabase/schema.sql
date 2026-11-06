@@ -74,8 +74,8 @@ create table party_events (
   party_id    uuid not null references parties(id) on delete cascade,
   event_id    text not null references events(id) on delete cascade,
   max_guests  int  not null check (max_guests > 0),
-  -- null: anyone in the party can take these seats. Set: only these guests (e.g. the sheet says
-  -- "Farid Karim" under Nikkah, so only Farid sees the Nikkah on the RSVP form).
+  -- null: the whole invitation. Set: only these guests (the sheet says "Farid Karim" under
+  -- Nikkah, so the RSVP form offers the Nikkah to Farid alone).
   guest_ids   uuid[],
   primary key (party_id, event_id)
 );

@@ -22,6 +22,16 @@ export function formatDate(isoDate: string, options: { weekday?: boolean } = { w
   }).format(new Date(`${isoDate}T12:00:00Z`));
 }
 
+/** ["Farid", "Nadia", "Samir"] -> "Farid, Nadia and Samir". */
+export function joinList(items: string[]): string {
+  return items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+/** Who an event is for when it isn't the whole invitation: "Farid Karim", "Farid Karim and 1 guest". */
+export function whoFor(names: string[], openSpots: number): string {
+  return joinList(openSpots > 0 ? [...names, `${openSpots} ${openSpots === 1 ? "guest" : "guests"}`] : names);
+}
+
 /** Today's date in Atlanta as "YYYY-MM-DD", for comparing against ISO dates like the RSVP deadline. */
 export function todayInAtlanta(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());

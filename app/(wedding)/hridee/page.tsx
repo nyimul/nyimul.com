@@ -13,7 +13,7 @@
  * Sections that mention events get only that party's events, already filtered, so nothing
  * about an event they aren't invited to ever reaches their browser.
  */
-import { eventsFor, requireParty } from "../_lib/party";
+import { eventsFor, eventsForSome, requireParty } from "../_lib/party";
 import Nav from "./_components/Nav";
 import Hero from "./_components/Hero";
 import Events from "./_components/Events";
@@ -31,6 +31,7 @@ import PhotoBackdrop from "./_components/PhotoBackdrop";
 export default async function WeddingHome() {
   const party = await requireParty();
   const myEvents = eventsFor(party.invitedEventIds);
+  const onlyFor = await eventsForSome(party.partyId);
 
   return (
     <>
@@ -39,7 +40,7 @@ export default async function WeddingHome() {
       <PhotoBackdrop />
       <main className="relative">
         <Hero guestName={party.displayName} firstEvent={myEvents[0]} />
-        <Events events={myEvents} />
+        <Events events={myEvents} onlyFor={onlyFor} />
         <RsvpCta />
         <OurStory />
         <Travel />

@@ -17,7 +17,7 @@ import "server-only";
 import { normalizeName, similarNames } from "../names";
 import type { DbGuest, DbInvitation, SheetPlan, Snapshot } from "../store/types";
 import type { EventId } from "../types";
-import { EVENT_IDS, SEAT_COLUMN, type Family, type ParsedGuest, type ParsedRow } from "./rows";
+import { EVENT_IDS, type Family, type ParsedGuest, type ParsedRow } from "./rows";
 
 /** More removals than this in one sync needs "Publish and allow removals". */
 export const REMOVAL_LIMIT = 10;
@@ -68,7 +68,6 @@ export function planSheetSync(
     m.set(inv.eventId, inv);
     invitationsByParty.set(inv.partyId, m);
   }
-  const attending = new Set(snapshot.rsvps.filter((r) => r.attending).map((r) => `${r.guestId}|${r.eventId}`));
   const saidYes = new Set(snapshot.rsvps.filter((r) => r.attending).map((r) => r.guestId));
 
   const dbNamedOf = (partyId: string) =>
@@ -191,7 +190,7 @@ export function planSheetSync(
     const keptGuestIds = [...namedIds, ...slotIds];
     const keptSet = new Set(keptGuestIds);
 
-    const warnings = [...r.warnings];
+    const warnings = r.warnings;
     const had = invitationsByParty.get(r.id) ?? new Map<EventId, DbInvitation>();
     for (const eventId of EVENT_IDS) {
       const seats = r.seats[eventId];
@@ -206,13 +205,6 @@ export function planSheetSync(
         const allowed = new Set(guestIds ?? keptGuestIds);
         const droppedOut = (before?.guestIds ?? currentGuests.map((g) => g.id)).filter((g) => keptSet.has(g) && !allowed.has(g));
         if (before && droppedOut.length > 0) plan.deleteRsvps.push({ eventId, guestIds: droppedOut });
-
-        const coming = [...allowed].filter((g) => attending.has(`${g}|${eventId}`)).length;
-        if (coming > seats) {
-          warnings.push(
-            `${coming} people already said yes to the ${SEAT_COLUMN[eventId]}, but it now has ${seats} ${seats === 1 ? "seat" : "seats"}.`,
-          );
-        }
       } else if (before !== undefined) {
         plan.deleteInvitations.push({ partyId: r.id, eventId });
         const guestIds = (guestsByParty.get(r.id) ?? []).map((g) => g.id);

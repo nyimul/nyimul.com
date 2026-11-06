@@ -9,7 +9,6 @@
  *   "Farid Karim"    5 invites, 3 of them named: Holud + Reception for all, the Nikkah for Farid only
  *   "Sam Lee"        Reception only, with one open spot (a +1)
  *   "Ayesha Rahman"  matches TWO parties, so you see the "which one are you?" picker
- *                    (The Rahman Family has 2 seats for 3 people)
  *   "Fareed Kareem"  no exact match, so the close spelling finds the Karims
  */
 import "server-only";
@@ -93,8 +92,7 @@ function seed(): DemoState {
         displayName: "The Rahman Family",
         archived: false,
         guests: [named(231, 1, "Tariq Rahman"), named(232, 2, "Mina Rahman"), named(233, 3, "Ayesha Rahman")],
-        // Fewer seats than people: any two of the three can come.
-        invitations: [{ eventId: "reception", maxGuests: 2, guestIds: null }],
+        invitations: [{ eventId: "reception", maxGuests: 3, guestIds: null }],
       },
     ],
     rsvps: [],

@@ -37,7 +37,7 @@ export type DbGuest = {
   sortOrder: number;
 };
 
-/** guestIds: null means anyone in the party may take the seats; otherwise only these guests. */
+/** guestIds: null means the whole invitation; otherwise only these guests. */
 export type DbInvitation = { partyId: string; eventId: EventId; maxGuests: number; guestIds: string[] | null };
 
 export type DbRsvp = {

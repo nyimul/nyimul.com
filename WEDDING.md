@@ -167,7 +167,7 @@ Not everyone is invited to every event, so **invitations are per party per event
 - **party**: one invitation / household, which is one row of the family's Google Sheet (its Website ID is the party id). Has a `display_name` ("The Hoque Family"), a `search_name` used for lookup, and `archived_at`, set when the row leaves the sheet.
 - **guests**: the people in the party. Named people are rows with names. Every invite without a name (the sheet's Invites number minus the names listed) is an **open spot**: `is_slot = true`, `full_name = null`. On the RSVP form the family says how many of those are coming and may type their names. Only open spots' names are editable by guests.
 - **search_name** on parties is kept up to date by a trigger (display name plus every guest's name, normalised). Never edit it by hand.
-- **party_events**: one row per event the party is invited to, with `max_guests` = how many seats they have *at that event*. A couple gets 2. A family of five gets 5 at the reception, maybe 5 at the Holud, and no row for the Nikkah. `guest_ids` is null when anyone in the party can take the seats, or lists the only guests invited to that event (the sheet had "Farid Karim" under Nikkah instead of an x).
+- **party_events**: one row per event the party is invited to, with `max_guests` = how many seats they have *at that event*. A couple gets 2. A family of five gets 5 at the reception, maybe 5 at the Holud, and no row for the Nikkah. `guest_ids` is null for the whole invitation, or lists the only guests invited to that event (the sheet had "Farid Karim" under Nikkah instead of an x). `max_guests` always equals the people invited to that event.
 - **rsvps**: one row per guest per event (attending yes/no, meal, dietary).
 - **party_responses**: the once-per-party answers (song request, message).
 
@@ -175,13 +175,13 @@ This handles every case you described: couples (2 seats), families with kids (mo
 
 ### The entrance (`/hridee/enter`, one question per screen)
 1. **Password**: the word printed on the invitation. Case, spaces and punctuation are ignored. After 10 wrong tries per IP in 15 minutes, a "wait or email us" message.
-2. **Find**: "Your first and last name, as written on your invitation." Needs two words. Each typed word must match a word of the same person's name (or the name on the invite), in any order, so middle names and "Karim Farid" work, and "Sa Lee" doesn't find "Sam Lee". If nothing matches exactly, close spellings count: one typo, two in long words ("Mohammed" / "Muhammad"), or the same consonants ("Chowdhury" / "Chaudhry", "Fareed" / "Farid"). An exact match always hides the close ones, so typing your name correctly never shows other families. The matching is `matchName` in `_lib/names.ts`. Returns at most 5 parties and only `displayName` + first names. 30 searches per IP per 15 minutes. Zero matches shows a friendly "try the spelling on your invitation, or email us", never "you're not invited".
+2. **Find**: "Your first and last name, as written on your invitation." Needs two words. Each typed word must match a word of the same person's name (or the name on the invite), in any order, so middle names and "Karim Farid" work, and "Sa Lee" doesn't find "Sam Lee". If nothing matches exactly, close spellings count: one typo, two in long words ("Mohammed" / "Muhammad"), or the same consonants ("Chowdhury" / "Chaudhry", "Fareed" / "Farid"). An exact match always hides the close ones, so typing your name correctly never shows other families. The matching is `matchName` in `_lib/names.ts`. Returns at most 5 parties and only `displayName` + first names. 30 searches per IP per 15 minutes. Zero matches shows a friendly "try the name on your invitation, or a family member's name, or email us", never "you're not invited". A family member who isn't named on the row can't find it by their own name, but the name on the invite ("Karim Family") or a relative's name works.
 3. **Pick**: "Is this you?" or "Which one is you?", always shown, even for one match.
 4. The visitor now has a signed session cookie for that party, good for a year. Every page is their version. "Not {party}? Switch" in the footer signs out, for shared family phones.
 
 ### The RSVP flow (`/hridee/rsvp`)
 No lookup: the party comes from the session.
-1. **One screen per invited event**, showing only the guests invited to it: Coming / Can't make it for each named person, then one counter for the open spots ("How many others are coming? Up to 3") with optional name boxes. Buttons grey out once `max_guests` is reached; the server re-checks it, and who may come to which event, anyway.
+1. **One screen per invited event**, showing only the guests invited to it: Coming / Can't make it for each named person, then one counter for the open spots ("How many others are coming? Up to 3") with optional name boxes. The two never affect each other: a named person's seat is theirs, so "Can't make it" doesn't free it up for someone else, and the counter's limit is the same whatever anyone answers. An event for only some of the party says so: "We've saved 1 seat for Farid Karim." The server re-checks who may come to which event, and `max_guests`, anyway.
 2. **Extras**: dietary needs for everyone coming, a song request, a message.
 3. **Please confirm**: "You are RSVP'ing 4 people" for each event, with the names. Then **Confirm and send**, then a thank-you. Coming back later shows "You already replied" with every answer pre-filled.
 
@@ -284,11 +284,11 @@ The columns can be in any order. The family can add their own columns, like Phon
 - **Event columns**:
   - `x` (or `yes`, or a ticked checkbox): invited, with all their invites.
   - Names, like `Farid Karim` or `Farid and Nadia`: only those people are invited to this event. A first name is enough if it's unique. `Farid Karim, +1` adds one open spot.
-  - A number, like `2`: that many seats, and the family picks who.
+  - A number isn't accepted, because it doesn't say who. The row's note explains.
   - Blank or 0: not invited, so that party never sees that event anywhere on the site.
 - **Website notes**:
   - `✓ On the website` means the row is live.
-  - `✓ ... Check:` means it's live, but something looks off: a one-word name, more seats than invites, fewer invites than names, or more yeses than seats.
+  - `✓ ... Check:` means it's live, but something looks off: a one-word name, or fewer invites than names (it then counts the names).
   - `Not on the website yet:` or `Not updated:` means something must be fixed first. Until then, the website keeps the earlier version.
 - **Website ID**: the link between the row and the database. The script fills it in. Never type in it.
 
@@ -300,7 +300,7 @@ What happens when the family...
 | fixes a name's spelling | updates it and keeps that person's RSVP |
 | adds or removes a person | adds them, or removes them along with their RSVP |
 | changes Invites | adds or removes open spots. Spots someone already used (named, or said yes) are kept first |
-| changes seats, or who an event is for | updates it, drops the RSVPs of people no longer invited to that event, and warns if more people already said yes than there are seats |
+| changes who an event is for | updates it and drops the RSVPs of people no longer invited to that event |
 | clears an event's cell | takes that event off their invitation and drops those RSVPs |
 | deletes a row, or clears its name and guest names | hides the invitation, so they can't sign in, but keeps their RSVP. Bringing the row back restores everything, whether through File > Version history or by retyping the same name and a guest |
 | deletes more than 10 rows at once | refuses and changes nothing, and the status line explains. Undo with Version history, or you use Website > Publish and allow removals |
@@ -339,6 +339,22 @@ You have two ways to deploy:
 9. **Share it.** Use the **Share** button to add your fiancée and the four parents as **Editors**. Never choose "Anyone with the link": the sheet holds everyone's names, and later their dietary needs and messages. Tell the family to read the Read me tab. They never need the Website menu. If one of them clicks it, Google asks them for the same permissions, and they can just close that.
 
 You can fill in the guest lists before the website is deployed. The first publish sends everything.
+
+### Starting over while testing
+
+The sheet holds the guest list and the database holds the answers, so you only ever need to empty the database. In Supabase, open **SQL Editor**, run this, and confirm the warning:
+
+```sql
+truncate parties, lookup_attempts cascade;
+```
+
+Then click **Website > Publish now**. Every row in the sheet is rebuilt with the same Website ID and no RSVPs, song requests or messages. `lookup_attempts` is the "too many tries" counter, so that clears too. Save the query in the SQL Editor to reuse it.
+
+- **Never run this once invitations are out.** It erases real RSVPs, and there's no undo. That's why it isn't a button in the sheet, where any family member could press it.
+- Deleting a row and retyping it doesn't reset anything: the row reconnects to its old invitation, RSVP included. That's the safety net working.
+- To change who's invited, just edit the row. No reset needed.
+- To sign in from scratch on your phone, tap "Switch" in the footer, or use a private tab.
+- To try changes to the site before deploying, run it on the fake guest list. It never touches the sheet or Supabase, and restarting gives fresh data. In a PowerShell window (close it afterwards, because the setting stays for that window): `$env:WEDDING_DEMO_DATA=1; $env:WEDDING_PASSWORD="demo"; npm run dev`
 
 ### Changing the script later
 
@@ -403,7 +419,7 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 - [x] Lookup returns the minimum: party display name + first names. No emails, phones, notes, or other parties.
 - [x] Lookup only works after the password, needs a first and last name, returns at most 5 results, and is **rate-limited per IP** via the `lookup_attempts` table. Vercel overwrites `x-forwarded-for`, so the IP can't be spoofed there.
 - [x] Every Server Action validates input with zod, trims, caps lengths (names 100, messages 1000), takes the party from the session, and checks that every `guestId`/`eventId` belongs to that party (tested with tampered requests).
-- [x] `max_guests` is enforced on the server (tested with a tampered request). The UI greying out buttons is a courtesy.
+- [x] Who may come to which event, and `max_guests`, are enforced on the server (tested with tampered requests). Seats always equal the people invited, so the form has nothing to grey out.
 - [x] No admin page on the website. The family's view is the Google Sheet, protected by Google sharing.
 - [x] `/hridee/sync` needs `Authorization: Bearer WEDDING_SHEET_SECRET` (constant-time compare). It refuses to run if the secret is missing or under 32 characters, validates the body with zod, and answers a wrong secret with nothing but an error (tested).
 - [ ] Don't show a public "who's coming" list. Don't put anyone's home address on the site, including yours (registry links only).
@@ -469,6 +485,7 @@ A shared word on the invitation, then "who are you?". It isn't a vault, since an
 - [ ] New Supabase project, run `schema.sql`, env vars (section 6).
 - [ ] Deploy, create the sheet (section 7), and do the end-to-end test in section 7, step 8, against the real database.
 - [ ] Test after the deadline (set `rsvpDeadline` to yesterday locally).
+- [ ] Right before invitations go out: run the reset in section 7, so test RSVPs don't stay in the counts.
 
 **Phase 5: visibility and launch.**
 - Share the sheet with the family (section 7, step 9). For caterers or seating charts, use File > Download > CSV on the RSVPs tab.

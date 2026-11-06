@@ -71,7 +71,7 @@ export type PartyEvent = {
   partyId: string;
   eventId: EventId;
   maxGuests: number;
-  /** null: anyone in the party. Otherwise only these guests may come to this event. */
+  /** null: the whole invitation. Otherwise only these guests may come to this event. */
   guestIds: string[] | null;
 };
 
