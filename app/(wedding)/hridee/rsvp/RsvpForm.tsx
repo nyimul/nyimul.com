@@ -6,15 +6,19 @@
  *
  * On an event screen, each person named on the invitation gets Coming / Can't make it. The
  * invites without a name ("open spots") are one counter: "How many others are coming?", with
- * optional name boxes. An event can be for only some of the party (the sheet named them under
- * it), so each screen shows only the guests in event.guestIds.
+ * optional name boxes. The two never affect each other: a named person's seat is theirs, so
+ * "Can't make it" doesn't free it up for someone else, and the counter's limit never moves.
+ * The one exception is a row marked "Others need a named guest": there the counter stays locked
+ * at 0 for an event until someone named says Coming.
+ * An event can be for only some of the party (the sheet named them under it), so each screen
+ * shows only the guests in event.guestIds.
  *
- * It only ever receives the signed-in party's guests and events (see page.tsx). Seat limits
- * are enforced here as a courtesy; submitRsvp enforces them on the server.
+ * It only ever receives the signed-in party's guests and events (see page.tsx). Seats always
+ * equal the people shown, so there's nothing to run out of here; submitRsvp re-checks anyway.
  */
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { formatDate, formatTime } from "../../_lib/format";
+import { formatDate, formatTime, joinList, whoFor } from "../../_lib/format";
 import type { EventId, Guest } from "../../_lib/types";
 import { submitRsvp } from "./actions";
 
@@ -32,6 +36,7 @@ export type RsvpEvent = {
 type Props = {
   guests: Guest[];
   events: RsvpEvent[];
+  othersNeedNamed: boolean;
   initialAnswers: Record<string, boolean>; // `${guestId}:${eventId}` -> attending
   initialDietary: Record<string, string>;
   initialSongRequest: string;
@@ -45,8 +50,6 @@ const key = (guestId: string, eventId: EventId) => `${guestId}:${eventId}`;
 const namedFor = (guests: Guest[], e: RsvpEvent) => guests.filter((g) => !g.isSlot && e.guestIds.includes(g.id));
 const spotsFor = (guests: Guest[], e: RsvpEvent) => guests.filter((g) => g.isSlot && e.guestIds.includes(g.id));
 const people = (n: number) => (n === 1 ? "1 person" : `${n} people`);
-const joinList = (items: string[]) =>
-  items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 
 const primaryButton = "w-full rounded-full bg-accent px-8 py-4 text-lg text-paper disabled:opacity-60";
 const secondaryButton = "w-full rounded-full border border-accent px-8 py-4 text-lg text-accent";
@@ -81,12 +84,12 @@ export default function RsvpForm(props: Props) {
 
   const nameOf = (g: Guest) => (g.isSlot ? slotNames[g.id]?.trim() || `Extra guest ${slots.indexOf(g) + 1}` : (g.fullName ?? "Guest"));
 
-  /** Seats left for open spots once the named people have answered. */
-  const roomFor = (e: RsvpEvent) => {
-    const namedComing = namedFor(guests, e).filter((g) => answers[key(g.id, e.id)]).length;
-    return Math.min(spotsFor(guests, e).length, Math.max(0, e.maxGuests - namedComing));
+  /** "Others need a named guest", and no one named has said Coming to this event yet. */
+  const othersLocked = (e: RsvpEvent) => {
+    const named = namedFor(guests, e);
+    return props.othersNeedNamed && named.length > 0 && !named.some((g) => answers[key(g.id, e.id)]);
   };
-  const extrasComing = (e: RsvpEvent) => Math.min(extras[e.id] ?? 0, roomFor(e));
+  const extrasComing = (e: RsvpEvent) => (othersLocked(e) ? 0 : Math.min(extras[e.id] ?? 0, spotsFor(guests, e).length));
   const comingTo = (e: RsvpEvent) => [
     ...namedFor(guests, e).filter((g) => answers[key(g.id, e.id)]),
     ...spotsFor(guests, e).slice(0, extrasComing(e)),
@@ -152,8 +155,7 @@ export default function RsvpForm(props: Props) {
     const e = events[step];
     const named = namedFor(guests, e);
     const spots = spotsFor(guests, e);
-    const namedComing = named.filter((g) => answers[key(g.id, e.id)]).length;
-    const room = roomFor(e);
+    const locked = othersLocked(e);
     const count = extrasComing(e);
     const onlySome = named.length + spots.length < guests.length;
     return (
@@ -171,15 +173,13 @@ export default function RsvpForm(props: Props) {
           {formatDate(e.date)} at {formatTime(e.startTime)}, {e.venueName}
         </p>
         <p className="mt-2">
-          {onlySome && spots.length === 0
-            ? `This invitation is for ${joinList(named.map(nameOf))}.`
-            : `We've saved ${e.maxGuests} ${e.maxGuests === 1 ? "seat" : "seats"} for you.`}
+          We&apos;ve saved {e.maxGuests} {e.maxGuests === 1 ? "seat" : "seats"} for{" "}
+          {onlySome ? whoFor(named.map(nameOf), spots.length) : "you"}.
         </p>
 
         <div className="mt-6 space-y-6">
           {named.map((g) => {
             const value = answers[key(g.id, e.id)];
-            const seatsFull = namedComing >= e.maxGuests && !value;
             return (
               <fieldset key={g.id} className="rounded-2xl border border-accent-soft p-4">
                 <legend className="px-1 text-lg">{nameOf(g)}</legend>
@@ -187,9 +187,8 @@ export default function RsvpForm(props: Props) {
                   <button
                     type="button"
                     aria-pressed={value === true}
-                    disabled={seatsFull}
                     onClick={() => setAnswers({ ...answers, [key(g.id, e.id)]: true })}
-                    className={`rounded-xl border px-4 py-3 text-lg disabled:opacity-40 ${value === true ? "border-accent bg-accent text-paper" : "border-accent-soft bg-white"}`}
+                    className={`rounded-xl border px-4 py-3 text-lg ${value === true ? "border-accent bg-accent text-paper" : "border-accent-soft bg-white"}`}
                   >
                     Coming
                   </button>
@@ -202,7 +201,6 @@ export default function RsvpForm(props: Props) {
                     Can&apos;t make it
                   </button>
                 </div>
-                {seatsFull && <p className="mt-2 text-sm text-muted">All your seats for this event are taken.</p>}
               </fieldset>
             );
           })}
@@ -210,7 +208,9 @@ export default function RsvpForm(props: Props) {
           {spots.length > 0 && (
             <fieldset className="rounded-2xl border border-accent-soft p-4">
               <legend className="px-1 text-lg">{named.length > 0 ? "How many others are coming?" : "How many people are coming?"}</legend>
-              <p className="text-sm text-muted">{room > 0 ? `Up to ${room}` : "All your seats for this event are taken."}</p>
+              <p className="text-sm text-muted">
+                {locked ? "You can add others once someone above is coming." : `Up to ${spots.length}`}
+              </p>
               <div className="mt-3 flex items-center justify-center gap-6">
                 <button
                   type="button"
@@ -221,13 +221,13 @@ export default function RsvpForm(props: Props) {
                 >
                   &minus;
                 </button>
-                <output aria-live="polite" className="w-12 text-center font-display text-4xl">
+                <output aria-live="polite" className="w-12 text-center text-3xl">
                   {count}
                 </output>
                 <button
                   type="button"
                   aria-label="One more"
-                  disabled={count >= room}
+                  disabled={locked || count >= spots.length}
                   onClick={() => setExtras({ ...extras, [e.id]: count + 1 })}
                   className={roundButton}
                 >

@@ -7,9 +7,8 @@
  * Try these names at /hridee/enter (any password set in WEDDING_PASSWORD):
  *   "Omar Rahman"    all three events
  *   "Farid Karim"    5 invites, 3 of them named: Holud + Reception for all, the Nikkah for Farid only
- *   "Sam Lee"        Reception only, with one open spot (a +1)
+ *   "Sam Lee"        Reception only, with one open spot (a +1) who can only come with Sam
  *   "Ayesha Rahman"  matches TWO parties, so you see the "which one are you?" picker
- *                    (The Rahman Family has 2 seats for 3 people)
  *   "Fareed Kareem"  no exact match, so the close spelling finds the Karims
  */
 import "server-only";
@@ -23,6 +22,7 @@ type DemoParty = {
   id: string;
   displayName: string;
   archived: boolean;
+  othersNeedNamed: boolean;
   guests: DemoGuest[];
   invitations: { eventId: EventId; maxGuests: number; guestIds: string[] | null }[];
 };
@@ -57,6 +57,7 @@ function seed(): DemoState {
         id: id(101),
         displayName: "Ayesha & Omar Rahman",
         archived: false,
+        othersNeedNamed: false,
         guests: [named(201, 1, "Ayesha Rahman"), named(202, 2, "Omar Rahman")],
         invitations: [
           { eventId: "nikkah", maxGuests: 2, guestIds: null },
@@ -68,6 +69,7 @@ function seed(): DemoState {
         id: id(102),
         displayName: "The Karim Family",
         archived: false,
+        othersNeedNamed: false,
         guests: [
           named(211, 1, "Farid Karim"),
           named(212, 2, "Nadia Karim"),
@@ -85,6 +87,7 @@ function seed(): DemoState {
         id: id(103),
         displayName: "Sam Lee",
         archived: false,
+        othersNeedNamed: true,
         guests: [named(221, 1, "Sam Lee"), slot(222, 2)],
         invitations: [{ eventId: "reception", maxGuests: 2, guestIds: null }],
       },
@@ -92,9 +95,9 @@ function seed(): DemoState {
         id: id(104),
         displayName: "The Rahman Family",
         archived: false,
+        othersNeedNamed: false,
         guests: [named(231, 1, "Tariq Rahman"), named(232, 2, "Mina Rahman"), named(233, 3, "Ayesha Rahman")],
-        // Fewer seats than people: any two of the three can come.
-        invitations: [{ eventId: "reception", maxGuests: 2, guestIds: null }],
+        invitations: [{ eventId: "reception", maxGuests: 3, guestIds: null }],
       },
     ],
     rsvps: [],
@@ -139,6 +142,7 @@ export const demoStore: GuestStore = {
       partyId: p.id,
       displayName: p.displayName,
       invitedEventIds: p.invitations.map((i) => i.eventId),
+      othersNeedNamed: p.othersNeedNamed,
       guests: sorted(p.guests).map(({ id, fullName, isSlot, isChild }) => ({ id, fullName, isSlot, isChild })),
       invitations: p.invitations.map((i) => ({ ...i, guestIds: i.guestIds && [...i.guestIds] })),
       rsvps: s.rsvps
@@ -175,7 +179,7 @@ export const demoStore: GuestStore = {
   async loadSnapshot(): Promise<Snapshot> {
     const s = state();
     return structuredClone({
-      parties: s.parties.map((p) => ({ id: p.id, displayName: p.displayName, archived: p.archived })),
+      parties: s.parties.map((p) => ({ id: p.id, displayName: p.displayName, archived: p.archived, othersNeedNamed: p.othersNeedNamed })),
       guests: s.parties.flatMap((p) => p.guests.map((x) => ({ ...x, partyId: p.id }))),
       invitations: s.parties.flatMap((p) => p.invitations.map((i) => ({ ...i, partyId: p.id }))),
       rsvps: s.rsvps,
@@ -193,8 +197,8 @@ export const demoStore: GuestStore = {
 
     for (const u of plan.upsertParties) {
       const p = s.parties.find((x) => x.id === u.id);
-      if (p) Object.assign(p, { displayName: u.displayName, archived: false });
-      else s.parties.push({ id: u.id, displayName: u.displayName, archived: false, guests: [], invitations: [] });
+      if (p) Object.assign(p, { displayName: u.displayName, othersNeedNamed: u.othersNeedNamed, archived: false });
+      else s.parties.push({ id: u.id, displayName: u.displayName, othersNeedNamed: u.othersNeedNamed, archived: false, guests: [], invitations: [] });
     }
     for (const { eventId, guestIds } of plan.deleteRsvps) {
       const ids = new Set(guestIds);

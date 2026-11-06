@@ -125,7 +125,7 @@ export default function EnterForm({ startAt, next, contactEmail }: Props) {
           lookup.status === "error"
             ? lookup.error
             : lookup.status === "none"
-              ? "We couldn't find that name. Try the spelling on your invitation, or email us and we'll sort it out."
+              ? "We couldn't find that name. Try the name on your invitation, or a family member's name. Or email us and we'll sort it out."
               : undefined
         }
       />

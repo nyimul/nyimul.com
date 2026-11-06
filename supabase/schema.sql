@@ -41,6 +41,9 @@ create table parties (
   -- Set when the party's row leaves the Google Sheet. The site then ignores the party, but its
   -- guests and RSVPs stay, so putting the row back restores everything.
   archived_at   timestamptz,
+  -- The sheet's "Others need a named guest": open spots can't come to an event unless someone
+  -- named on the invitation is coming to it. Off by default.
+  others_need_named  boolean not null default false,
   created_at    timestamptz not null default now()
   -- Phone numbers, addresses and private notes live in the Google Sheet only, never here.
 );
@@ -74,8 +77,8 @@ create table party_events (
   party_id    uuid not null references parties(id) on delete cascade,
   event_id    text not null references events(id) on delete cascade,
   max_guests  int  not null check (max_guests > 0),
-  -- null: anyone in the party can take these seats. Set: only these guests (e.g. the sheet says
-  -- "Farid Karim" under Nikkah, so only Farid sees the Nikkah on the RSVP form).
+  -- null: the whole invitation. Set: only these guests (the sheet says "Farid Karim" under
+  -- Nikkah, so the RSVP form offers the Nikkah to Farid alone).
   guest_ids   uuid[],
   primary key (party_id, event_id)
 );

@@ -10,8 +10,11 @@
  *   Guest names  the people they know by name: "Farid Karim, Nadia Karim"
  *   Invites      how many people in total (blank = just the names). Any invite without a name
  *                is an open spot: the family says on the RSVP form how many of those are coming.
- *   Event cells  x = everyone on the invitation; a number = that many of them; names = only those
- *                people ("Farid Karim", or "Farid Karim, +1"); blank = not invited.
+ *   Event cells  x = everyone on the invitation; names = only those people ("Farid Karim", or
+ *                "Farid Karim, +1"); blank = not invited. There are no seat numbers: a number
+ *                doesn't say who, and seats always equal the people invited to that event.
+ *   Others need a named guest  usually blank. x = open spots can't come to an event unless
+ *                someone named is coming to it. Applies to every event on the row.
  *
  * The column names and tab names here must match the ones in scripts/wedding-sheet.gs.
  */
@@ -46,6 +49,7 @@ export const syncRequestSchema = z.object({
         name: cell,
         guests: cell,
         invites: cell.optional(),
+        needsNamed: cell.optional(),
         seats: z.object({ nikkah: cell.optional(), holud: cell.optional(), reception: cell.optional() }),
       }),
     )
@@ -72,6 +76,8 @@ export type ParsedRow = {
   seats: Partial<Record<EventId, number>>;
   /** Events where only some of the party is invited. Indexes are into the named guests. */
   only: Partial<Record<EventId, OnlyFor>>;
+  /** Open spots can't come to an event unless someone named is coming to it. */
+  othersNeedNamed: boolean;
   /** Anything here keeps the row off the website (or keeps the website's previous version). */
   errors: string[];
   /** Published anyway, but worth a look. */
@@ -145,11 +151,12 @@ export function parseRow(input: SyncRequest["rows"][number]): ParsedRow {
     const n = Number(invitesText);
     if (!Number.isInteger(n) || n < 1) {
       errors.push(`Invites: "${invitesText}" isn't a number. Use a number like 5, or leave it blank for just the names.`);
+    } else if (n < named.length) {
+      // Everyone named has a seat, so the count can't be lower than the names.
+      total = named.length;
+      warnings.push(`${people(named.length)} are named, so this invitation has ${named.length} seats, not ${n}.`);
     } else {
       total = n;
-      if (n < named.length) {
-        warnings.push(`${people(named.length)} are named but Invites is ${n}, so only ${n} of them can come.`);
-      }
     }
   }
   if (total > MAX_PEOPLE) errors.push(`That's more than ${MAX_PEOPLE} people on one invitation. Split it into two rows.`);
@@ -159,7 +166,12 @@ export function parseRow(input: SyncRequest["rows"][number]): ParsedRow {
     ...Array.from({ length: spotCount }, (_, i) => ({ kind: "slot" as const, isChild: plusSpots[i] ?? false })),
   ];
 
-  // ---- Events: x for everyone, a number, some names, or blank for not invited.
+  // ---- Others need a named guest: usually blank.
+  const flag = input.needsNamed === true ? "x" : text(input.needsNamed).toLowerCase();
+  const othersNeedNamed = YES.has(flag);
+  if (!othersNeedNamed && !NO.has(flag)) errors.push("Others need a named guest: put an x, or leave it blank.");
+
+  // ---- Events: x for everyone, some names, or blank for not invited.
   const seats: Partial<Record<EventId, number>> = {};
   const only: Partial<Record<EventId, OnlyFor>> = {};
   for (const eventId of EVENT_IDS) {
@@ -178,13 +190,7 @@ export function parseRow(input: SyncRequest["rows"][number]): ParsedRow {
       continue;
     }
     if (/^\d+$/.test(word)) {
-      const n = Number(word);
-      if (n > MAX_PEOPLE) {
-        errors.push(`${column}: ${n} is too many seats for one invitation.`);
-      } else if (n > 0) {
-        seats[eventId] = n;
-        if (n > total) warnings.push(`${column} has ${n} seats, but the invitation is for ${people(total)}.`);
-      }
+      errors.push(`${column}: a number doesn't say who. Put an x for everyone, or type the names of the people invited.`);
       continue;
     }
 
@@ -196,7 +202,7 @@ export function parseRow(input: SyncRequest["rows"][number]): ParsedRow {
     }
   }
 
-  return { family: input.family, row: input.row, id: input.id, displayName, guests, seats, only, errors, warnings };
+  return { family: input.family, row: input.row, id: input.id, displayName, guests, seats, only, othersNeedNamed, errors, warnings };
 }
 
 /**
@@ -226,7 +232,7 @@ function pickPeople(cellText: string, named: { fullName: string }[], spotCount: 
     if (matches.length === 0) matches = named.flatMap((g, i) => (similarNames(g.fullName, token) ? [i] : []));
     if (matches.length === 1) picked.add(matches[0]);
     else if (matches.length > 1) errors.push(`${column}: more than one guest could be "${token}". Use the full name.`);
-    else errors.push(`${column}: "${token}" isn't one of the Guest names. Use an x, a number, or names from Guest names.`);
+    else errors.push(`${column}: "${token}" isn't in Guest names. Add them there, or put an x for everyone.`);
   }
   if (openSpots > spotCount) {
     errors.push(

@@ -71,7 +71,7 @@ export type PartyEvent = {
   partyId: string;
   eventId: EventId;
   maxGuests: number;
-  /** null: anyone in the party. Otherwise only these guests may come to this event. */
+  /** null: the whole invitation. Otherwise only these guests may come to this event. */
   guestIds: string[] | null;
 };
 
@@ -106,6 +106,8 @@ export type PartySummary = {
 
 /** Everything the RSVP form needs for one party (and nothing about anyone else). */
 export type RsvpPartyData = PartySummary & {
+  /** Open spots can't come to an event unless someone named is coming to it. */
+  othersNeedNamed: boolean;
   guests: Guest[];
   invitations: { eventId: EventId; maxGuests: number; guestIds: string[] | null }[];
   rsvps: Rsvp[];

@@ -69,6 +69,7 @@ export default async function RsvpPage() {
           <RsvpForm
             guests={party.guests}
             events={events}
+            othersNeedNamed={party.othersNeedNamed}
             initialAnswers={initialAnswers}
             initialDietary={initialDietary}
             initialSongRequest={party.response?.songRequest ?? ""}

@@ -11,7 +11,8 @@
  * Rules (see WEDDING.md > Security):
  *   - Validate and trim all input with zod. Cap string lengths.
  *   - Every guestId / eventId must belong to the signed-in party and its invitations.
- *   - Enforce party_events.max_guests and guest_ids (who may come to which event) here, not just in the UI.
+ *   - Enforce party_events.max_guests, guest_ids (who may come to which event) and
+ *     parties.others_need_named here, not just in the UI.
  *   - Return plain objects ({ ok, error }), never raw DB errors.
  */
 import { z } from "zod";
@@ -77,6 +78,18 @@ export async function submitRsvp(input: RsvpInput): Promise<SubmitResult> {
     for (const [eventId, max] of seats) {
       const coming = answers.filter((a) => a.eventId === eventId && a.attending).length;
       if (coming > max) return fail(`You have ${max} ${max === 1 ? "seat" : "seats"} for one of the events. Please choose who is coming.`);
+    }
+
+    // The sheet's "Others need a named guest": open spots can't come to an event alone.
+    if (party.othersNeedNamed) {
+      for (const eventId of seats.keys()) {
+        const only = allowed.get(eventId);
+        const namedInvited = party.guests.some((g) => !g.isSlot && (!only || only.has(g.id)));
+        const coming = answers.filter((a) => a.eventId === eventId && a.attending).map((a) => guests.get(a.guestId));
+        if (namedInvited && coming.length > 0 && coming.every((g) => g?.isSlot)) {
+          return fail("The others can only come with someone named on your invitation. Please check your answers.");
+        }
+      }
     }
 
     // Names for open spots are optional. An unused spot loses any name it had.

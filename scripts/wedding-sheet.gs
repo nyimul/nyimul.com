@@ -36,10 +36,11 @@ var COL = {
   nikkah: "Nikkah",
   holud: "Holud",
   reception: "Reception",
+  needsNamed: "Others need a named guest",
   notes: "Website notes",
   id: "Website ID",
 };
-var COL_ORDER = ["name", "guests", "invites", "nikkah", "holud", "reception", "notes", "id"];
+var COL_ORDER = ["name", "guests", "invites", "nikkah", "holud", "reception", "needsNamed", "notes", "id"];
 var OLD_HEADERS = { guests: ["Guests"] }; // renamed by Set up
 var EVENTS = ["nikkah", "holud", "reception"];
 
@@ -48,6 +49,7 @@ var HEADER_NOTES = {
   guests: "The people you know by name, with commas between them.\nExample: Farid Karim, Nadia Karim",
   invites: "How many people in total, counting the ones without a name.\nExample: 5\nBlank means just the names.",
   event: "x = invited. Blank = not invited.\nOnly some of them? Type their names instead, like: Farid Karim",
+  needsNamed: "Usually blank.\nx = the others can only come to an event if someone named is coming too.",
   notes: "The website fills this in. ✓ means it's on the website.",
   id: "The website fills this in. Don't type here.",
 };
@@ -65,6 +67,7 @@ var READ_ME = [
   ["Invites: how many people in total, like 5. They can add the rest when they RSVP."],
   ["Nikkah, Holud, Reception: an x if they're invited, blank if not."],
   ["Only some of them invited to an event? Type their names there instead of an x."],
+  ["Others need a named guest: usually blank. An x means the others can only come if someone named is coming too."],
   [""],
   ["Leave Website notes and Website ID alone. A ✓ in Website notes means it's on the website."],
   ["Changes go to the website by themselves within 10 minutes."],
@@ -236,7 +239,7 @@ function setUpGuestTab_(sheet) {
   var cols = columnsOf_(header);
   sheet.setFrozenRows(1);
   sheet.getRange(1, 1, 1, header.length).setFontWeight("bold");
-  ["name", "guests", "invites", "notes", "id"].forEach(function (key) {
+  ["name", "guests", "invites", "needsNamed", "notes", "id"].forEach(function (key) {
     sheet.getRange(1, cols[key] + 1).setNote(HEADER_NOTES[key]);
   });
   EVENTS.forEach(function (e) {
@@ -394,6 +397,7 @@ function collectRows_(tab, rows) {
       name: name,
       guests: guestText,
       invites: cellOut_(r[cols.invites]),
+      needsNamed: cellOut_(r[cols.needsNamed]),
       seats: seats,
     });
   });

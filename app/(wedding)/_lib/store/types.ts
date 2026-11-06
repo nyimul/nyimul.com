@@ -26,7 +26,7 @@ export interface GuestStore {
 
 // ---------- The whole guest list, as the sheet sync sees it ----------
 
-export type DbParty = { id: string; displayName: string; archived: boolean };
+export type DbParty = { id: string; displayName: string; archived: boolean; othersNeedNamed: boolean };
 
 export type DbGuest = {
   id: string;
@@ -37,7 +37,7 @@ export type DbGuest = {
   sortOrder: number;
 };
 
-/** guestIds: null means anyone in the party may take the seats; otherwise only these guests. */
+/** guestIds: null means the whole invitation; otherwise only these guests. */
 export type DbInvitation = { partyId: string; eventId: EventId; maxGuests: number; guestIds: string[] | null };
 
 export type DbRsvp = {
@@ -69,7 +69,7 @@ export type Snapshot = {
  */
 export type SheetPlan = {
   /** New parties, renamed parties, and archived parties that are back in the sheet (un-archives them). */
-  upsertParties: { id: string; displayName: string }[];
+  upsertParties: { id: string; displayName: string; othersNeedNamed: boolean }[];
   /** RSVPs for an event the party (or that guest) is no longer invited to. */
   deleteRsvps: { eventId: EventId; guestIds: string[] }[];
   deleteInvitations: { partyId: string; eventId: EventId }[];

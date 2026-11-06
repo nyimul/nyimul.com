@@ -92,7 +92,7 @@ export const supabaseStore: GuestStore = {
     const { data, error } = await db
       .from("parties")
       .select(
-        "id, display_name, guests(id, full_name, is_slot, is_child, sort_order), party_events(event_id, max_guests, guest_ids), party_responses(song_request, message, submitted_at)",
+        "id, display_name, others_need_named, guests(id, full_name, is_slot, is_child, sort_order), party_events(event_id, max_guests, guest_ids), party_responses(song_request, message, submitted_at)",
       )
       .eq("id", partyId)
       .is("archived_at", null)
@@ -103,6 +103,7 @@ export const supabaseStore: GuestStore = {
     const row = data as {
       id: string;
       display_name: string;
+      others_need_named: boolean;
       guests: GuestRow[];
       party_events: { event_id: EventId; max_guests: number; guest_ids: string[] | null }[];
       party_responses: ResponseRow | ResponseRow[] | null;
@@ -129,6 +130,7 @@ export const supabaseStore: GuestStore = {
       partyId: row.id,
       displayName: row.display_name,
       invitedEventIds: row.party_events.map((pe) => pe.event_id),
+      othersNeedNamed: row.others_need_named,
       guests: guests.map((g) => ({ id: g.id, fullName: g.full_name, isSlot: g.is_slot, isChild: g.is_child })),
       invitations: row.party_events.map((pe) => ({ eventId: pe.event_id, maxGuests: pe.max_guests, guestIds: pe.guest_ids })),
       rsvps,
@@ -191,9 +193,9 @@ export const supabaseStore: GuestStore = {
 
   async loadSnapshot(): Promise<Snapshot> {
     const [parties, guests, invitations, rsvps, responses] = await Promise.all([
-      selectAll<{ id: string; display_name: string; archived_at: string | null }>(
+      selectAll<{ id: string; display_name: string; archived_at: string | null; others_need_named: boolean }>(
         "parties",
-        "id, display_name, archived_at",
+        "id, display_name, archived_at, others_need_named",
         ["id"],
       ),
       selectAll<GuestRow & { party_id: string }>("guests", "id, party_id, full_name, is_slot, is_child, sort_order", ["id"]),
@@ -210,7 +212,12 @@ export const supabaseStore: GuestStore = {
       selectAll<{ party_id: string } & ResponseRow>("party_responses", "party_id, song_request, message, submitted_at", ["party_id"]),
     ]);
     return {
-      parties: parties.map((p) => ({ id: p.id, displayName: p.display_name, archived: p.archived_at !== null })),
+      parties: parties.map((p) => ({
+        id: p.id,
+        displayName: p.display_name,
+        archived: p.archived_at !== null,
+        othersNeedNamed: p.others_need_named,
+      })),
       guests: guests.map((g) => ({
         id: g.id,
         partyId: g.party_id,
@@ -250,7 +257,14 @@ export const supabaseStore: GuestStore = {
     if (plan.upsertParties.length > 0) {
       const { error } = await db
         .from("parties")
-        .upsert(plan.upsertParties.map((p) => ({ id: p.id, display_name: p.displayName, archived_at: null })));
+        .upsert(
+          plan.upsertParties.map((p) => ({
+            id: p.id,
+            display_name: p.displayName,
+            others_need_named: p.othersNeedNamed,
+            archived_at: null,
+          })),
+        );
       if (error) fail("save invitations", error);
     }
 
