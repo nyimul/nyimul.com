@@ -22,9 +22,9 @@ export function formatDate(isoDate: string, options: { weekday?: boolean } = { w
   }).format(new Date(`${isoDate}T12:00:00Z`));
 }
 
-/** A pasted palette as CSS colors: at most 5, and "F5EBE0" (hex without its #) gets the "#". */
+/** A pasted palette as CSS colors: at most 7, and "F5EBE0" (hex without its #) gets the "#". */
 export function paletteColors(colors: string[]): string[] {
-  return colors.slice(0, 5).map((color) => {
+  return colors.slice(0, 7).map((color) => {
     const value = color.trim();
     return /^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value) ? `#${value}` : value;
   });
