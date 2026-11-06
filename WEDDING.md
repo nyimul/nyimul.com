@@ -144,7 +144,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 
 ### Extra, because this is a Bengali wedding across three events
 - [ ] A short, warm "what to expect" for each event for guests who have never been to a Holud or Nikkah: what happens, how long, when to arrive, seating.
-- [ ] Colors to wear: up to 5 per event, per family's side, in `content.ts > eventColors` (hex or rgb). Starter palettes are in; final ones to come. Also: modesty notes if any, where to buy/rent if you want to help non-Desi guests.
+- [ ] Colors to wear: up to 7 per event, per family's side, in `content.ts > eventColors` (hex or rgb). The palettes from Coolors are in. Also: modesty notes if any, where to buy/rent if you want to help non-Desi guests.
 - [ ] Food: halal, vegetarian options, alcohol yes/no, per event.
 - [ ] Prayer space / timing around salah if relevant.
 - [ ] Gift etiquette if you want to say anything (registry vs. envelopes vs. "your presence is enough").

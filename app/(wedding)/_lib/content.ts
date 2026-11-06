@@ -31,20 +31,20 @@ export const wedding = {
 };
 
 /**
- * Colors to wear, shown on each event's card. Up to 5 per event, per family's side. A guest sees
+ * Colors to wear, shown on each event's card. Up to 7 per event, per family's side. A guest sees
  * the list for the tab their row is on (Nyimul's Family or Hridee's Family).
  * Paste any of these: "#F5EBE0", "F5EBE0", "rgb(245, 235, 224)".
  * To give the sides different colors for the Nikkah or Reception, give each side its own list,
  * the way the Holud does. An empty list hides the colors for that event.
  */
-const nikkahColors = ["#F9DDE4", "#FBF0C4", "#D7EBD2", "#E3DAF0", "#D5E9F5"]; // blossom pink, butter yellow, mint, lilac, sky
-const receptionColors = ["#1F4E79", "#1E6F5C", "#5B3A70", "#C9A44C", "#E8D7C3"]; // sapphire, emerald, plum, gold, champagne
+const nikkahColors = ["#FFE4E1", "#FBF0C4", "#D0F0C0", "#E3DAF0", "#D5E9F5"]; // misty rose, butter yellow, tea green, lilac, sky
+const receptionColors = ["#64403e", "#413C58", "#6b4423", "#b8860b", "#f7e7ce", "#000000", "#FFFFFF"]; // chocolate plum, vintage grape, brown bark, dark goldenrod, champagne mist, black, white
 
 export const eventColors: Record<EventId, Record<Family, string[]>> = {
   nikkah: { nyimul: nikkahColors, hridee: nikkahColors },
   holud: {
-    nyimul: ["#2563B8", "#7FB3E6", "#E75480", "#F7A8C4", "#F6C445"], // cobalt blue, sky blue, pink, soft pink, gold
-    hridee: ["#E8701A", "#F9A03F", "#2E8B57", "#A4C96A", "#F6C445"], // deep orange, orange, green, spring green, gold
+    nyimul: ["#191970", "#F77FBE", "#FFD700", "#DBB2D1", "#7FB3E6"], // midnight blue, bright pink, gold, soft pink, cool horizon
+    hridee: ["#E8701A", "#2E8B57", "#FFD700", "#FFA000", "#50C878"], // deep orange, sea green, gold, amber, emerald
   },
   reception: { nyimul: receptionColors, hridee: receptionColors },
 };
