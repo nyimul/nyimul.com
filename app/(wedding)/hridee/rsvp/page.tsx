@@ -14,7 +14,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { couple, wedding } from "../../_lib/content";
-import { formatDate, isRsvpClosed } from "../../_lib/format";
+import { isRsvpClosed } from "../../_lib/format";
 import { eventsFor } from "../../_lib/party";
 import { requirePartyId } from "../../_lib/session";
 import { guestStore } from "../../_lib/store";
@@ -65,7 +65,7 @@ export default async function RsvpPage() {
         </p>
       ) : (
         <>
-          <p className="mt-2 text-muted">Please reply by {formatDate(wedding.rsvpDeadline)}.</p>
+          <p className="mt-2 text-muted">Please reply by {wedding.rsvpDeadlineText}</p>
           <RsvpForm
             guests={party.guests}
             events={events}

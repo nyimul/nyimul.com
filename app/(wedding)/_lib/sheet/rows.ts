@@ -6,7 +6,7 @@
  * ticked checkbox for "invited", and explains every problem in plain words. Those words end up
  * in the row's "Website notes" cell, so they're written for the parents.
  *
- * One row:  Name on invite | Guest names | Invites | Nikkah | Holud | Reception
+ * One row:  Family name | Guest names | Invites | Nikkah | Holud | Reception
  *   Guest names  the people they know by name: "Farid Karim, Nadia Karim"
  *   Invites      how many people in total (blank = just the names). Any invite without a name
  *                is an open spot: the family says on the RSVP form how many of those are coming.
@@ -22,15 +22,15 @@ import "server-only";
 import { z } from "zod";
 import { events } from "../content";
 import { normalizeName, similarNames } from "../names";
-import type { EventId } from "../types";
+import type { EventId, Family } from "../types";
 
 /** Event ids in the order the site shows them, and the sheet column for each. */
 export const EVENT_IDS: EventId[] = events.map((e) => e.id);
 export const SEAT_COLUMN: Record<EventId, string> = { nikkah: "Nikkah", holud: "Holud", reception: "Reception" };
 
 /** One guest list tab per family. The labels are the tab names in the sheet. */
-export const FAMILIES = ["nyimul", "hridee"] as const;
-export type Family = (typeof FAMILIES)[number];
+export const FAMILIES = ["nyimul", "hridee"] as const satisfies readonly Family[];
+export type { Family };
 export const FAMILY_LABEL: Record<Family, string> = { nyimul: "Nyimul's Family", hridee: "Hridee's Family" };
 
 const MAX_PEOPLE = 40;
@@ -102,8 +102,8 @@ export function parseRow(input: SyncRequest["rows"][number]): ParsedRow {
   const warnings: string[] = [];
 
   const displayName = oneLine(text(input.name));
-  if (!displayName) errors.push("Add the name that goes on the invite.");
-  else if (displayName.length > 120) errors.push("The name on the invite is too long.");
+  if (!displayName) errors.push("Add a family name, like The Karim Family.");
+  else if (displayName.length > 120) errors.push("The family name is too long.");
 
   // ---- Guest names: "Farid Karim, Nadia Karim, Samir Karim (child)"
   const named: { fullName: string; isChild: boolean }[] = [];

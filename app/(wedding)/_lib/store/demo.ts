@@ -12,7 +12,7 @@
  *   "Fareed Kareem"  no exact match, so the close spelling finds the Karims
  */
 import "server-only";
-import type { EventId, Guest, PartyResponse } from "../types";
+import type { EventId, Family, Guest, PartyResponse } from "../types";
 import { firstName, normalizeName, pickMatches } from "../names";
 import type { AttemptKind, DbRsvp, GuestStore, Snapshot } from "./types";
 
@@ -23,6 +23,7 @@ type DemoParty = {
   displayName: string;
   archived: boolean;
   othersNeedNamed: boolean;
+  family: Family;
   guests: DemoGuest[];
   invitations: { eventId: EventId; maxGuests: number; guestIds: string[] | null }[];
 };
@@ -58,6 +59,7 @@ function seed(): DemoState {
         displayName: "Ayesha & Omar Rahman",
         archived: false,
         othersNeedNamed: false,
+        family: "nyimul",
         guests: [named(201, 1, "Ayesha Rahman"), named(202, 2, "Omar Rahman")],
         invitations: [
           { eventId: "nikkah", maxGuests: 2, guestIds: null },
@@ -70,6 +72,7 @@ function seed(): DemoState {
         displayName: "The Karim Family",
         archived: false,
         othersNeedNamed: false,
+        family: "nyimul",
         guests: [
           named(211, 1, "Farid Karim"),
           named(212, 2, "Nadia Karim"),
@@ -88,6 +91,7 @@ function seed(): DemoState {
         displayName: "Sam Lee",
         archived: false,
         othersNeedNamed: true,
+        family: "hridee",
         guests: [named(221, 1, "Sam Lee"), slot(222, 2)],
         invitations: [{ eventId: "reception", maxGuests: 2, guestIds: null }],
       },
@@ -96,6 +100,7 @@ function seed(): DemoState {
         displayName: "The Rahman Family",
         archived: false,
         othersNeedNamed: false,
+        family: "hridee",
         guests: [named(231, 1, "Tariq Rahman"), named(232, 2, "Mina Rahman"), named(233, 3, "Ayesha Rahman")],
         invitations: [{ eventId: "reception", maxGuests: 3, guestIds: null }],
       },
@@ -130,7 +135,7 @@ export const demoStore: GuestStore = {
 
   async getPartySummary(partyId) {
     const p = active().find((x) => x.id === partyId);
-    return p ? { partyId: p.id, displayName: p.displayName, invitedEventIds: p.invitations.map((i) => i.eventId) } : null;
+    return p ? { partyId: p.id, displayName: p.displayName, family: p.family, invitedEventIds: p.invitations.map((i) => i.eventId) } : null;
   },
 
   async getRsvpPartyData(partyId) {
@@ -141,6 +146,7 @@ export const demoStore: GuestStore = {
     return {
       partyId: p.id,
       displayName: p.displayName,
+      family: p.family,
       invitedEventIds: p.invitations.map((i) => i.eventId),
       othersNeedNamed: p.othersNeedNamed,
       guests: sorted(p.guests).map(({ id, fullName, isSlot, isChild }) => ({ id, fullName, isSlot, isChild })),
@@ -179,7 +185,7 @@ export const demoStore: GuestStore = {
   async loadSnapshot(): Promise<Snapshot> {
     const s = state();
     return structuredClone({
-      parties: s.parties.map((p) => ({ id: p.id, displayName: p.displayName, archived: p.archived, othersNeedNamed: p.othersNeedNamed })),
+      parties: s.parties.map((p) => ({ id: p.id, displayName: p.displayName, archived: p.archived, othersNeedNamed: p.othersNeedNamed, family: p.family })),
       guests: s.parties.flatMap((p) => p.guests.map((x) => ({ ...x, partyId: p.id }))),
       invitations: s.parties.flatMap((p) => p.invitations.map((i) => ({ ...i, partyId: p.id }))),
       rsvps: s.rsvps,
@@ -197,8 +203,8 @@ export const demoStore: GuestStore = {
 
     for (const u of plan.upsertParties) {
       const p = s.parties.find((x) => x.id === u.id);
-      if (p) Object.assign(p, { displayName: u.displayName, othersNeedNamed: u.othersNeedNamed, archived: false });
-      else s.parties.push({ id: u.id, displayName: u.displayName, othersNeedNamed: u.othersNeedNamed, archived: false, guests: [], invitations: [] });
+      if (p) Object.assign(p, { displayName: u.displayName, othersNeedNamed: u.othersNeedNamed, family: u.family, archived: false });
+      else s.parties.push({ id: u.id, displayName: u.displayName, othersNeedNamed: u.othersNeedNamed, family: u.family, archived: false, guests: [], invitations: [] });
     }
     for (const { eventId, guestIds } of plan.deleteRsvps) {
       const ids = new Set(guestIds);

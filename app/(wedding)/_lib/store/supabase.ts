@@ -5,7 +5,7 @@
  */
 import "server-only";
 import { supabaseAdmin } from "../supabase.server";
-import type { EventId, RsvpPartyData } from "../types";
+import type { EventId, Family, RsvpPartyData } from "../types";
 import { firstName, pickMatches } from "../names";
 import type { GuestStore, Snapshot } from "./types";
 
@@ -72,17 +72,18 @@ export const supabaseStore: GuestStore = {
   async getPartySummary(partyId) {
     const { data, error } = await supabaseAdmin()
       .from("parties")
-      .select("id, display_name, party_events(event_id)")
+      .select("id, display_name, family, party_events(event_id)")
       .eq("id", partyId)
       .is("archived_at", null)
       .maybeSingle();
     if (error) fail("load a party", error);
     if (!data) return null;
 
-    const row = data as { id: string; display_name: string; party_events: { event_id: EventId }[] };
+    const row = data as { id: string; display_name: string; family: Family; party_events: { event_id: EventId }[] };
     return {
       partyId: row.id,
       displayName: row.display_name,
+      family: row.family,
       invitedEventIds: row.party_events.map((pe) => pe.event_id),
     };
   },
@@ -92,7 +93,7 @@ export const supabaseStore: GuestStore = {
     const { data, error } = await db
       .from("parties")
       .select(
-        "id, display_name, others_need_named, guests(id, full_name, is_slot, is_child, sort_order), party_events(event_id, max_guests, guest_ids), party_responses(song_request, message, submitted_at)",
+        "id, display_name, family, others_need_named, guests(id, full_name, is_slot, is_child, sort_order), party_events(event_id, max_guests, guest_ids), party_responses(song_request, message, submitted_at)",
       )
       .eq("id", partyId)
       .is("archived_at", null)
@@ -103,6 +104,7 @@ export const supabaseStore: GuestStore = {
     const row = data as {
       id: string;
       display_name: string;
+      family: Family;
       others_need_named: boolean;
       guests: GuestRow[];
       party_events: { event_id: EventId; max_guests: number; guest_ids: string[] | null }[];
@@ -129,6 +131,7 @@ export const supabaseStore: GuestStore = {
     return {
       partyId: row.id,
       displayName: row.display_name,
+      family: row.family,
       invitedEventIds: row.party_events.map((pe) => pe.event_id),
       othersNeedNamed: row.others_need_named,
       guests: guests.map((g) => ({ id: g.id, fullName: g.full_name, isSlot: g.is_slot, isChild: g.is_child })),
@@ -193,9 +196,9 @@ export const supabaseStore: GuestStore = {
 
   async loadSnapshot(): Promise<Snapshot> {
     const [parties, guests, invitations, rsvps, responses] = await Promise.all([
-      selectAll<{ id: string; display_name: string; archived_at: string | null; others_need_named: boolean }>(
+      selectAll<{ id: string; display_name: string; archived_at: string | null; others_need_named: boolean; family: Family }>(
         "parties",
-        "id, display_name, archived_at, others_need_named",
+        "id, display_name, archived_at, others_need_named, family",
         ["id"],
       ),
       selectAll<GuestRow & { party_id: string }>("guests", "id, party_id, full_name, is_slot, is_child, sort_order", ["id"]),
@@ -217,6 +220,7 @@ export const supabaseStore: GuestStore = {
         displayName: p.display_name,
         archived: p.archived_at !== null,
         othersNeedNamed: p.others_need_named,
+        family: p.family,
       })),
       guests: guests.map((g) => ({
         id: g.id,
@@ -262,6 +266,7 @@ export const supabaseStore: GuestStore = {
             id: p.id,
             display_name: p.displayName,
             others_need_named: p.othersNeedNamed,
+            family: p.family,
             archived_at: null,
           })),
         );

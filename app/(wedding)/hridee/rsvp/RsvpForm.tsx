@@ -140,7 +140,7 @@ export default function RsvpForm(props: Props) {
       <div className="mt-10 text-center">
         <h2 className="text-3xl">{comingToSomething ? "Thank you! We can't wait to see you." : "Thank you for letting us know."}</h2>
         <p className="mt-4 text-lg text-muted">
-          Your RSVP is saved. You can change it any time before {formatDate(props.deadline)} by coming back to this page.
+          Your RSVP is saved. You can change it any time until {formatDate(props.deadline, { weekday: false })} by coming back to this page.
         </p>
         <Link href="/hridee" className={`${primaryButton} mt-8 inline-block no-underline`}>
           Back to the wedding page

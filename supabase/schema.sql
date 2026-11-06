@@ -44,6 +44,8 @@ create table parties (
   -- The sheet's "Others need a named guest": open spots can't come to an event unless someone
   -- named on the invitation is coming to it. Off by default.
   others_need_named  boolean not null default false,
+  -- Which family's tab the row is on. Decides the event colors this party sees.
+  family        text not null default 'nyimul' check (family in ('nyimul', 'hridee')),
   created_at    timestamptz not null default now()
   -- Phone numbers, addresses and private notes live in the Google Sheet only, never here.
 );

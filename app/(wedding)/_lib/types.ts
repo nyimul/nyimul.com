@@ -8,6 +8,9 @@
 
 export type EventId = "holud" | "nikkah" | "reception";
 
+/** Whose side an invitation is on: the tab of the family's Google Sheet its row is on. */
+export type Family = "nyimul" | "hridee";
+
 export type Venue = {
   name: string;
   address: string;
@@ -101,6 +104,7 @@ export type PartyLookupResult = {
 export type PartySummary = {
   partyId: string;
   displayName: string;
+  family: Family;
   invitedEventIds: EventId[];
 };
 
