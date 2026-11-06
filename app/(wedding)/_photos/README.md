@@ -1,49 +1,68 @@
-# Engagement photos for the wedding site
+# Photos for the wedding site
 
-Put the photos the *design* uses here (hero, scroll backdrops, story, gallery) and register them in `index.ts`.
+The web-sized copies of the engagement and relationship photos, plus the monogram, all registered in `index.ts`.
+Nothing in this folder is an original: the originals stay in the "Wedding Website Pics" folder outside the repo.
 
 ## Why here and not in `public/`
 
-Importing an image file (`import hero from "./hero.jpg"`) instead of referencing `/hero.jpg` from `public/` gives you, for free:
+Importing an image file (`import hero from "./hero-a.jpg"`) instead of referencing `/hero.jpg` from `public/` gives you, for free:
 
 - intrinsic width/height, so the layout never jumps while photos load (no CLS)
 - an automatic blur-up placeholder (`placeholder="blur"`)
 - a content-hashed URL that browsers and Vercel cache forever
 - on-demand resizing to the exact size the device needs, in AVIF/WebP, via `next/image`
 
-`public/` is still fine for things that are never resized (favicons, a PDF, the OG image).
+`public/` is still fine for things that are never resized (a PDF, the OG image).
 
-## Prepare photos before committing them
+## How the files are made
 
-High-res for the web is **not** the camera original. A phone screen is ~1200px wide and a 4K desktop is 3840px; `next/image` scales *down*, never up, so the file you commit only needs to be as large as the biggest place it is shown.
+`scripts/export-wedding-photos.py` (repo root) reads the originals and writes the files here:
 
-1. Export at **2400px on the long edge** for full-bleed photos (hero, backdrops), **1600px** for gallery/story photos, JPEG quality ~80. Expect 300-800 KB each.
-2. **Strip metadata.** Engagement photos carry GPS coordinates and camera serials in EXIF. Export "without location info / metadata" in Lightroom/Photos, or run `exiftool -all= -tagsfromfile @ -icc_profile *.jpg` (the second part keeps colour profiles so skin tones don't shift).
-3. Keep the untouched originals in your cloud drive, not in git. Only committed files are deployed.
-4. Name by purpose and order, not by camera filename: `hero.jpg`, `backdrop-01.jpg` … `story-proposal.jpg`, `gallery-01.jpg`.
-5. Mobile is portrait, desktop is landscape. For the hero and backdrops, have the photographer's files in both crops or use `object-position` to choose the focal point per breakpoint.
+- **2400px** on the long edge for full-bleed photos (hero, chapter openers, bands), **1600px** for story, food and gallery photos, JPEG quality 82, progressive. A phone screen is ~1200px wide and `next/image` only ever scales *down*, so camera originals (12-38 MB) would be wasted bytes.
+- **All metadata removed.** Phone photos carry GPS coordinates and the camera files carry serial numbers; nothing of that survives. The colour profile is kept so skin tones don't shift. The script checks every output file and prints `OK` or what is wrong.
+- Named by purpose and order, not by camera filename: `hero-a.jpg`, `events.jpg`, `gallery-01.jpg` ...
+- The HEIC phone photos are converted; orientation is baked in.
+
+To run it you need Python 3 with `pillow` and `pillow-heif` (a throwaway venv is fine):
+
+```
+python -m venv .photos-venv
+.photos-venv/Scripts/pip install pillow pillow-heif
+.photos-venv/Scripts/python -I scripts/export-wedding-photos.py --src "C:/path/to/Wedding Website Pics" --out "app/(wedding)/_photos"
+```
+
+To add or swap a photo: add or change one line in `PLAN` in the script, re-run it (`--only name` exports just that one), then point the entry in `index.ts` at the new file.
+
+## `index.ts`, the manifest
+
+Every photo is imported once there and exported by purpose: `heroPhoto`, `enterPhoto`, `chapterPhotos`, `storyPhotos`, `foodPhotos`, `closingPhoto`, `galleryPhotos`, `monogram`. Each entry carries:
+
+- `alt`: a short plain description for screen readers and phones with images off
+- `caption` (gallery only): the month the photo was taken
+- `position` / `positionDesktop`: the CSS `object-position`, i.e. which part of the photo to keep when it is cropped to the screen
+- `desktop`: an optional landscape file for wide screens (phones get the portrait one)
 
 ## Using them
 
+Full-bleed photos go through `hridee/_components/Photo.tsx`, which handles the phone/desktop pair, the focal point and eager loading for the hero. Everything else is a plain `<Image>`:
+
 ```tsx
 import Image from "next/image";
-import { heroPhoto } from "../_photos"; // from index.ts
+import { storyPhotos } from "../../_photos";
 
 <Image
-  src={heroPhoto}
-  alt="Hridee and Nyimul at ..."   // real alt text; screen readers and old phones with images off
-  fill                              // or width/height
-  priority                          // ONLY on the hero (the first thing on screen); everything else lazy-loads
+  src={storyPhotos[0].src}
+  alt={storyPhotos[0].alt}
   placeholder="blur"
-  sizes="100vw"                     // tells the browser how wide the image will be so it downloads the right size
-  className="object-cover"
+  sizes="(min-width: 768px) 50vw, 100vw"  // how wide it is on screen, so the browser picks the right size
+  className="h-auto w-full rounded-3xl"
 />
 ```
 
-- `sizes` matters: without it the browser assumes 100vw and downloads a huge file for a 400px gallery tile. Use e.g. `sizes="(max-width: 768px) 100vw, 33vw"` for a 3-column grid.
-- One `priority` image per page. Too many defeats lazy loading.
+- `sizes` matters: without it the browser assumes 100vw and downloads a huge file for a half-width photo.
+- Only the hero and the entrance photo load eagerly (`loading="eager"` + `fetchPriority="high"`; Next 16 deprecated `priority`). Everything else lazy-loads.
 
 ## Limits to know about
 
-- Vercel's image optimization has a monthly cap on how many *source* images it will transform, which depends on your plan. Check it in the Vercel dashboard once you know roughly how many photos the site uses. A few dozen photos is nothing; a 500-photo gallery is not.
-- Git gets slow with hundreds of MB of binaries. If the folder grows past ~100 MB, move the big gallery to Supabase Storage (same project as the RSVP data) and add its host to `images.remotePatterns` in `next.config.ts`, or use Git LFS.
+- Vercel's image optimization has a monthly cap on how many *source* images it will transform, which depends on your plan. Three dozen photos is nothing; a 500-photo gallery is not.
+- Git gets slow with hundreds of MB of binaries. This folder is ~14 MB. If it grows past ~100 MB, move the big gallery to Supabase Storage (same project as the RSVP data) and add its host to `images.remotePatterns` in `next.config.ts`, or use Git LFS.

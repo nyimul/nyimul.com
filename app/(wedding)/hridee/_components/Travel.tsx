@@ -1,19 +1,56 @@
 /**
  * Travel: everything an out-of-town guest needs, in this order:
- *   1. Accommodation: hotel block(s) with booking link, group code, cut-off date (guide "easily forgotten")
- *   2. Getting there: airport (ATL), rideshare, driving, parking at each venue
- *   3. Shuttle/transport between hotel and venues, with times and how to book (guide)
- * Data: `accommodations`, `transport` in _lib/content.ts.
- * Keep it scannable: short headings, bold the booking code and cut-off date.
+ *   1. Getting there: airport (ATL), parking, rideshare, shuttle (shown as soon as they are filled in)
+ *   2. Accommodation: hotel block(s), one card each, with the booking button and group code
+ * Data: `transport`, `accommodations` in _lib/content.ts.
+ *
+ * A hotel's `eventNotes` are filtered by the party's invitations (like the FAQ), so a line such
+ * as "The reception is here" never reaches a guest who isn't invited to the reception.
  */
-import { transport } from "../../_lib/content";
+import { accommodations, transport } from "../../_lib/content";
+import { visibleTo } from "../../_lib/party";
+import type { EventId } from "../../_lib/types";
+import { cardClass, smallButton } from "../../_lib/ui";
+import { chapterPhotos } from "../../_photos";
+import Section from "./Section";
 
-export default function Travel() {
+export default function Travel({ invitedEventIds }: { invitedEventIds: EventId[] }) {
   return (
-    <section id="travel" className="mx-auto max-w-3xl px-4 py-24">
-      <h2 className="font-display text-4xl">Travel &amp; Stay</h2>
-      <p className="mt-4 text-muted">Fly into {transport.airport}.</p>
-      {/* TODO: accommodations, parking, shuttle */}
-    </section>
+    <Section id="travel" title="Travel & Stay" photo={chapterPhotos.travel}>
+      <p className="text-lg">Fly into {transport.airport}.</p>
+      {transport.parking && <p className="mt-4">{transport.parking}</p>}
+      {transport.rideshare && <p className="mt-4">{transport.rideshare}</p>}
+      {transport.shuttle && <p className="mt-4">{transport.shuttle}</p>}
+
+      {accommodations.length > 0 && (
+        <ul className="mt-8 space-y-5">
+          {accommodations.map((hotel) => (
+            <li key={hotel.name} className={cardClass}>
+              <h3 className="text-2xl md:text-3xl">{hotel.name}</h3>
+              {hotel.address && <p className="mt-1 text-muted">{hotel.address}</p>}
+              {visibleTo(hotel.eventNotes ?? [], invitedEventIds).map((note) => (
+                <p key={note.text} className="mt-3">
+                  {note.text}
+                </p>
+              ))}
+              {hotel.notes && <p className="mt-3">{hotel.notes}</p>}
+              {hotel.groupCode && (
+                <p className="mt-3">
+                  Group code <span className="font-semibold">{hotel.groupCode}</span>
+                </p>
+              )}
+              {/* cutoffDate and nightlyRate need short labels ("Book by", "Rate"): decide the wording first. */}
+              {hotel.bookingUrl && (
+                <div className="mt-5">
+                  <a href={hotel.bookingUrl} target="_blank" rel="noopener noreferrer" className={smallButton}>
+                    Book a room
+                  </a>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Section>
   );
 }

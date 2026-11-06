@@ -6,6 +6,11 @@
     --color-paper   -> bg-paper, text-paper, border-paper ...
     --font-display  -> font-display
 
+  Palette (Nov 2026), taken from the engagement photos: navy from Nyimul's kurta for buttons,
+  links and headings; a sage tint from Hridee's saree for borders and soft fills; warm paper
+  behind everything. Every text colour passes 4.5:1 on paper. The "Colors to wear" swatches
+  are data in content.ts, not theme.
+
   Note: Tailwind v4 scans the whole project for class names by default, so this file and
   app/(portfolio)/globals.css both compile fine side by side. They are loaded by different
   root layouts, so they never end up on the same page.
@@ -13,33 +18,41 @@
 
 /* Colours: plain values, so they also exist as CSS variables (var(--color-paper)) for custom CSS. */
 @theme {
-  /* TODO: pick the real palette from the engagement photos / invitations. Keep it to 4-5 colours. */
-  --color-paper: #fbf7f2;        /* page background */
-  --color-ink: #2b2420;          /* primary text, high contrast for older eyes */
-  --color-muted: #7a6e66;        /* secondary text */
-  --color-accent: #9a6b4f;       /* buttons, links, rules */
-  --color-accent-soft: #eadbcf;  /* tints, borders, hover states */
+  --color-paper: #fbf8f3;        /* page background */
+  --color-card: #ffffff;         /* cards and inputs */
+  --color-ink: #1e2130;          /* primary text, 15:1 on paper */
+  --color-muted: #5c6070;        /* secondary text, 6:1 on paper */
+  --color-accent: #2b3261;       /* buttons, links, selected states */
+  --color-accent-soft: #e3e9df;  /* borders, pills, soft fills (sage tint) */
+  --color-sage: #8fa58a;         /* decorative only (the "&", rules); too light for text */
 }
 
 /* Fonts: `inline` because the values reference the next/font variables set on <html> in layout.tsx. */
 @theme inline {
-  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
-  --font-body: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-source-sans), system-ui, sans-serif;
 }
+
+/* `short:` utilities apply on short screens (an iPhone SE is 667px tall), where the hero and the
+   entrance need tighter type so the faces and the button both stay on the first screen. */
+@custom-variant short (@media (max-height: 700px));
 
 /* Base styles go in @layer base so Tailwind utilities (e.g. font-display on a <p>) can still override them. */
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Anchor jumps (#events, #travel ...) land below the fixed top bar. */
+    scroll-padding-top: 4rem;
   }
 
   body {
     background: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-body);
-    /* Slightly larger default type: the audience includes grandparents on phones. */
-    font-size: 1.0625rem;
-    line-height: 1.6;
+    /* Larger default type: the audience includes grandparents on phones. */
+    font-size: 1.125rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
   }
 
   h1,
@@ -47,12 +60,20 @@
   h3 {
     font-family: var(--font-display);
     font-weight: 500;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.005em;
+    line-height: 1.1;
+    text-wrap: balance;
   }
 
   a {
     color: var(--color-accent);
     text-underline-offset: 0.2em;
+  }
+
+  /* Keyboard users get a clear focus ring everywhere. */
+  :focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
   }
 
   /* Accessibility: anyone who has turned off motion gets an instant, still site.
@@ -68,5 +89,119 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+@layer components {
+  /* The italic "&" between the names. */
+  .ampersand {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--color-sage);
+    padding: 0 0.04em;
+  }
+
+  /* Small caps label above a title ("Welcome, The Karim Family"). */
+  .eyebrow {
+    font-weight: 600;
+    font-size: 0.8125rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .shadow-text {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Gradients that keep white text readable over a photo. Ink-tinted, never plain black. */
+  .shade-hero {
+    background: linear-gradient(to top, rgba(20, 22, 36, 0.85) 0%, rgba(20, 22, 36, 0.5) 30%, rgba(20, 22, 36, 0) 54%);
+  }
+  .shade-chapter {
+    background: linear-gradient(to top, rgba(20, 22, 36, 0.78) 0%, rgba(20, 22, 36, 0.3) 38%, rgba(20, 22, 36, 0) 62%);
+  }
+  .shade-band {
+    background: linear-gradient(to bottom, rgba(20, 22, 36, 0.7) 0%, rgba(20, 22, 36, 0.42) 40%, rgba(20, 22, 36, 0) 68%);
+  }
+
+  /* Art-directed photos: one <img>, a different focal point on phones and wide screens. */
+  .art-directed {
+    object-position: var(--pos-mobile, 50% 50%);
+  }
+  @media (min-width: 1024px) {
+    .art-directed {
+      object-position: var(--pos-desktop, var(--pos-mobile, 50% 50%));
+    }
+  }
+
+  /* Reveal: content fades in and rises 16px the first time it scrolls into view (see Reveal.tsx). */
+  .reveal {
+    transition: opacity 700ms ease-out, transform 700ms ease-out;
+  }
+  .reveal[data-inview="false"] {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  /*
+    Monogram: big and centred in the sky on the hero, then it glides into the top-left corner
+    once the hero scrolls away (or the hero's RSVP button is tapped). One fixed element and a
+    transform-only transition, so it stays smooth on old phones. See Nav.tsx.
+    Dock width = hero width x dock scale (184 x 0.26 = 48px), keep the pairs in step.
+  */
+  .monogram-dock {
+    --mono-hero-w: 184px;
+    --mono-hero-top: 30px;
+    --mono-dock-left: 16px;
+    --mono-dock-top: 10px;
+    --mono-dock-scale: 0.26;
+    position: fixed;
+    z-index: 60;
+    top: var(--mono-hero-top);
+    left: calc(50vw - var(--mono-hero-w) / 2);
+    width: var(--mono-hero-w);
+    transform-origin: 0 0;
+    transition: transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+  }
+  .monogram-dock[data-docked="true"] {
+    transform: translate(
+        calc(var(--mono-dock-left) - (50vw - var(--mono-hero-w) / 2)),
+        calc(var(--mono-dock-top) - var(--mono-hero-top))
+      )
+      scale(var(--mono-dock-scale));
+  }
+  @media (min-width: 768px) {
+    .monogram-dock {
+      --mono-hero-w: 250px;
+      --mono-hero-top: 36px;
+      --mono-dock-left: 24px;
+      --mono-dock-scale: 0.2;
+    }
+  }
+
+  /* The top bar: invisible over the hero, paper once the monogram has docked. */
+  .site-bar {
+    background: rgba(251, 248, 243, 0.96);
+    border-bottom: 1px solid var(--color-accent-soft);
+    transition: opacity 400ms ease, transform 400ms ease, visibility 0s linear 0s;
+  }
+  .site-bar[data-docked="false"] {
+    opacity: 0;
+    transform: translateY(-8px);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 400ms ease, transform 400ms ease, visibility 0s linear 400ms;
+  }
+
+  /* FAQ rows: hide the default triangle, we draw our own chevron that turns when open. */
+  .faq-summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-chevron {
+    transition: transform 250ms ease;
+  }
+  details[open] .faq-chevron {
+    transform: rotate(180deg);
   }
 }

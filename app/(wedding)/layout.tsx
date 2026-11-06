@@ -7,26 +7,27 @@
  * portfolio (dark background, kantha colours, Georgia) leaks in here, and vice versa.
  * The "(wedding)" folder name is a route group: it never appears in the URL.
  *
- * Favicon: app/favicon.ico is shared by both sites. To give the wedding site its own,
- * drop an icon.png (or icon.svg) into app/(wedding)/hridee/.
+ * Icons: app/(wedding)/hridee/icon.png and apple-icon.png (the monogram on paper) are picked up
+ * by Next automatically for every page under /hridee. proxy.ts lets link previews fetch them.
  */
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Playfair_Display, Source_Sans_3 } from "next/font/google";
 import { couple } from "./_lib/content";
 import "./wedding.css";
 
-// Placeholder fonts: a display serif for names/headings and a clean sans for body copy.
-// Swap them freely. Keep the `variable` names: wedding.css maps them to --font-display/--font-body.
-const displayFont = Cormorant_Garamond({
+// Playfair Display echoes the high-contrast serif of the monogram; Source Sans 3 is a quiet,
+// very legible sans for everything else (both are variable fonts, so no weight list is needed).
+// Keep the `variable` names: wedding.css maps them to --font-display/--font-body.
+const displayFont = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-cormorant",
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
   display: "swap",
 });
 
-const bodyFont = Inter({
+const bodyFont = Source_Sans_3({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-source-sans",
   display: "swap",
 });
 
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
 
 // Colours the browser UI (address bar on mobile) to match the page background.
 export const viewport: Viewport = {
-  themeColor: "#FBF7F2",
+  themeColor: "#FBF8F3",
 };
 
 export default function WeddingLayout({
@@ -58,6 +59,8 @@ export default function WeddingLayout({
   return (
     <html
       lang="en"
+      // Tells Next about the smooth scrolling in wedding.css so it can pause it during route changes.
+      data-scroll-behavior="smooth"
       className={`${displayFont.variable} ${bodyFont.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>
