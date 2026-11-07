@@ -38,7 +38,6 @@ To add or swap a photo: add or change one line in `PLAN` in the script, re-run i
 Every photo is imported once there and exported by purpose: `heroPhoto`, `enterPhoto`, `chapterPhotos`, `storyPhotos`, `foodPhotos`, `cafePhotos`, `closingPhoto`, `galleryPhotos`, `monogram`. Each entry carries:
 
 - `alt`: a short plain description for screen readers and phones with images off
-- `caption` (gallery only): the month the photo was taken
 - `position` / `positionDesktop`: the CSS `object-position`, i.e. which part of the photo to keep when it is cropped to the screen
 - `desktop`: an optional landscape file for wide screens (phones get the portrait one)
 
