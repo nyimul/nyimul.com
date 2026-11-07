@@ -81,7 +81,8 @@ Caveats to remember:
 ### Running and deploying
 
 - `npm run dev` then open `http://localhost:3000/hridee`. You'll land on the entrance.
-- **On your phone**, open the "Network" URL the dev server prints (`http://192.168.1.171:3000/hridee` on this Wi-Fi). The computer's IP must be listed in `allowedDevOrigins` in `next.config.ts`, otherwise Next serves the page but blocks its scripts for that origin and nothing is interactive (the monogram never docks, sections never fade in). If the IP changes, update it there.
+- **Always open the dev site as `http://localhost:3000/hridee`** (or a host listed in `allowedDevOrigins` in `next.config.ts`). From any other host (`127.0.0.1`, the computer's name, a changed Wi-Fi IP) Next serves the page but refuses the live-reload connection, and the dev page then never starts its JavaScript: it shows, but the monogram never docks, sections never fade in, and reloading does not help. Production is not affected. `127.0.0.1` and the Wi-Fi IP are listed; if the IP changes, update it there (Next restarts the dev server by itself when the config changes).
+- **On your phone**, open the "Network" URL the dev server prints (`http://192.168.1.171:3000/hridee` on this Wi-Fi).
 - **Without touching the real database:** set `WEDDING_DEMO_DATA=1` and `WEDDING_PASSWORD=demo` (in `.env.local`, or on the command line, which wins over the file), so the site runs on a fake guest list (`_lib/store/demo.ts`). Try "Omar Rahman" (all three events), "Farid Karim" (5 invites, 2 of them open spots, and the Nikkah for Farid only), "Sam Lee" (Reception only, with a +1 who can only come with Sam), "Ayesha Rahman" (two matches, so you get the picker) and "Fareed Kareem" (a close spelling). Demo RSVPs vanish when the dev server restarts. The demo list refuses to run on Vercel.
 - Hosting: Vercel, same project as the portfolio. The wedding site is just more routes.
 - Env vars: Vercel > Project > Settings > Environment Variables. Set them for Production and Preview separately. Local dev uses `.env.local` (gitignored). `.env.example` lists them all.
@@ -124,7 +125,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [ ] **FAQ section** (the guide calls it essential for large or complex weddings; three events, two venues qualifies). `content.ts > faq`, `Faq`
 
 ### Nice-to-haves ("hidden gems")
-- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. `content.ts > recommendations` (grouped, hidden until filled), `ThingsToDo`
+- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. Food and Cafes are in (Nov 2026); things to do still empty. `content.ts > recommendations` (each row opens Google Maps, nearest the hotel first, by `minutes`), `recommendationsMapUrl` (a shared Google Maps list gives the one-button map), `ThingsToDo`
 - [ ] **Video message**: a personal welcome. Optional; a short muted loop or a private YouTube embed in `Hero`/`OurStory`
 - [ ] **Photo gallery**: milestones, engagement photos, a "then and now". `_photos/index.ts > galleryPhotos`, `Gallery`
 - [ ] **Wedding party introductions**: photos + short bios. `content.ts > weddingParty`, `WeddingParty`

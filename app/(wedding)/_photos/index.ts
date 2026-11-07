@@ -28,6 +28,7 @@ import things from "./things.jpg";
 import thingsWide from "./things-wide.jpg";
 import food01 from "./food-01.jpg";
 import food02 from "./food-02.jpg";
+import cafe from "./cafe.jpg";
 import closing from "./closing.jpg";
 import gallery01 from "./gallery-01.jpg";
 import gallery02 from "./gallery-02.jpg";
@@ -129,11 +130,14 @@ export const storyPhotos: Photo[] = [
   { src: story03, alt: "Hridee and Nyimul laughing under a blue sky" },
 ];
 
-/** Shown at the end of While You're in Atlanta. */
+/** Under the Food list in While You're in Atlanta (taken at Botiwalla). */
 export const foodPhotos: Photo[] = [
   { src: food01, alt: "Hridee and Nyimul feeding each other at a snack shop" },
   { src: food02, alt: "Hridee and Nyimul toasting with drinks at a snack shop" },
 ];
+
+/** Under the Cafes list in While You're in Atlanta. The original is small (560px wide), so it is not upscaled. */
+export const cafePhotos: Photo[] = [{ src: cafe, alt: "Hridee in front of the mural at Raani Coffee Roasters" }];
 
 /** The last photo on the page, right above the footer. */
 export const closingPhoto: ArtDirectedPhoto = {
