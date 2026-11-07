@@ -144,7 +144,7 @@ export const transport = {
 };
 
 /**
- * "While You're in Atlanta": your favorite places, mainly for out-of-town guests.
+ * "Our Favorite Food/Cafes in Atlanta": your favorite places, mainly for out-of-town guests.
  * Groups (Food, Cafes...) each list their places nearest the hotel first, sorted by `minutes`:
  * the drive from the hotel without traffic, rounded to 5 (from a routing check on 6 Nov 2026).
  * Every row opens the place in Google Maps as a search for its name and address, so there are

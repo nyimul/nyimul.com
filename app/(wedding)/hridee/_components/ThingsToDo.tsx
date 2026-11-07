@@ -1,5 +1,5 @@
 /**
- * ThingsToDo ("While You're in Atlanta"): your favorite places, mainly for the out-of-towners.
+ * ThingsToDo ("Our Favorite Food/Cafes in Atlanta"): your favorite places, mainly for the out-of-towners.
  * Data: `recommendations` in content.ts, grouped (Food, Cafes...). Each group lists its places
  * nearest the hotel first, and every row is one big link that opens the place in Google Maps
  * (a search for its name and address, so there are no map links to collect; it opens the Maps
@@ -42,7 +42,7 @@ export default function ThingsToDo() {
   if (groups.length === 0) return null;
 
   return (
-    <Section id="things-to-do" title="While You're in Atlanta" photo={chapterPhotos.things} wide>
+    <Section id="things-to-do" title="Our Favorite Food/Cafes in Atlanta" photo={chapterPhotos.things} wide tall>
       <p className="text-muted">Minutes are the drive from the hotel, without traffic.</p>
       {recommendationsMapUrl && (
         <div className="mt-5 max-w-xs">

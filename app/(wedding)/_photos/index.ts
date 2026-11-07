@@ -129,13 +129,13 @@ export const storyPhotos: Photo[] = [
   { src: story03, alt: "Hridee and Nyimul laughing under a blue sky" },
 ];
 
-/** Under the Food list in While You're in Atlanta (taken at Botiwalla). */
+/** Under the Food list in Our Favorite Food/Cafes in Atlanta (taken at Botiwalla). */
 export const foodPhotos: Photo[] = [
   { src: food01, alt: "Hridee and Nyimul feeding each other at a snack shop" },
   { src: food02, alt: "Hridee and Nyimul toasting with drinks at a snack shop" },
 ];
 
-/** Under the Cafes list in While You're in Atlanta. The original is small (560px wide), so it is not upscaled. */
+/** Under the Cafes list in Our Favorite Food/Cafes in Atlanta. The original is small (560px wide), so it is not upscaled. */
 export const cafePhotos: Photo[] = [{ src: cafe, alt: "Hridee in front of the mural at Raani Coffee Roasters" }];
 
 /** The last photo on the page, right above the footer. */

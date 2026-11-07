@@ -16,6 +16,8 @@ type Props = {
   children: ReactNode;
   /** A wider content column for grids; the default is a reading column. */
   wide?: boolean;
+  /** Content several screens tall: fade it in as soon as any of it is on screen. Waiting for the usual 12% leaves blank paper under the photo. */
+  tall?: boolean;
 };
 
 export function Chapter({ title, photo }: { title: string; photo: ArtDirectedPhoto }) {
@@ -32,13 +34,13 @@ export function Chapter({ title, photo }: { title: string; photo: ArtDirectedPho
   );
 }
 
-export default function Section({ id, title, photo, children, wide = false }: Props) {
+export default function Section({ id, title, photo, children, wide = false, tall = false }: Props) {
   return (
     <section id={id}>
       <Reveal>
         <Chapter title={title} photo={photo} />
       </Reveal>
-      <Reveal>
+      <Reveal threshold={tall ? 0 : undefined}>
         <div className={`mx-auto px-4 py-10 md:py-16 ${wide ? "max-w-6xl" : "max-w-2xl"}`}>{children}</div>
       </Reveal>
     </section>

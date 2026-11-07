@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Nav: the monogram plus a small fixed bar with three anchor links and the RSVP button.
+ * Nav: the monogram plus a small fixed bar with four anchor links and the RSVP button.
  *
  * On the home page the monogram starts big and centred in the sky of the hero photo. When the
  * hero scrolls out of view (or the hero's RSVP button is tapped, see HeroRsvpButton.tsx) it
@@ -20,6 +20,7 @@ const links = [
   { href: "#events", label: "Events" },
   { href: "#travel", label: "Travel" },
   { href: "#faq", label: "FAQ" },
+  { href: "#things-to-do", label: "Food" },
 ];
 
 export default function Nav() {
@@ -79,20 +80,20 @@ export default function Nav() {
       </Link>
       <nav
         data-docked={docked}
-        className="site-bar fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-end gap-1 px-3 md:px-6"
+        className="site-bar fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-end px-3 md:gap-1 md:px-6"
       >
         {links.map((l) => (
           <a
             key={l.href}
             href={l.href}
-            className="inline-flex min-h-11 items-center px-2.5 text-[15px] font-semibold text-ink no-underline md:px-3 md:text-base"
+            className="inline-flex min-h-11 items-center px-1.5 text-[15px] font-semibold text-ink no-underline md:px-3 md:text-base"
           >
             {l.label}
           </a>
         ))}
         <Link
           href="/hridee/rsvp"
-          className="ml-1 inline-flex min-h-10 items-center rounded-full bg-accent px-4 text-[15px] font-semibold text-white no-underline md:text-base"
+          className="ml-1 inline-flex min-h-10 items-center rounded-full bg-accent px-3 text-[15px] font-semibold text-white no-underline md:px-4 md:text-base"
         >
           RSVP
         </Link>
