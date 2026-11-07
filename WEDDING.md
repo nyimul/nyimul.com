@@ -462,7 +462,7 @@ Built in Nov 2026 (the direction mockup is `design-direction.html` next to the p
 
 **The monogram.** Ink on light backgrounds everywhere. On the home page it starts big and centred in the sky of the hero photo; when the hero scrolls away, or the hero's RSVP button is tapped, it glides into the top-left corner and the bar (Events, Travel, FAQ, RSVP) fades in behind it. One fixed element and one transform transition (`.monogram-dock` in `wedding.css`, driven by `Nav.tsx`). The RSVP page and the footer keep it small, the entrance shows it as a crest under the photo, and `hridee/icon.png` + `apple-icon.png` make it the favicon.
 
-**Chapters, not backdrops.** Each section of the home page opens with one full-width photo that carries its title (`Section.tsx`), then its content on solid paper. This replaced the earlier idea of a fixed crossfading photo layer behind translucent panels: the same feeling while scrolling, but text is always on paper (readable for older eyes) and there is no fixed full-screen layer to stutter on old phones. Order: hero, Events, the RSVP band (deadline and button written in the sky above the two of you), Our Story, Travel & Stay, Questions, then Wedding Party, While You're in Atlanta and Registry (hidden until there is content), Gallery (oldest first, no captions), the waving photo, footer.
+**Chapters, not backdrops.** Each section of the home page opens with one full-width photo that carries its title (`Section.tsx`), then its content on solid paper. This replaced the earlier idea of a fixed crossfading photo layer behind translucent panels: the same feeling while scrolling, but text is always on paper (readable for older eyes) and there is no fixed full-screen layer to stutter on old phones. Order: hero, Events, the RSVP band (deadline and button written in the sky above the two of you), Our Story, Travel & Stay, Questions, then Wedding Party, Our Favorite Food/Cafes in Atlanta and Registry (hidden until there is content), Gallery (oldest first, no captions), the waving photo, footer.
 
 **Motion rules.**
 - Exactly two effects: `Reveal` (content fades in and rises 16px as it enters the viewport, 700ms, ease-out, once) and the monogram docking above. No animation library. `useInView` renders everything visible on the server and only hides below-the-fold blocks after JavaScript runs, so a slow phone never stares at an empty page.
@@ -473,7 +473,7 @@ Built in Nov 2026 (the direction mockup is `design-direction.html` next to the p
 **For older guests specifically.**
 - Base font 18px, line-height 1.55, contrast at least 4.5:1.
 - Buttons and inputs 56px tall and full width on phones, the two card buttons 48px, bar links 44px. No hover-only interactions, no carousels.
-- Nav: 3 anchor links + one RSVP button, shown once the hero has scrolled away.
+- Nav: 4 anchor links + one RSVP button, shown once the hero has scrolled away.
 - RSVP: one question per screen with a "Step 2 of 5" line and a progress bar, visible labels, Coming / Can't make it as two big toggles with a check mark on the chosen one, a big Next button, a plain-language confirmation, and the contact email on every step.
 - Dates written out ("Friday, April 9, 2027"), never `04/09`.
 - "Get directions" (a Google Maps search for the address, or `venue.mapsUrl` when set) and "Add to calendar" (an .ics from `/hridee/calendar/<event>.ics`, served only for events the party is invited to, 3 hours long unless `endTime` is set) on every event card.

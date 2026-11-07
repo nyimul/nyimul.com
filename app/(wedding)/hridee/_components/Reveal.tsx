@@ -10,8 +10,15 @@
  */
 import { useInView } from "../../_hooks/useInView";
 
-export default function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.12, rootMargin: "0px 0px -6% 0px", once: true });
+type Props = {
+  children: React.ReactNode;
+  className?: string;
+  /** How much of the block must be on screen before it fades in. */
+  threshold?: number;
+};
+
+export default function Reveal({ children, className = "", threshold = 0.12 }: Props) {
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold, rootMargin: "0px 0px -6% 0px", once: true });
 
   return (
     <div ref={ref} className={`reveal ${className}`} data-inview={inView}>
