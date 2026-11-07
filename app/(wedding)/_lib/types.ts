@@ -51,15 +51,23 @@ export type WeddingPartyMember = {
   photo?: string; // key into _photos/index.ts
 };
 
-/** One recommended place: a restaurant, cafe, park... `url` can be its website or a Google Maps link. */
+/**
+ * One recommended place. Its row opens Google Maps with a search for the name and address, so
+ * only set `url` when you want a different link (the place's website, a Maps share link).
+ */
 export type Recommendation = {
   name: string;
-  blurb: string;
-  url?: string;
+  /** A few words under the name: why you love it or what it is ("Our favorite Thai", "Ice cream"). */
+  what?: string;
+  /** Town or neighborhood as a guest would say it ("Duluth", "West Midtown", "Several locations"). */
+  area: string;
+  /** Drive from the hotel in minutes, without traffic. Each group lists its places nearest first. */
+  minutes: number;
   address?: string;
+  url?: string;
 };
 
-/** A group of recommendations under one heading ("Restaurants", "Cafes"...). */
+/** A group of recommendations under one heading ("Food", "Cafes"...). */
 export type RecommendationGroup = {
   title: string;
   places: Recommendation[];

@@ -50,7 +50,7 @@ app/
       supabase.server.ts           server-only Supabase client (secret key)
     _hooks/useInView.ts            IntersectionObserver hook powering Reveal (renders visible first, so no-JS is safe)
     _hooks/monogramDock.ts         the hero's RSVP button telling Nav "dock the monogram now"
-    _photos/                       web-sized engagement photos + index.ts manifest (alt text, captions, focal points)
+    _photos/                       web-sized engagement photos + index.ts manifest (alt text, focal points)
     hridee/
       page.tsx                     nyimul.com/hridee: composes the sections below
       _components/                 one file per section: Nav (monogram + bar), Hero, Events, RsvpCta, OurStory,
@@ -81,7 +81,8 @@ Caveats to remember:
 ### Running and deploying
 
 - `npm run dev` then open `http://localhost:3000/hridee`. You'll land on the entrance.
-- **On your phone**, open the "Network" URL the dev server prints (`http://192.168.1.171:3000/hridee` on this Wi-Fi). The computer's IP must be listed in `allowedDevOrigins` in `next.config.ts`, otherwise Next serves the page but blocks its scripts for that origin and nothing is interactive (the monogram never docks, sections never fade in). If the IP changes, update it there.
+- **Always open the dev site as `http://localhost:3000/hridee`** (or a host listed in `allowedDevOrigins` in `next.config.ts`). From any other host (`127.0.0.1`, the computer's name, a changed Wi-Fi IP) Next serves the page but refuses the live-reload connection, and the dev page then never starts its JavaScript: it shows, but the monogram never docks, sections never fade in, and reloading does not help. Production is not affected. `127.0.0.1` and the Wi-Fi IP are listed; if the IP changes, update it there (Next restarts the dev server by itself when the config changes).
+- **On your phone**, open the "Network" URL the dev server prints (`http://192.168.1.171:3000/hridee` on this Wi-Fi).
 - **Without touching the real database:** set `WEDDING_DEMO_DATA=1` and `WEDDING_PASSWORD=demo` (in `.env.local`, or on the command line, which wins over the file), so the site runs on a fake guest list (`_lib/store/demo.ts`). Try "Omar Rahman" (all three events), "Farid Karim" (5 invites, 2 of them open spots, and the Nikkah for Farid only), "Sam Lee" (Reception only, with a +1 who can only come with Sam), "Ayesha Rahman" (two matches, so you get the picker) and "Fareed Kareem" (a close spelling). Demo RSVPs vanish when the dev server restarts. The demo list refuses to run on Vercel.
 - Hosting: Vercel, same project as the portfolio. The wedding site is just more routes.
 - Env vars: Vercel > Project > Settings > Environment Variables. Set them for Production and Preview separately. Local dev uses `.env.local` (gitignored). `.env.example` lists them all.
@@ -96,7 +97,7 @@ Full guidance is in `app/(wedding)/_photos/README.md`. The short version:
 
 - The originals live outside the repo (the "Wedding Website Pics" folder on the desktop) and never go in git: 12-38 MB each, and the phone photos carry GPS coordinates.
 - `scripts/export-wedding-photos.py` makes the web copies in `app/(wedding)/_photos/`: 2400px long edge for full-bleed photos, 1600px for story/gallery, JPEG ~82, every EXIF/XMP/GPS tag dropped, colour profile kept, named by purpose (`hero-a.jpg`, `events.jpg`, `gallery-01.jpg`...). It checks its own output. To add or swap a photo: one line in its PLAN, re-run it, then point `_photos/index.ts` at the file.
-- `_photos/index.ts` is the only place photos are imported. It also holds the alt text, the gallery captions (the month each photo was taken) and the focal point per breakpoint (`position` / `positionDesktop`).
+- `_photos/index.ts` is the only place photos are imported. It also holds the alt text and the focal point per breakpoint (`position` / `positionDesktop`).
 - Importing (`import hero from "./hero-a.jpg"`) rather than using `public/` gives intrinsic sizes (no layout jumps), blur placeholders, forever-cached URLs and on-demand AVIF/WebP resizing from `next/image`.
 - Only the hero and the entrance photo load eagerly (`loading="eager"` + `fetchPriority="high"`; Next 16 deprecated `priority`). Everything else lazy-loads, with a real `alt` and a correct `sizes`.
 - Phones get portrait files and wide screens landscape ones where a pair exists (`Photo.tsx` builds a `<picture>` from `getImageProps`).
@@ -124,7 +125,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [ ] **FAQ section** (the guide calls it essential for large or complex weddings; three events, two venues qualifies). `content.ts > faq`, `Faq`
 
 ### Nice-to-haves ("hidden gems")
-- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. `content.ts > recommendations` (grouped, hidden until filled), `ThingsToDo`
+- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. Food and Cafes are in (Nov 2026); things to do still empty. `content.ts > recommendations` (each row opens Google Maps, nearest the hotel first, by `minutes`), `recommendationsMapUrl` (a shared Google Maps list gives the one-button map), `ThingsToDo`
 - [ ] **Video message**: a personal welcome. Optional; a short muted loop or a private YouTube embed in `Hero`/`OurStory`
 - [ ] **Photo gallery**: milestones, engagement photos, a "then and now". `_photos/index.ts > galleryPhotos`, `Gallery`
 - [ ] **Wedding party introductions**: photos + short bios. `content.ts > weddingParty`, `WeddingParty`
@@ -461,7 +462,7 @@ Built in Nov 2026 (the direction mockup is `design-direction.html` next to the p
 
 **The monogram.** Ink on light backgrounds everywhere. On the home page it starts big and centred in the sky of the hero photo; when the hero scrolls away, or the hero's RSVP button is tapped, it glides into the top-left corner and the bar (Events, Travel, FAQ, RSVP) fades in behind it. One fixed element and one transform transition (`.monogram-dock` in `wedding.css`, driven by `Nav.tsx`). The RSVP page and the footer keep it small, the entrance shows it as a crest under the photo, and `hridee/icon.png` + `apple-icon.png` make it the favicon.
 
-**Chapters, not backdrops.** Each section of the home page opens with one full-width photo that carries its title (`Section.tsx`), then its content on solid paper. This replaced the earlier idea of a fixed crossfading photo layer behind translucent panels: the same feeling while scrolling, but text is always on paper (readable for older eyes) and there is no fixed full-screen layer to stutter on old phones. Order: hero, Events, the RSVP band (deadline and button written in the sky above the two of you), Our Story, Travel & Stay, Questions, then Wedding Party, While You're in Atlanta and Registry (hidden until there is content), Gallery (oldest first, month captions), the waving photo, footer.
+**Chapters, not backdrops.** Each section of the home page opens with one full-width photo that carries its title (`Section.tsx`), then its content on solid paper. This replaced the earlier idea of a fixed crossfading photo layer behind translucent panels: the same feeling while scrolling, but text is always on paper (readable for older eyes) and there is no fixed full-screen layer to stutter on old phones. Order: hero, Events, the RSVP band (deadline and button written in the sky above the two of you), Our Story, Travel & Stay, Questions, then Wedding Party, While You're in Atlanta and Registry (hidden until there is content), Gallery (oldest first, no captions), the waving photo, footer.
 
 **Motion rules.**
 - Exactly two effects: `Reveal` (content fades in and rises 16px as it enters the viewport, 700ms, ease-out, once) and the monogram docking above. No animation library. `useInView` renders everything visible on the server and only hides below-the-fold blocks after JavaScript runs, so a slow phone never stares at an empty page.

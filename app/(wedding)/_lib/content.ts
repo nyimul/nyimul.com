@@ -86,7 +86,7 @@ export const events: WeddingEvent[] = [
       mapsUrl: "",
       directions: "",
     },
-    dressCode: "Dress code Holud", // TODO e.g. "Traditional South Asian attire, yellows and oranges welcome"
+    dressCode: "", // TODO e.g. "Traditional South Asian attire, yellows and oranges welcome"
     description: "", // TODO: 1-2 sentences on what a Holud is, for guests who have never been to one
     guestNotes: "",
   },
@@ -145,26 +145,59 @@ export const transport = {
 
 /**
  * "While You're in Atlanta": your favorite places, mainly for out-of-town guests.
- * The section stays hidden until at least one group has a place in it. Rename the group titles,
- * add or remove groups, and add places as `{ name, blurb, url?, address? }`: `url` can be the
- * place's website or a Google Maps link, and the blurb is one short line (why you love it).
+ * Groups (Food, Cafes...) each list their places nearest the hotel first, sorted by `minutes`:
+ * the drive from the hotel without traffic, rounded to 5 (from a routing check on 6 Nov 2026).
+ * Every row opens the place in Google Maps as a search for its name and address, so there are
+ * no map links to collect; `url` overrides that if you ever want one. `what` is a few words
+ * under the name, `area` the town or neighborhood as a guest would say it. Add a place anywhere
+ * in its group and the site sorts it in. The section stays hidden until a group has a place.
  */
 export const recommendations: RecommendationGroup[] = [
   {
-    title: "Restaurants",
+    title: "Food",
     places: [
-      // { name: "", blurb: "", url: "", address: "" },
+      { name: "Pokeworks", what: "Our favorite poke", area: "Peachtree Corners", minutes: 10, address: "5160 Town Center Blvd Ste 520, Peachtree Corners, GA 30092" },
+      { name: "Java Saga", what: "Taiwanese", area: "Buford Highway", minutes: 10, address: "5145 Buford Hwy NE Ste E, Doraville, GA 30340" },
+      { name: "China Hot Pot", what: "Hot pot", area: "Buford Highway", minutes: 10, address: "5090 Buford Hwy NE Ste 104, Doraville, GA 30340" },
+      { name: "LanZhou Ramen", what: "Hand-pulled noodles", area: "Buford Highway", minutes: 10, address: "5231 Buford Hwy NE, Doraville, GA 30340" },
+      { name: "Cafe Maiko", what: "Dessert", area: "Buford Highway", minutes: 10, address: "5306 Buford Hwy NE Ste B, Doraville, GA 30340" },
+      { name: "Dhaka Guys", what: "Bengali snacks and street food", area: "Buford Highway", minutes: 10, address: "5382 Buford Hwy NE Ste C, Doraville, GA 30340" },
+      { name: "Pad Thai", what: "Our favorite Thai", area: "Duluth", minutes: 15, address: "2180 Pleasant Hill Rd B3, Duluth, GA 30096" },
+      { name: "Big Sister's Kitchen", what: "Our favorite Korean", area: "Duluth", minutes: 15, address: "3095 Peachtree Industrial Blvd Ste 100, Duluth, GA 30097" },
+      { name: "Jeni's Splendid Ice Creams", what: "Ice cream", area: "Several locations", minutes: 15 },
+      { name: "Cow Wow", what: "Our favorite Korean BBQ", area: "Suwanee", minutes: 25, address: "2850 Lawrenceville-Suwanee Rd Ste F, Suwanee, GA 30024" },
+      { name: "Circle Poke", what: "Our favorite poke", area: "West Midtown", minutes: 25, address: "1000 Northside Dr NW Ste 950, Atlanta, GA 30318" },
+      { name: "Botiwalla by Chai Pani", what: "Our favorite Indian", area: "Ponce City Market", minutes: 30, address: "675 Ponce De Leon Ave NE, Atlanta, GA 30308" },
+      { name: "Agavero", what: "Our favorite Mexican", area: "West Midtown", minutes: 30, address: "1133 Huff Rd NW Ste C, Atlanta, GA 30318" },
     ],
   },
   {
     title: "Cafes",
-    places: [],
+    places: [
+      { name: "Paris Baguette", what: "Bakery", area: "Several locations", minutes: 10 },
+      { name: "Qamaria Yemeni Coffee Co.", area: "Duluth", minutes: 15, address: "2645 N Berkeley Lake Rd NW Ste 221, Duluth, GA 30096" },
+      { name: "Kafeiin", area: "Duluth", minutes: 15, address: "3865 Venture Dr A, Duluth, GA 30096" },
+      { name: "Cafe Flat", area: "Duluth", minutes: 15, address: "2227 Duluth Hwy #109, Duluth, GA 30097" },
+      { name: "Summit Coffee", area: "Brookhaven", minutes: 15, address: "4001 Peachtree Rd NE, Atlanta, GA 30319" },
+      { name: "Refuge Coffee Co.", area: "Midtown", minutes: 25, address: "1280 Peachtree St NE Ste 100-A, Atlanta, GA 30309" },
+      { name: "The Chai Box Cafe", area: "West Midtown", minutes: 25, address: "1963 Howell Mill Rd NW, Atlanta, GA 30318" },
+      { name: "Raani Coffee Roasters", area: "East Atlanta", minutes: 30, address: "720 Moreland Ave SE Ste B, Atlanta, GA 30316" },
+    ],
   },
   {
     title: "Things to do",
-    places: [],
+    places: [
+      // { name: "", what: "", area: "", minutes: 0, address: "" },
+    ],
   },
 ];
+
+/**
+ * Optional, for a real map: in the Google Maps app, save all the places above to one list
+ * (Saved > New list), then Share > Copy link and paste it here. A "See them all on a map"
+ * button then appears above the lists. Empty means no button.
+ */
+export const recommendationsMapUrl = "";
 
 export const registry: { name: string; url: string; note?: string }[] = [
   // TODO { name: "", url: "" }

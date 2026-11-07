@@ -7,7 +7,6 @@
  * point the entry below at the new file.
  *
  * Alt text is for screen readers and for phones with images off; keep it short and plain.
- * Captions are the month the photo was taken (from the original file's date).
  */
 import type { StaticImageData } from "next/image";
 
@@ -28,6 +27,7 @@ import things from "./things.jpg";
 import thingsWide from "./things-wide.jpg";
 import food01 from "./food-01.jpg";
 import food02 from "./food-02.jpg";
+import cafe from "./cafe.jpg";
 import closing from "./closing.jpg";
 import gallery01 from "./gallery-01.jpg";
 import gallery02 from "./gallery-02.jpg";
@@ -129,11 +129,14 @@ export const storyPhotos: Photo[] = [
   { src: story03, alt: "Hridee and Nyimul laughing under a blue sky" },
 ];
 
-/** Shown at the end of While You're in Atlanta. */
+/** Under the Food list in While You're in Atlanta (taken at Botiwalla). */
 export const foodPhotos: Photo[] = [
   { src: food01, alt: "Hridee and Nyimul feeding each other at a snack shop" },
   { src: food02, alt: "Hridee and Nyimul toasting with drinks at a snack shop" },
 ];
+
+/** Under the Cafes list in While You're in Atlanta. The original is small (560px wide), so it is not upscaled. */
+export const cafePhotos: Photo[] = [{ src: cafe, alt: "Hridee in front of the mural at Raani Coffee Roasters" }];
 
 /** The last photo on the page, right above the footer. */
 export const closingPhoto: ArtDirectedPhoto = {
@@ -142,20 +145,20 @@ export const closingPhoto: ArtDirectedPhoto = {
   position: "50% 40%",
 };
 
-/** Everything else, in the order it happened. */
-export const galleryPhotos: (Photo & { caption: string })[] = [
-  { src: gallery01, alt: "Hridee and Nyimul holding sparklers", caption: "October 2024" },
-  { src: gallery02, alt: "Hridee and Nyimul sitting on fallen ginkgo leaves", caption: "December 2024" },
-  { src: gallery03, alt: "Hridee and Nyimul at the symphony", caption: "March 2025" },
-  { src: gallery04, alt: "Hridee and Nyimul in a greenhouse full of flowers", caption: "April 2025" },
-  { src: gallery05, alt: "Hridee and Nyimul in a park", caption: "April 2025" },
-  { src: gallery06, alt: "Hridee and Nyimul in front of an aquarium tank", caption: "May 2025" },
-  { src: gallery07, alt: "Hridee and Nyimul at a mountain overlook", caption: "November 2025" },
-  { src: gallery08, alt: "Hridee and Nyimul walking through autumn woods", caption: "November 2025" },
-  { src: gallery09, alt: "Hridee and Nyimul by a lake in winter", caption: "January 2026" },
-  { src: gallery10, alt: "Hridee and Nyimul with a birthday dessert", caption: "March 2026" },
-  { src: gallery11, alt: "Hridee and Nyimul in the gazebo at Piedmont Park", caption: "April 2026" },
-  { src: gallery12, alt: "Hridee and Nyimul walking across the meadow at Piedmont Park", caption: "April 2026" },
-  { src: gallery13, alt: "Hridee in the gazebo at Piedmont Park", caption: "April 2026" },
-  { src: gallery14, alt: "Hridee and Nyimul under a red umbrella", caption: "April 2026" },
+/** Everything else, in the order it happened (no captions; the months are in scripts/export-wedding-photos.py). */
+export const galleryPhotos: Photo[] = [
+  { src: gallery01, alt: "Hridee and Nyimul holding sparklers" },
+  { src: gallery02, alt: "Hridee and Nyimul sitting on fallen ginkgo leaves" },
+  { src: gallery03, alt: "Hridee and Nyimul at the symphony" },
+  { src: gallery04, alt: "Hridee and Nyimul in a greenhouse full of flowers" },
+  { src: gallery05, alt: "Hridee and Nyimul in a park" },
+  { src: gallery06, alt: "Hridee and Nyimul in front of an aquarium tank" },
+  { src: gallery07, alt: "Hridee and Nyimul at a mountain overlook" },
+  { src: gallery08, alt: "Hridee and Nyimul walking through autumn woods" },
+  { src: gallery09, alt: "Hridee and Nyimul by a lake in winter" },
+  { src: gallery10, alt: "Hridee and Nyimul with a birthday dessert" },
+  { src: gallery11, alt: "Hridee and Nyimul in the gazebo at Piedmont Park" },
+  { src: gallery12, alt: "Hridee and Nyimul walking across the meadow at Piedmont Park" },
+  { src: gallery13, alt: "Hridee in the gazebo at Piedmont Park" },
+  { src: gallery14, alt: "Hridee and Nyimul under a red umbrella" },
 ];

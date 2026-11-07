@@ -36,6 +36,7 @@ PLAN = {
     "things-wide": ("things to do in atlaNTA.jpg", FULL, None),
     "food-01": ("where to eat.jpg", STORY, None),
     "food-02": ("for poster at reception.jpg", STORY, None),
+    "cafe": ("hridee in front of raani.jpg", STORY, None),  # Hridee at Raani; the original is small (560x995) and is not upscaled
     "closing": ("5S8A3929.jpg", FULL, None),
     # entrance
     "enter": ("Enter page pic perhaps.jpg", FULL, None),

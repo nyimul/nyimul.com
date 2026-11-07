@@ -1,12 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Testing on a phone over Wi-Fi: `npm run dev`, then open the "Network" URL it prints
-  // (http://<this computer's IP>:3000/hridee). In development Next refuses to serve the page's
-  // scripts to any origin but localhost unless it is listed here, and without them the page shows
-  // but nothing is interactive (no monogram animation, no reveals). Development only; if the
-  // computer's IP changes, update it here. Exact addresses only, no wildcards for IPs.
-  allowedDevOrigins: ["192.168.1.171"],
+  // Development only. Next serves the page to any host, but it refuses the live-reload
+  // connection to every host except localhost and the ones listed here, and the dev page then
+  // never starts its JavaScript: it shows, but nothing is interactive (the monogram never moves
+  // to the corner, no reveals). So always open the site as http://localhost:3000/hridee, or one
+  // of these:
+  //   192.168.1.171  this computer on the Wi-Fi, for testing on a phone (the "Network" URL
+  //                  `npm run dev` prints). If the computer's IP changes, update it here.
+  //   127.0.0.1      the same machine by number, in case a link opens it that way.
+  // Exact addresses only, no wildcards for IPs. Next restarts the dev server when this changes.
+  allowedDevOrigins: ["192.168.1.171", "127.0.0.1"],
 
   images: {
     // Serve modern formats. Next generates them on demand from the files you commit.
