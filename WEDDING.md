@@ -54,7 +54,7 @@ app/
     hridee/
       page.tsx                     nyimul.com/hridee: composes the sections below
       _components/                 one file per section: Nav (monogram + bar), Hero, Events, RsvpCta, OurStory,
-                                   Travel, Faq, WeddingParty, ThingsToDo, Registry, Gallery, ClosingPhoto, Footer;
+                                   Travel, Faq, Gifts, WeddingParty, ThingsToDo (+ ShowAll), Gallery, ClosingPhoto, Footer;
                                    plus Section (chapter photo + title), Photo (art-directed full-bleed photo),
                                    Reveal (fade-in wrapper), SiteHeader (bar for the RSVP page), HeroRsvpButton
       icon.png, apple-icon.png     the monogram on paper, as favicon
@@ -120,7 +120,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [ ] **Wedding location**: map plus **written directions with landmarks**, parking, which entrance. `events[].venue.directions`
 - [ ] **Accommodation**: hotel block(s), booking link, group code, cut-off date, Airbnb suggestions. `content.ts > accommodations`, `Travel`
 - [ ] **Transport**: shuttles/buses/rideshare between hotel and venues, how to book, times. `content.ts > transport`, `Travel`
-- [ ] **Wishing well / registry**: link(s) + a gentle sentence. `content.ts > registry`, `Registry`
+- [x] **Gifts**: a plain note (cash gifts only), always shown; registry links are optional and appear under it if added. `content.ts > giftNote` / `registry`, `Gifts`
 - [x] **Childcare**: children are welcome at every event, so there's nothing beyond the FAQ answer. `content.ts > faq`
 - [ ] **FAQ section** (the guide calls it essential for large or complex weddings; three events, two venues qualifies). `content.ts > faq`, `Faq`
 
@@ -158,7 +158,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [ ] Colors to wear: up to 7 per event, per family's side, in `content.ts > eventColors` (hex or rgb). The palettes from Coolors are in. Also: modesty notes if any, where to buy/rent if you want to help non-Desi guests.
 - [ ] Food: halal, vegetarian options, alcohol yes/no, per event.
 - [ ] Prayer space / timing around salah if relevant.
-- [ ] Gift etiquette if you want to say anything (registry vs. envelopes vs. "your presence is enough").
+- [x] Gift etiquette: cash gifts only, said plainly in the Gifts section (`content.ts > giftNote`).
 - [x] Who is invited to what: every page shows a signed-in party only their own events (home page, FAQ, RSVP). Tag event-specific content in `content.ts` with `eventIds`.
 
 ---
@@ -462,7 +462,7 @@ Built in Nov 2026 (the direction mockup is `design-direction.html` next to the p
 
 **The monogram.** Ink on light backgrounds everywhere. On the home page it starts big and centred in the sky of the hero photo; when the hero scrolls away, or the hero's RSVP button is tapped, it glides into the top-left corner and the bar (Events, Travel, FAQ, RSVP) fades in behind it. One fixed element and one transform transition (`.monogram-dock` in `wedding.css`, driven by `Nav.tsx`). The RSVP page and the footer keep it small, the entrance shows it as a crest under the photo, and `hridee/icon.png` + `apple-icon.png` make it the favicon.
 
-**Chapters, not backdrops.** Each section of the home page opens with one full-width photo that carries its title (`Section.tsx`), then its content on solid paper. This replaced the earlier idea of a fixed crossfading photo layer behind translucent panels: the same feeling while scrolling, but text is always on paper (readable for older eyes) and there is no fixed full-screen layer to stutter on old phones. Order: hero, Events, the RSVP band (deadline and button written in the sky above the two of you), Our Story, Travel & Stay, Questions, then Wedding Party, Our Favorite Food/Cafes in Atlanta and Registry (hidden until there is content), Gallery (oldest first, no captions), the waving photo, footer.
+**Chapters, not backdrops.** Each section of the home page opens with one full-width photo that carries its title (`Section.tsx`), then its content on solid paper. This replaced the earlier idea of a fixed crossfading photo layer behind translucent panels: the same feeling while scrolling, but text is always on paper (readable for older eyes) and there is no fixed full-screen layer to stutter on old phones. Order: hero, Events, the RSVP band (deadline and button written in the sky above the two of you), Our Story, Travel & Stay, Questions, Gifts, then Wedding Party and Our Favorite Food/Things To Do in Atlanta (hidden until there is content), Gallery (three columns filled top to bottom in list order, no captions), the waving photo, footer.
 
 **Motion rules.**
 - Exactly two effects: `Reveal` (content fades in and rises 16px as it enters the viewport, 700ms, ease-out, once) and the monogram docking above. No animation library. `useInView` renders everything visible on the server and only hides below-the-fold blocks after JavaScript runs, so a slow phone never stares at an empty page.
@@ -498,7 +498,7 @@ Built in Nov 2026 (the direction mockup is `design-direction.html` next to the p
 
 **Phase 3: photos and polish.**
 - [x] Photos exported and registered (`scripts/export-wedding-photos.py`, `_photos/index.ts`).
-- [x] `Section` chapter openers (instead of `PhotoBackdrop`), `Gallery`, `WeddingParty`, `ThingsToDo`, `Registry`, `ClosingPhoto`, the monogram docking.
+- [x] `Section` chapter openers (instead of `PhotoBackdrop`), `Gallery`, `WeddingParty`, `ThingsToDo`, `Gifts`, `ClosingPhoto`, the monogram docking.
 - [x] Mobile pass at 375px (headless screenshots of each demo guest, both families' sides).
 - [ ] Reduced-motion pass on a device; Lighthouse pass; the three real devices in section 9.
 
@@ -534,7 +534,7 @@ Built in Nov 2026 (the direction mockup is `design-direction.html` next to the p
 - Hotel block: hotel, booking link, group code, nightly rate, cut-off date. Any second hotel or Airbnb area.
 - Shuttle plan if any. Rideshare/airport notes.
 - Children: invited to which events; babysitting plan; contact person.
-- Registry links, or the wording you want instead.
+- Registry links, only if you ever want a small one (optional).
 - Favourite Atlanta spots with one line each.
 - FAQ answers (the questions are already drafted in `content.ts`).
 - Whether the ceremony is unplugged.

@@ -26,17 +26,14 @@ import faq from "./faq.jpg";
 import things from "./things.jpg";
 import thingsWide from "./things-wide.jpg";
 import food01 from "./food-01.jpg";
-import food02 from "./food-02.jpg";
 import cafe from "./cafe.jpg";
 import closing from "./closing.jpg";
-import gallery01 from "./gallery-01.jpg";
 import gallery02 from "./gallery-02.jpg";
 import gallery03 from "./gallery-03.jpg";
 import gallery04 from "./gallery-04.jpg";
 import gallery05 from "./gallery-05.jpg";
 import gallery06 from "./gallery-06.jpg";
 import gallery07 from "./gallery-07.jpg";
-import gallery08 from "./gallery-08.jpg";
 import gallery09 from "./gallery-09.jpg";
 import gallery10 from "./gallery-10.jpg";
 import gallery11 from "./gallery-11.jpg";
@@ -129,13 +126,12 @@ export const storyPhotos: Photo[] = [
   { src: story03, alt: "Hridee and Nyimul laughing under a blue sky" },
 ];
 
-/** Under the Food list in Our Favorite Food/Cafes in Atlanta (taken at Botiwalla). */
+/** Under the Food list in Our Favorite Food/Things To Do in Atlanta (taken at Botiwalla). */
 export const foodPhotos: Photo[] = [
   { src: food01, alt: "Hridee and Nyimul feeding each other at a snack shop" },
-  { src: food02, alt: "Hridee and Nyimul toasting with drinks at a snack shop" },
 ];
 
-/** Under the Cafes list in Our Favorite Food/Cafes in Atlanta. The original is small (560px wide), so it is not upscaled. */
+/** Under the Cafes list in Our Favorite Food/Things To Do in Atlanta. The original is small (560px wide), so it is not upscaled. */
 export const cafePhotos: Photo[] = [{ src: cafe, alt: "Hridee in front of the mural at Raani Coffee Roasters" }];
 
 /** The last photo on the page, right above the footer. */
@@ -145,18 +141,22 @@ export const closingPhoto: ArtDirectedPhoto = {
   position: "50% 40%",
 };
 
-/** Everything else, in the order it happened (no captions; the months are in scripts/export-wedding-photos.py). */
+/**
+ * Everything else, roughly in the order it happened (no captions; the months are in
+ * scripts/export-wedding-photos.py). On tablets and desktops the gallery is three columns filled
+ * top to bottom: the first third of this list is the left column, the second third the middle,
+ * the rest the right. Move an entry to move it between columns. The birthday photo is up in the
+ * first third so it sits in the left column.
+ */
 export const galleryPhotos: Photo[] = [
-  { src: gallery01, alt: "Hridee and Nyimul holding sparklers" },
   { src: gallery02, alt: "Hridee and Nyimul sitting on fallen ginkgo leaves" },
   { src: gallery03, alt: "Hridee and Nyimul at the symphony" },
   { src: gallery04, alt: "Hridee and Nyimul in a greenhouse full of flowers" },
+  { src: gallery10, alt: "Hridee and Nyimul with a birthday dessert" },
   { src: gallery05, alt: "Hridee and Nyimul in a park" },
   { src: gallery06, alt: "Hridee and Nyimul in front of an aquarium tank" },
   { src: gallery07, alt: "Hridee and Nyimul at a mountain overlook" },
-  { src: gallery08, alt: "Hridee and Nyimul walking through autumn woods" },
   { src: gallery09, alt: "Hridee and Nyimul by a lake in winter" },
-  { src: gallery10, alt: "Hridee and Nyimul with a birthday dessert" },
   { src: gallery11, alt: "Hridee and Nyimul in the gazebo at Piedmont Park" },
   { src: gallery12, alt: "Hridee and Nyimul walking across the meadow at Piedmont Park" },
   { src: gallery13, alt: "Hridee in the gazebo at Piedmont Park" },

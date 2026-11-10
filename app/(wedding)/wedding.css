@@ -143,6 +143,22 @@
     transform: translateY(16px);
   }
 
+  /* Rows (and the photo) that appear after a "Show all" tap fade and rise in; see ShowAll.tsx.
+     The reduced-motion rule above makes it instant. */
+  .fade-in {
+    animation: fade-in 450ms ease-out both;
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /*
     Monogram: big and centred in the sky on the hero, then it glides into the top-left corner
     once the hero scrolls away (or the hero's RSVP button is tapped). One fixed element and a

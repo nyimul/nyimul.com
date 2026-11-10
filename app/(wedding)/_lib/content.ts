@@ -26,7 +26,7 @@ export const wedding = {
   /** ISO date. The RSVP form closes after this day. Change rsvpDeadlineText along with it. */
   rsvpDeadline: "2027-02-15",
   /** How the deadline reads on the site, as in "Please RSVP by ...". */
-  rsvpDeadlineText: "February 15th, right after Valentine's Day!",
+  rsvpDeadlineText: "February 15th, right after Valentine's Day.",
   unpluggedCeremony: true, // TODO: decide (guide: say whether ceremony/reception are unplugged)
 };
 
@@ -144,15 +144,24 @@ export const transport = {
 };
 
 /**
- * "Our Favorite Food/Cafes in Atlanta": your favorite places, mainly for out-of-town guests.
- * Groups (Food, Cafes...) each list their places nearest the hotel first, sorted by `minutes`:
- * the drive from the hotel without traffic, rounded to 5 (from a routing check on 6 Nov 2026).
+ * "Our Favorite Food/Things To Do in Atlanta": your favorite places, mainly for out-of-town guests.
+ * Groups (Activities, Food, Cafes) each list their places nearest the hotel first, sorted by `minutes`:
+ * the drive from the hotel without traffic, rounded to 5 (from routing checks in Nov 2026).
+ * For a chain ("Several locations"), `minutes` is to the location nearest the hotel.
  * Every row opens the place in Google Maps as a search for its name and address, so there are
  * no map links to collect; `url` overrides that if you ever want one. `what` is a few words
  * under the name, `area` the town or neighborhood as a guest would say it. Add a place anywhere
  * in its group and the site sorts it in. The section stays hidden until a group has a place.
  */
 export const recommendations: RecommendationGroup[] = [
+  {
+    title: "Activities",
+    places: [
+      { name: "The Georgia Aquarium", area: "Downtown", minutes: 25, address: "225 Baker St NW, Atlanta, GA 30313" },
+      { name: "Puttshack", what: "Mini golf", area: "Several locations", minutes: 10 },
+      { name: "The Escape Game Atlanta", what: "Escape rooms", area: "Several locations", minutes: 20 },
+    ],
+  },
   {
     title: "Food",
     places: [
@@ -184,12 +193,6 @@ export const recommendations: RecommendationGroup[] = [
       { name: "Raani Coffee Roasters", area: "East Atlanta", minutes: 30, address: "720 Moreland Ave SE Ste B, Atlanta, GA 30316" },
     ],
   },
-  {
-    title: "Things to do",
-    places: [
-      // { name: "", what: "", area: "", minutes: 0, address: "" },
-    ],
-  },
 ];
 
 /**
@@ -199,25 +202,32 @@ export const recommendations: RecommendationGroup[] = [
  */
 export const recommendationsMapUrl = "";
 
+/**
+ * Gifts. `giftNote` is shown to everyone in the Gifts section (right after Questions). `registry`
+ * is optional: add links and they appear under the note as buttons; leave it empty for cash gifts
+ * only. Never put a home address here.
+ */
+export const giftNote = "Having you there is the best gift. If you'd like to give one, cash gifts only, please.";
 export const registry: { name: string; url: string; note?: string }[] = [
-  // TODO { name: "", url: "" }
+  // { name: "", url: "" }
 ];
 
 export const faq: FaqItem[] = [
   // Suggested questions. TODO: write the answers.
   // An answer that talks about one event belongs on a question tagged with that event's id;
   // otherwise every guest reads about an event they may not be invited to.
-  { question: "What should I wear to each event?", answer: "" },
+  { question: "What should I wear to each event?", answer: "Scroll up and view each event - there is a dress code and recommended color scheme for each one." },
+  { question: "I am unfamiliar with South Asian or Bengali attire. Where can I learn more, or acquire rentals?", answer: "Click here (TODO)"},
   { question: "I've never been to a Nikkah. What should I expect?", answer: "", eventIds: ["nikkah"] },
   { question: "I've never been to a Gaye Holud. What should I expect?", answer: "", eventIds: ["holud"] },
-  { question: "How many people can I bring? Can I bring a plus-one?", answer: "" },
-  { question: "Are children invited?", answer: "Yes" },
-  { question: "Is there parking?", answer: "Venues have on-site free parking." },
+  { question: "How many people can I bring? Can I bring a plus-one?", answer: "When you complete the RSVP form, you will be shown exactly how many seats for each event are saved for you, your family, or any plus-ones. Please read this carefully, and let whoever invited you know if something seems wrong. Or you can contact us at hrideeandnyimul@gmail.com" },
+  { question: "Are children invited?", answer: "Yes. We ask that you please keep an eye on them during ceremonies." },
+  { question: "Is there parking?", answer: "There is free, on-site parking." },
   { question: "Will there be alcohol?", answer: "No, alcohol will not be served." },
-  { question: "Is the ceremony unplugged? Can I take photos?", answer: "", eventIds: ["nikkah"] },
+  { question: "Is the ceremony unplugged? Can I take photos?", answer: "We only ask that you refrain from recording the actual Nikkah ceremony.", eventIds: ["nikkah"] },
   {
     question: "When is the RSVP deadline, and how do I change my RSVP?",
     answer: `${wedding.rsvpDeadlineText} To change your RSVP, come back to this site by then, sign in, and send it again.`,
   },
-  { question: "Who do I contact with questions?", answer: "Whoever invited you, or at "+ couple.contactEmail },
+  { question: "Who do I contact with questions?", answer: "Whoever invited you! Or email us at "+ couple.contactEmail },
 ];

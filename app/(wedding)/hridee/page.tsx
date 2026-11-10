@@ -22,7 +22,7 @@ import OurStory from "./_components/OurStory";
 import WeddingParty from "./_components/WeddingParty";
 import Travel from "./_components/Travel";
 import ThingsToDo from "./_components/ThingsToDo";
-import Registry from "./_components/Registry";
+import Gifts from "./_components/Gifts";
 import Faq from "./_components/Faq";
 import Gallery from "./_components/Gallery";
 import RsvpCta from "./_components/RsvpCta";
@@ -44,9 +44,9 @@ export default async function WeddingHome() {
         <OurStory />
         <Travel invitedEventIds={party.invitedEventIds} />
         <Faq invitedEventIds={party.invitedEventIds} />
+        <Gifts />
         <WeddingParty />
         <ThingsToDo />
-        <Registry />
         <Gallery />
         <ClosingPhoto />
       </main>

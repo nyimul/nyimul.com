@@ -20,7 +20,7 @@ const links = [
   { href: "#events", label: "Events" },
   { href: "#travel", label: "Travel" },
   { href: "#faq", label: "FAQ" },
-  { href: "#things-to-do", label: "Food" },
+  { href: "#things-to-do", label: "ATL" },
 ];
 
 export default function Nav() {
