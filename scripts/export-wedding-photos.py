@@ -35,21 +35,21 @@ PLAN = {
     "things": ("things to do or intro.jpg", FULL, None),
     "things-wide": ("things to do in atlaNTA.jpg", FULL, None),
     "food-01": ("where to eat.jpg", STORY, None),
-    "food-02": ("for poster at reception.jpg", STORY, None),
+    # "food-02": ("for poster at reception.jpg", STORY, None),  # second Botiwalla photo, removed from the site 10 Nov 2026; uncomment to bring it back
     "cafe": ("hridee in front of raani.jpg", STORY, None),  # Hridee at Raani; the original is small (560x995) and is not upscaled
     "closing": ("5S8A3929.jpg", FULL, None),
     # entrance
     "enter": ("Enter page pic perhaps.jpg", FULL, None),
     "enter-portrait": ("Enter page pic perhaps.jpg", STORY, (0.18, 0.0, 0.68, 1.0)),  # 3:4 crop around the couple
     # gallery, in the order it happened
-    "gallery-01": ("IMG_8684.HEIC", STORY, None),         # Oct 2024 sparklers
+    # "gallery-01": ("IMG_8684.HEIC", STORY, None),       # Oct 2024 sparklers, removed from the site 10 Nov 2026
     "gallery-02": ("IMG_9613.HEIC", STORY, None),         # Dec 2024 ginkgo
     "gallery-03": ("us at the symphony.jpg", STORY, None),  # Mar 2025
     "gallery-04": ("IMG_3200.HEIC", STORY, None),         # Apr 2025 botanical garden
     "gallery-05": ("IMG_0089.JPG", STORY, None),          # Apr 2025 park
     "gallery-06": ("IMG_4186.HEIC", STORY, None),         # May 2025 aquarium
     "gallery-07": ("IMG_4178.HEIC", STORY, None),         # Nov 2025 overlook
-    "gallery-08": ("IMG_1213.HEIC", STORY, None),         # Nov 2025 autumn walk
+    # "gallery-08": ("IMG_1213.HEIC", STORY, None),       # Nov 2025 autumn walk, removed from the site 10 Nov 2026
     "gallery-09": ("IMG_6799.HEIC", STORY, None),         # Jan 2026 winter lake
     "gallery-10": ("IMG_3481.heic", STORY, None),         # Mar 2026 birthday
     "gallery-11": ("5S8A3798.jpg", STORY, None),          # Apr 2026 gazebo bridge
