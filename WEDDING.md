@@ -38,7 +38,7 @@ app/
       types.ts                     shared TS types; RSVP types mirror supabase/schema.sql
       format.ts                    formatDate / formatTime / isRsvpClosed
       ui.ts                        shared button/input/card class strings (the look of every control)
-      calendar.ts                  builds the .ics for "Add to calendar" (Atlanta times -> UTC)
+      calendar.ts                  "Add to calendar": the .ics file and the Google Calendar link (Atlanta times -> UTC)
       names.ts                     name normaliser for the lookup (must match the SQL trigger)
       sessionToken.ts              sign/verify the session cookie (used by proxy.ts too)
       session.ts                   getSession / requirePartyId / start and end a session (server-only)
@@ -54,7 +54,7 @@ app/
     hridee/
       page.tsx                     nyimul.com/hridee: composes the sections below
       _components/                 one file per section: Nav (monogram + bar), Hero, Events, RsvpCta, OurStory,
-                                   Travel, Faq, Gifts, WeddingParty, ThingsToDo (+ ShowAll), Gallery, ClosingPhoto, Footer;
+                                   Travel, Faq, Gifts, WeddingParty, ThingsToDo (+ ShowAll), Gallery, ClosingPhoto, Footer; Events uses AddToCalendar;
                                    plus Section (chapter photo + title), Photo (art-directed full-bleed photo),
                                    Reveal (fade-in wrapper), SiteHeader (bar for the RSVP page), HeroRsvpButton
       icon.png, apple-icon.png     the monogram on paper, as favicon
@@ -125,7 +125,7 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [ ] **FAQ section** (the guide calls it essential for large or complex weddings; three events, two venues qualifies). `content.ts > faq`, `Faq`
 
 ### Nice-to-haves ("hidden gems")
-- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. Food and Cafes are in (Nov 2026); things to do still empty. `content.ts > recommendations` (each row opens Google Maps, nearest the hotel first, by `minutes`), `recommendationsMapUrl` (a shared Google Maps list gives the one-button map), `ThingsToDo`
+- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. Activities, Food and Cafes are in (Nov 2026; the aquarium pair sits beside Activities, one photo under Food and one under Cafes); the Things to do group is still empty. `content.ts > recommendations` (each row opens Google Maps, nearest the hotel first, by `minutes`), `recommendationsMapUrl` (a shared Google Maps list gives the one-button map), `ThingsToDo`
 - [ ] **Video message**: a personal welcome. Optional; a short muted loop or a private YouTube embed in `Hero`/`OurStory`
 - [ ] **Photo gallery**: milestones, engagement photos, a "then and now". `_photos/index.ts > galleryPhotos`, `Gallery`
 - [ ] **Wedding party introductions**: photos + short bios. `content.ts > weddingParty`, `WeddingParty`
@@ -476,7 +476,7 @@ Built in Nov 2026 (the direction mockup is `design-direction.html` next to the p
 - Nav: 4 anchor links + one RSVP button, shown once the hero has scrolled away.
 - RSVP: one question per screen with a "Step 2 of 5" line and a progress bar, visible labels, Coming / Can't make it as two big toggles with a check mark on the chosen one, a big Next button, a plain-language confirmation, and the contact email on every step.
 - Dates written out ("Friday, April 9, 2027"), never `04/09`.
-- "Get directions" (a Google Maps search for the address, or `venue.mapsUrl` when set) and "Add to calendar" (an .ics from `/hridee/calendar/<event>.ics`, served only for events the party is invited to, 3 hours long unless `endTime` is set) on every event card.
+- "Get directions" (a Google Maps search for the address, or `venue.mapsUrl` when set) and "Add to calendar" on every event card. The calendar button (`AddToCalendar.tsx`) opens two choices: a Google Calendar link (the event filled in, one tap to save) and the .ics file from `/hridee/calendar/<event>.ics` for Apple Calendar, Outlook and the rest; the .ics is served only for events the party is invited to, and both are 3 hours long unless `endTime` is set.
 - FAQ with native `<details>` so it works everywhere, including with JS off.
 
 **Performance budget.** Hero visible under 2.5s on 4G: eager loading on the hero image only, `sizes` on every image, `display: swap` on fonts, no component libraries. Check with Lighthouse on a throttled mobile profile before launch.

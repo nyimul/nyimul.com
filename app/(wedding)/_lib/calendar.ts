@@ -1,5 +1,6 @@
 /**
- * "Add to calendar": builds the .ics file for one event, served by /hridee/calendar/<id>.ics.
+ * "Add to calendar": builds the .ics file for one event, served by /hridee/calendar/<id>.ics
+ * (Apple Calendar, Outlook and most others), and the Google Calendar link for the same event.
  *
  * Times in content.ts are Atlanta wall-clock times. They are converted to UTC here so the entry
  * lands at the right hour for a guest in any time zone (a "floating" time would show 9:30 in
@@ -53,10 +54,34 @@ function fold(line: string): string {
   return out.join("\r\n");
 }
 
-export function buildIcs(event: WeddingEvent): string {
+/** When the event starts and ends, as UTC instants. */
+function eventWindow(event: WeddingEvent) {
   const start = atlantaToUtc(event.date, event.startTime);
   const end = event.endTime ? atlantaToUtc(event.date, event.endTime) : new Date(start.getTime() + DEFAULT_HOURS * 3_600_000);
-  const names = `${couple.names[0]} & ${couple.names[1]}`;
+  return { start, end };
+}
+
+const coupleNames = () => `${couple.names[0]} & ${couple.names[1]}`;
+
+/**
+ * Google Calendar's "add event" link: opens Google Calendar (web, or the app on Android) with the
+ * event filled in, so one tap saves it. Same title, time window and location as the .ics file.
+ */
+export function googleCalendarUrl(event: WeddingEvent): string {
+  const { start, end } = eventWindow(event);
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `${event.name} - ${coupleNames()}`,
+    dates: `${stamp(start)}/${stamp(end)}`,
+    location: `${event.venue.name}, ${event.venue.address}`,
+  });
+  if (event.description) params.set("details", event.description);
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+export function buildIcs(event: WeddingEvent): string {
+  const { start, end } = eventWindow(event);
+  const names = coupleNames();
 
   const lines = [
     "BEGIN:VCALENDAR",
