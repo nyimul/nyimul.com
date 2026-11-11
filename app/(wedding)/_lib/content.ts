@@ -57,6 +57,9 @@ export const eventColors: Record<EventId, Record<Family, string[]>> = {
  */
 export const colorsToWearLabel = "Wear any of these colors, or mix them";
 
+/** The small heading above each event's dress code text, in the same style as the line above the swatches. */
+export const dressCodeLabel = "Dress code";
+
 export const events: WeddingEvent[] = [
   {
     id: "nikkah",
@@ -110,8 +113,12 @@ export const events: WeddingEvent[] = [
 
 /** How you met, the proposal, the in-between. Short paragraphs; photos go in _photos. */
 export const story: { heading: string; body: string }[] = [
-  { heading: "How we met", body: "We met at Georgia Tech through mutual friends." },
-  { heading: "The proposal", body: "Idk what to put here tbh" },
+  { heading: "How we met", body: "We met at Georgia Tech through mutual friends. TODO: ADD MORE" },
+  // { heading: "The proposal", body: "Idk what to put here tbh" }, // hidden until it is written; uncomment to show it
+  {
+    heading: "The honeymoon",
+    body: "For our honeymoon immediately after the wedding, we're heading to Sri Lanka and the Maldives. We'll spend the first week soaking up the culture and exploring in Sri Lanka, then unwind in the second week at an overwater-hut resort in the Maldives.",
+  },
 ];
 
 export const weddingParty: WeddingPartyMember[] = [
@@ -223,7 +230,12 @@ export const faq: FaqItem[] = [
   // An answer that talks about one event belongs on a question tagged with that event's id;
   // otherwise every guest reads about an event they may not be invited to.
   { question: "What should I wear to each event?", answer: "Please wear your best outfits - both south asian and western formals are welcome! Scroll up and view each event - there is a dress code and recommended color scheme for each one." },
-  { question: "I am unfamiliar with South Asian or Bengali attire. Where can I learn more, or acquire rentals?", answer: "We would love for you to wear our culture's clothing! If you don't have any outfits, we recommend either finding a local south asian boutique or visiting websites like lashkaraa.com." },
+  {
+    question: "I am unfamiliar with South Asian or Bengali attire. Where can I learn more, or acquire rentals?",
+    // Lines 2 and 3 (shops near the hotel, rentals) are from Nov 2026 research; prices were the sites' listed rental prices then.
+    answer:
+      "We would love for you to wear our culture's clothing! If you don't have any outfits, we recommend either finding a local south asian boutique or visiting websites like lashkaraa.com.\nNear the hotel: Global Mall in Norcross (5675 Jimmy Carter Blvd) has many South Asian boutiques under one roof, and Junaid Jamshed (6050 Singleton Rd, Norcross) carries Pakistani brands for men and women.\nTo rent instead of buy: allborrow.com and marigold.rent ship outfits across the US, mostly $80 to $250.",
+  },
   {
     question: "I've never been to a Nikkah. What should I expect?",
     answer: "The Nikkah (also known as Akht in Bengali) is the Islamic marriage ceremony conducted by an imam. It is a short ceremony that typically lasts around 25 minutes, ending with the bride and groom's first meeting as newly weds!",
@@ -234,7 +246,7 @@ export const faq: FaqItem[] = [
     answer: "Think of it as a Bengali wedding celebration before the actual wedding! It's a colorful, music-filled party where everyone dresses up, dances, eats, and celebrates the bride or groom. One of the traditions is applying turmeric paste to the bride or groom as a symbol of good luck, beauty, and blessings for their upcoming marriage.",
     eventIds: ["holud"],
   },
-  { question: "How many people can I bring? Can I bring a plus-one?", answer: "When you complete the RSVP form, you will be shown exactly how many seats for each event are saved for you, your family, or any plus-ones. Please read this carefully, and let whoever invited you know if something seems wrong. Or you can contact us at hrideeandnyimul@gmail.com" },
+  { question: "How many people can I bring? Can I bring a plus-one?", answer: "When you complete the RSVP form, you will be shown exactly how many seats per event are saved for you, your family, or any plus-ones. Please read this carefully, and let whoever invited you know if something seems wrong. Or you can contact us at hrideeandnyimul@gmail.com" },
   { question: "Are children invited?", answer: "Yes, we love your little ones! We kindly ask that you please keep an eye on them during ceremonies." },
   { question: "Is there parking?", answer: "There is free, on-site parking." },
   { question: "Will there be alcohol?", answer: "No, alcohol will not be served." },
