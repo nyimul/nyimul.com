@@ -37,6 +37,8 @@ PLAN = {
     "food-01": ("where to eat.jpg", STORY, None),
     # "food-02": ("for poster at reception.jpg", STORY, None),  # second Botiwalla photo, removed from the site 10 Nov 2026; uncomment to bring it back
     "cafe": ("hridee in front of raani.jpg", STORY, None),  # Hridee at Raani; the original is small (560x995) and is not upscaled
+    "activities-01": ("Photos-1-001/IMG_9399.heic", STORY, None),  # Feb 2023 aquarium; the pair beside the Activities list
+    "activities-02": ("Photos-1-001/IMG_9406.heic", STORY, None),  # Feb 2023 aquarium, back to back
     "closing": ("5S8A3929.jpg", FULL, None),
     # entrance
     "enter": ("Enter page pic perhaps.jpg", FULL, None),
@@ -52,10 +54,16 @@ PLAN = {
     # "gallery-08": ("IMG_1213.HEIC", STORY, None),       # Nov 2025 autumn walk, removed from the site 10 Nov 2026
     "gallery-09": ("IMG_6799.HEIC", STORY, None),         # Jan 2026 winter lake
     "gallery-10": ("IMG_3481.heic", STORY, None),         # Mar 2026 birthday
-    "gallery-11": ("5S8A3798.jpg", STORY, None),          # Apr 2026 gazebo bridge
-    "gallery-12": ("backup.jpg", STORY, None),            # Apr 2026 meadow
-    "gallery-13": ("phone background.jpg", STORY, None),  # Apr 2026 Hridee in the gazebo
+    # "gallery-11": ("5S8A3798.jpg", STORY, None),        # Apr 2026 gazebo bridge, removed from the site 11 Nov 2026
+    # "gallery-12": ("backup.jpg", STORY, None),          # Apr 2026 meadow, removed 11 Nov 2026
+    # "gallery-13": ("phone background.jpg", STORY, None),  # Apr 2026 Hridee in the gazebo, removed 11 Nov 2026
     "gallery-14": ("IMG_3077.jpeg", STORY, None),         # Apr 2026 red umbrella
+    # added 11 Nov 2026 from the Photos-1-001 folder
+    # gallery-15 and -16 (the Feb 2023 aquarium pair) moved beside the Activities list as activities-01/02 on 11 Nov 2026
+    "gallery-17": ("Photos-1-001/DSC_8690.JPG", STORY, None),    # Sep 2024 hug by the lake
+    "gallery-18": ("Photos-1-001/DSC_8829_2.jpg", STORY, None),  # Dec 2024 mirror
+    "gallery-19": ("Photos-1-001/DSC_8843.jpg", STORY, None),    # Dec 2024 mirrored wall
+    "gallery-20": ("Photos-1-001/IMG_1049.HEIC", STORY, None),   # Mar 2026 night out
 }
 MONOGRAM = "Hridee Nyimul Monogram TRANSPARENT.png"
 

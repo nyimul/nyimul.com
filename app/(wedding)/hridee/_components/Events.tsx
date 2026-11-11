@@ -2,7 +2,8 @@
  * Events: one card per event a guest can read in ten seconds: date and time, venue and address
  * (the venue name links to its website once content.ts has one), description, dress code,
  * directions and notes when they are filled in, "Get directions" (Google Maps) and "Add to
- * calendar" (an .ics file from /hridee/calendar), and the colours to wear.
+ * calendar" (AddToCalendar.tsx: a Google Calendar link, or the .ics file from /hridee/calendar
+ * for Apple Calendar and Outlook), and the colours to wear.
  *
  * Shows ONLY the events the signed-in party is invited to. The page passes them in already
  * filtered (see _lib/party.ts); this component never imports the full events list.
@@ -10,11 +11,13 @@
  * Colors come from `eventColors` in content.ts, for the party's own family's side. This renders
  * on the server, so the other side's colors never reach the browser.
  */
+import { googleCalendarUrl } from "../../_lib/calendar";
 import { colorsToWearLabel, eventColors } from "../../_lib/content";
 import { formatDate, formatTime, paletteColors } from "../../_lib/format";
 import type { EventId, Family, Venue, WeddingEvent } from "../../_lib/types";
 import { cardClass, smallButton } from "../../_lib/ui";
 import { chapterPhotos } from "../../_photos";
+import AddToCalendar from "./AddToCalendar";
 import Section from "./Section";
 
 type Props = {
@@ -89,9 +92,7 @@ export default function Events({ events, onlyFor, family }: Props) {
                 <a href={directionsUrl(event.venue)} target="_blank" rel="noopener noreferrer" className={smallButton}>
                   Get directions
                 </a>
-                <a href={`/hridee/calendar/${event.id}.ics`} className={smallButton}>
-                  Add to calendar
-                </a>
+                <AddToCalendar icsUrl={`/hridee/calendar/${event.id}.ics`} googleUrl={googleCalendarUrl(event)} />
               </div>
               <EventColors colors={paletteColors(eventColors[event.id][family])} eventName={event.name} />
             </li>

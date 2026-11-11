@@ -35,7 +35,7 @@ To add or swap a photo: add or change one line in `PLAN` in the script, re-run i
 
 ## `index.ts`, the manifest
 
-Every photo is imported once there and exported by purpose: `heroPhoto`, `enterPhoto`, `chapterPhotos`, `storyPhotos`, `foodPhotos`, `cafePhotos`, `closingPhoto`, `galleryPhotos`, `monogram`. Each entry carries:
+Every photo is imported once there and exported by purpose: `heroPhoto`, `enterPhoto`, `chapterPhotos`, `storyPhotos`, `foodPhotos`, `cafePhotos`, `activityPhotos`, `closingPhoto`, `galleryPhotos`, `monogram`. Each entry carries:
 
 - `alt`: a short plain description for screen readers and phones with images off
 - `position` / `positionDesktop`: the CSS `object-position`, i.e. which part of the photo to keep when it is cropped to the screen

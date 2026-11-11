@@ -27,6 +27,8 @@ import things from "./things.jpg";
 import thingsWide from "./things-wide.jpg";
 import food01 from "./food-01.jpg";
 import cafe from "./cafe.jpg";
+import activities01 from "./activities-01.jpg";
+import activities02 from "./activities-02.jpg";
 import closing from "./closing.jpg";
 import gallery02 from "./gallery-02.jpg";
 import gallery03 from "./gallery-03.jpg";
@@ -36,10 +38,11 @@ import gallery06 from "./gallery-06.jpg";
 import gallery07 from "./gallery-07.jpg";
 import gallery09 from "./gallery-09.jpg";
 import gallery10 from "./gallery-10.jpg";
-import gallery11 from "./gallery-11.jpg";
-import gallery12 from "./gallery-12.jpg";
-import gallery13 from "./gallery-13.jpg";
 import gallery14 from "./gallery-14.jpg";
+import gallery17 from "./gallery-17.jpg";
+import gallery18 from "./gallery-18.jpg";
+import gallery19 from "./gallery-19.jpg";
+import gallery20 from "./gallery-20.jpg";
 import monogramPng from "./monogram.png";
 import monogramWhitePng from "./monogram-white.png";
 
@@ -134,6 +137,16 @@ export const foodPhotos: Photo[] = [
 /** Under the Cafes list in Our Favorite Food/Things To Do in Atlanta. The original is small (560px wide), so it is not upscaled. */
 export const cafePhotos: Photo[] = [{ src: cafe, alt: "Hridee in front of the mural at Raani Coffee Roasters" }];
 
+/**
+ * Beside the Activities list in Our Favorite Food/Things To Do in Atlanta (the Georgia Aquarium is
+ * on it): to the right of the list on wide screens, under it on phones. Shown side by side, so
+ * keep it a pair of portraits from the same day.
+ */
+export const activityPhotos: Photo[] = [
+  { src: activities01, alt: "Hridee and Nyimul at the aquarium" },
+  { src: activities02, alt: "Hridee and Nyimul back to back at the aquarium" },
+];
+
 /** The last photo on the page, right above the footer. */
 export const closingPhoto: ArtDirectedPhoto = {
   src: closing,
@@ -144,21 +157,26 @@ export const closingPhoto: ArtDirectedPhoto = {
 /**
  * Everything else, roughly in the order it happened (no captions; the months are in
  * scripts/export-wedding-photos.py). On tablets and desktops the gallery is three columns filled
- * top to bottom: the first third of this list is the left column, the second third the middle,
- * the rest the right. Move an entry to move it between columns. The birthday photo is up in the
- * first third so it sits in the left column.
+ * top to bottom: the list is cut into three runs, left, middle, right (the first run or two are
+ * one photo longer when the count does not divide by three). Move an entry to move it between
+ * columns. The order below is roughly by date, nudged so the three columns end at about the
+ * same height; the birthday photo stays in the left column on purpose.
  */
 export const galleryPhotos: Photo[] = [
+  // Left column (tablets and up)
   { src: gallery02, alt: "Hridee and Nyimul sitting on fallen ginkgo leaves" },
+  { src: gallery07, alt: "Hridee and Nyimul at a mountain overlook" },
+  { src: gallery05, alt: "Hridee and Nyimul in a park" },
+  { src: gallery09, alt: "Hridee and Nyimul by a lake in winter" },
+  { src: gallery10, alt: "Hridee and Nyimul with a birthday dessert" },
+  // Middle column
+  { src: gallery18, alt: "Hridee and Nyimul taking a photo in a mirror" },
   { src: gallery03, alt: "Hridee and Nyimul at the symphony" },
   { src: gallery04, alt: "Hridee and Nyimul in a greenhouse full of flowers" },
-  { src: gallery10, alt: "Hridee and Nyimul with a birthday dessert" },
-  { src: gallery05, alt: "Hridee and Nyimul in a park" },
+  { src: gallery19, alt: "Hridee and Nyimul reflected in a mirrored wall" },
+  // Right column
+  { src: gallery17, alt: "Hridee hugging Nyimul from behind by a lake" },
   { src: gallery06, alt: "Hridee and Nyimul in front of an aquarium tank" },
-  { src: gallery07, alt: "Hridee and Nyimul at a mountain overlook" },
-  { src: gallery09, alt: "Hridee and Nyimul by a lake in winter" },
-  { src: gallery11, alt: "Hridee and Nyimul in the gazebo at Piedmont Park" },
-  { src: gallery12, alt: "Hridee and Nyimul walking across the meadow at Piedmont Park" },
-  { src: gallery13, alt: "Hridee in the gazebo at Piedmont Park" },
   { src: gallery14, alt: "Hridee and Nyimul under a red umbrella" },
+  { src: gallery20, alt: "Hridee and Nyimul outside on a night out" },
 ];

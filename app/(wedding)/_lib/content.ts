@@ -45,8 +45,8 @@ const nikkahColors = ["#FFE4E1", "#FBF0C4", "#D0F0C0", "#E3DAF0", "#D5E9F5"]; //
 export const eventColors: Record<EventId, Record<Family, string[]>> = {
   nikkah: { nyimul: nikkahColors, hridee: nikkahColors },
   holud: {
-    nyimul: ["#191970", "#F77FBE", "#FFD700", "#DBB2D1", "#7FB3E6"], // midnight blue, bright pink, gold, soft pink, cool horizon
-    hridee: ["#E8701A", "#2E8B57", "#FFD700", "#FFA000", "#50C878"], // deep orange, sea green, gold, amber, emerald
+    nyimul: ["#191970", "#7FB3E6", "#D4AF37", "#DBB2D1", "#F77FBE"], // midnight blue, cool horizon, metallic gold, soft pink, bright pink (coolors.co/191970-7fb3e6-d4af37-dbb2d1-f77fbe)
+    hridee: ["#E8701A", "#FFA000", "#D4AF37", "#2E8B57", "#50C878"], // deep orange, amber, metallic gold, sea green, emerald (coolors.co/e8701a-ffa000-d4af37-2e8b57-50c878)
   },
   reception: { nyimul: [], hridee: [] }, // no palette for now; see receptionColors above
 };
@@ -70,7 +70,7 @@ export const events: WeddingEvent[] = [
       mapsUrl: "",
       directions: "",
     },
-    dressCode: "", // TODO
+    dressCode: "Women: a saree, salwar kameez or lehenga in soft colors, or a modest dress. Men: a panjabi or kurta, or a suit.",
     description: "", // TODO: what the ceremony is, roughly how long, seating, modest dress note if any
     guestNotes: "",
   },
@@ -86,14 +86,14 @@ export const events: WeddingEvent[] = [
       mapsUrl: "",
       directions: "",
     },
-    dressCode: "", // TODO e.g. "Traditional South Asian attire, yellows and oranges welcome"
+    dressCode: "Bright and festive. Women: a saree, lehenga or salwar kameez. Men: a colorful panjabi or kurta.",
     description: "", // TODO: 1-2 sentences on what a Holud is, for guests who have never been to one
     guestNotes: "",
   },
   {
     id: "reception",
     name: "Reception",
-    date: "2027-04-10", // TODO: confirm reception date
+    date: "2027-04-10",
     startTime: "19:00",
     venue: {
       name: "Hilton Atlanta Northeast",
@@ -102,7 +102,7 @@ export const events: WeddingEvent[] = [
       mapsUrl: "",
       directions: "",
     },
-    dressCode: "", // TODO
+    dressCode: "Formal. Women: a saree, lehenga, gown or cocktail dress. Men: a suit and tie, or a sherwani.",
     description: "",
     guestNotes: "",
   },
@@ -110,8 +110,8 @@ export const events: WeddingEvent[] = [
 
 /** How you met, the proposal, the in-between. Short paragraphs; photos go in _photos. */
 export const story: { heading: string; body: string }[] = [
-  // TODO { heading: "How we met", body: "..." },
-  // TODO { heading: "The proposal", body: "..." },
+  { heading: "How we met", body: "We met at Georgia Tech through mutual friends." },
+  { heading: "The proposal", body: "Idk what to put here tbh" },
 ];
 
 export const weddingParty: WeddingPartyMember[] = [
@@ -153,6 +153,10 @@ export const transport = {
  * under the name, `area` the town or neighborhood as a guest would say it. Add a place anywhere
  * in its group and the site sorts it in. The section stays hidden until a group has a place.
  */
+/** The line under the section title. Keep it short; the lists follow right after. */
+export const recommendationsIntro =
+  "Here are some of our favorite places to spend time together in Atlanta. Each spot is very special to us, and is significant in our relationship's history! Estimated travel times from the hotel do not account for traffic.";
+
 export const recommendations: RecommendationGroup[] = [
   {
     title: "Activities",
@@ -160,6 +164,8 @@ export const recommendations: RecommendationGroup[] = [
       { name: "The Georgia Aquarium", area: "Downtown", minutes: 25, address: "225 Baker St NW, Atlanta, GA 30313" },
       { name: "Puttshack", what: "Mini golf", area: "Several locations", minutes: 10 },
       { name: "The Escape Game Atlanta", what: "Escape rooms", area: "Several locations", minutes: 20 },
+      { name: "Piedmont Park", what: "The park in our photos", area: "Midtown", minutes: 25, address: "1320 Monroe Dr NE, Atlanta, GA 30306" },
+      { name: "Incha", what: "Figurine painting", area: "Duluth", minutes: 15, address: "3500 Gwinnett Place Dr Ste 6, Duluth, GA 30096" },
     ],
   },
   {
@@ -216,12 +222,20 @@ export const faq: FaqItem[] = [
   // Suggested questions. TODO: write the answers.
   // An answer that talks about one event belongs on a question tagged with that event's id;
   // otherwise every guest reads about an event they may not be invited to.
-  { question: "What should I wear to each event?", answer: "Scroll up and view each event - there is a dress code and recommended color scheme for each one." },
-  { question: "I am unfamiliar with South Asian or Bengali attire. Where can I learn more, or acquire rentals?", answer: "Click here (TODO)"},
-  { question: "I've never been to a Nikkah. What should I expect?", answer: "", eventIds: ["nikkah"] },
-  { question: "I've never been to a Gaye Holud. What should I expect?", answer: "", eventIds: ["holud"] },
+  { question: "What should I wear to each event?", answer: "Please wear your best outfits - both south asian and western formals are welcome! Scroll up and view each event - there is a dress code and recommended color scheme for each one." },
+  { question: "I am unfamiliar with South Asian or Bengali attire. Where can I learn more, or acquire rentals?", answer: "We would love for you to wear our culture's clothing! If you don't have any outfits, we recommend either finding a local south asian boutique or visiting websites like lashkaraa.com." },
+  {
+    question: "I've never been to a Nikkah. What should I expect?",
+    answer: "The Nikkah (also known as Akht in Bengali) is the Islamic marriage ceremony conducted by an imam. It is a short ceremony that typically lasts around 25 minutes, ending with the bride and groom's first meeting as newly weds!",
+    eventIds: ["nikkah"],
+  },
+  {
+    question: "I've never been to a Gaye Holud. What should I expect?",
+    answer: "Think of it as a Bengali wedding celebration before the actual wedding! It's a colorful, music-filled party where everyone dresses up, dances, eats, and celebrates the bride or groom. One of the traditions is applying turmeric paste to the bride or groom as a symbol of good luck, beauty, and blessings for their upcoming marriage.",
+    eventIds: ["holud"],
+  },
   { question: "How many people can I bring? Can I bring a plus-one?", answer: "When you complete the RSVP form, you will be shown exactly how many seats for each event are saved for you, your family, or any plus-ones. Please read this carefully, and let whoever invited you know if something seems wrong. Or you can contact us at hrideeandnyimul@gmail.com" },
-  { question: "Are children invited?", answer: "Yes. We ask that you please keep an eye on them during ceremonies." },
+  { question: "Are children invited?", answer: "Yes, we love your little ones! We kindly ask that you please keep an eye on them during ceremonies." },
   { question: "Is there parking?", answer: "There is free, on-site parking." },
   { question: "Will there be alcohol?", answer: "No, alcohol will not be served." },
   { question: "Is the ceremony unplugged? Can I take photos?", answer: "We only ask that you refrain from recording the actual Nikkah ceremony.", eventIds: ["nikkah"] },
