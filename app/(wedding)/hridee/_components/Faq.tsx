@@ -15,7 +15,7 @@ import { chapterPhotos } from "../../_photos";
 import Section from "./Section";
 
 /** One capture group, so split() alternates plain text and matches. Skips the domain inside an email. */
-const LINK = /(https?:\/\/[^\s]+|[\w.+-]+@[\w-]+\.[\w.-]+|(?<![\w@.-])[\w-]+\.(?:com|org|net|co)\b[^\s]*)/g;
+const LINK = /(https?:\/\/[^\s]+|[\w.+-]+@[\w-]+\.[\w.-]+|(?<![\w@.-])[\w-]+\.(?:com|org|net|co|rent)\b[^\s]*)/g;
 
 function linkify(text: string) {
   return text.split(LINK).map((part, i) => {

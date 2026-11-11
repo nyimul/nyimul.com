@@ -12,7 +12,7 @@
  * on the server, so the other side's colors never reach the browser.
  */
 import { googleCalendarUrl } from "../../_lib/calendar";
-import { colorsToWearLabel, eventColors } from "../../_lib/content";
+import { colorsToWearLabel, dressCodeLabel, eventColors } from "../../_lib/content";
 import { formatDate, formatTime, paletteColors } from "../../_lib/format";
 import type { EventId, Family, Venue, WeddingEvent } from "../../_lib/types";
 import { cardClass, smallButton } from "../../_lib/ui";
@@ -85,7 +85,12 @@ export default function Events({ events, onlyFor, family }: Props) {
               </p>
               <p className="text-muted">{event.venue.address}</p>
               {event.description && <p className="mt-4">{event.description}</p>}
-              {event.dressCode && <p className="mt-3">{event.dressCode}</p>}
+              {event.dressCode && (
+                <div className="mt-4">
+                  <p className="text-[15px] font-semibold text-muted">{dressCodeLabel}</p>
+                  <p className="mt-1">{event.dressCode}</p>
+                </div>
+              )}
               {event.venue.directions && <p className="mt-3 text-muted">{event.venue.directions}</p>}
               {event.guestNotes && <p className="mt-3 text-muted">{event.guestNotes}</p>}
               <div className="mt-5 grid grid-cols-2 gap-3">
