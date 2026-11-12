@@ -105,7 +105,7 @@ export const events: WeddingEvent[] = [
       mapsUrl: "",
       directions: "",
     },
-    dressCode: "Formal. Women: a saree, lehenga, gown or cocktail dress. Men: a suit and tie, or a sherwani.",
+    dressCode: "Formal. Women: a saree, lehenga, salwar kameez, gown or cocktail dress. Men: a suit and tie, or a sherwani.",
     description: "",
     guestNotes: "",
   },
@@ -115,10 +115,6 @@ export const events: WeddingEvent[] = [
 export const story: { heading: string; body: string }[] = [
   { heading: "How we met", body: "We met at Georgia Tech through mutual friends. TODO: ADD MORE" },
   // { heading: "The proposal", body: "Idk what to put here tbh" }, // hidden until it is written; uncomment to show it
-  {
-    heading: "The honeymoon",
-    body: "For our honeymoon immediately after the wedding, we're heading to Sri Lanka and the Maldives. We'll spend the first week soaking up the culture and exploring in Sri Lanka, then unwind in the second week at an overwater-hut resort in the Maldives.",
-  },
 ];
 
 export const weddingParty: WeddingPartyMember[] = [
@@ -136,11 +132,18 @@ export const accommodations: Accommodation[] = [
     // TODO: cutoffDate and nightlyRate once the hotel confirms them.
     // Each line below is only shown to guests invited to one of its events.
     eventNotes: [
-      { eventIds: ["reception"], text: "The reception is here." },
+      { eventIds: ["reception"], text: "The reception will be hosted at this hotel." },
       { eventIds: ["nikkah", "holud"], text: "TPC Sugarloaf is a short drive or Uber away." },
     ],
   },
+  // Cheaper hotels nearby (`alternative: true`): short rows under the Hilton's card, with a Map link,
+  // so it stays clear which hotel is yours. `minutes` is the drive from the Hilton.
+  { name: "Hampton Inn Peachtree Corners/Norcross", address: "440 Technology Pkwy NW, Peachtree Corners, GA 30092", minutes: 2, alternative: true },
+  { name: "Holiday Inn Express Peachtree Corners-Norcross", address: "7035 Jimmy Carter Blvd, Norcross, GA 30092", minutes: 5, alternative: true },
 ];
+
+/** The line under the "Other hotels nearby" heading. */
+export const otherHotelsNote = "A short drive from the Hilton and usually a bit cheaper.";
 
 export const transport = {
   // TODO airport (ATL), rideshare notes, parking at each venue, shuttle between hotel and venue (if any) with times
@@ -179,8 +182,6 @@ export const recommendations: RecommendationGroup[] = [
     title: "Food",
     places: [
       { name: "Pokeworks", what: "Our favorite poke", area: "Peachtree Corners", minutes: 10, address: "5160 Town Center Blvd Ste 520, Peachtree Corners, GA 30092" },
-      { name: "Java Saga", what: "Taiwanese", area: "Buford Highway", minutes: 10, address: "5145 Buford Hwy NE Ste E, Doraville, GA 30340" },
-      { name: "China Hot Pot", what: "Hot pot", area: "Buford Highway", minutes: 10, address: "5090 Buford Hwy NE Ste 104, Doraville, GA 30340" },
       { name: "LanZhou Ramen", what: "Hand-pulled noodles", area: "Buford Highway", minutes: 10, address: "5231 Buford Hwy NE, Doraville, GA 30340" },
       { name: "Cafe Maiko", what: "Dessert", area: "Buford Highway", minutes: 10, address: "5306 Buford Hwy NE Ste B, Doraville, GA 30340" },
       { name: "Dhaka Guys", what: "Bengali snacks and street food", area: "Buford Highway", minutes: 10, address: "5382 Buford Hwy NE Ste C, Doraville, GA 30340" },
@@ -188,9 +189,13 @@ export const recommendations: RecommendationGroup[] = [
       { name: "Big Sister's Kitchen", what: "Our favorite Korean", area: "Duluth", minutes: 15, address: "3095 Peachtree Industrial Blvd Ste 100, Duluth, GA 30097" },
       { name: "Jeni's Splendid Ice Creams", what: "Ice cream", area: "Several locations", minutes: 15 },
       { name: "Cow Wow", what: "Our favorite Korean BBQ", area: "Suwanee", minutes: 25, address: "2850 Lawrenceville-Suwanee Rd Ste F, Suwanee, GA 30024" },
-      { name: "Circle Poke", what: "Our favorite poke", area: "West Midtown", minutes: 25, address: "1000 Northside Dr NW Ste 950, Atlanta, GA 30318" },
       { name: "Botiwalla by Chai Pani", what: "Our favorite Indian", area: "Ponce City Market", minutes: 30, address: "675 Ponce De Leon Ave NE, Atlanta, GA 30308" },
       { name: "Agavero", what: "Our favorite Mexican", area: "West Midtown", minutes: 30, address: "1133 Huff Rd NW Ste C, Atlanta, GA 30318" },
+      // Halal places, to fill in: name, a few words, area, minutes from the hotel, address. `halal: true` puts
+      // "Halal options served here" (halalLabel) next to the name. Uncomment a row once it is filled in.
+      { name: "Halal", what: "Halal", area: "Halal", minutes: 0, address: "", halal: true },
+      // { name: "", what: "", area: "", minutes: 0, address: "", halal: true },
+      // { name: "", what: "", area: "", minutes: 0, address: "", halal: true },
     ],
   },
   {
@@ -215,12 +220,15 @@ export const recommendations: RecommendationGroup[] = [
  */
 export const recommendationsMapUrl = "";
 
+/** Shown next to a place's name when it has `halal: true`. */
+export const halalLabel = "Halal options served here";
+
 /**
  * Gifts. `giftNote` is shown to everyone in the Gifts section (right after Questions). `registry`
  * is optional: add links and they appear under the note as buttons; leave it empty for cash gifts
  * only. Never put a home address here.
  */
-export const giftNote = "Having you there is the best gift. If you'd like to give one, cash gifts only, please.";
+export const giftNote = "Having you at our wedding is the best gift, but we ask that you please do not bring boxed gifts.";
 export const registry: { name: string; url: string; note?: string }[] = [
   // { name: "", url: "" }
 ];
@@ -246,7 +254,7 @@ export const faq: FaqItem[] = [
     answer: "Think of it as a Bengali wedding celebration before the actual wedding! It's a colorful, music-filled party where everyone dresses up, dances, eats, and celebrates the bride or groom. One of the traditions is applying turmeric paste to the bride or groom as a symbol of good luck, beauty, and blessings for their upcoming marriage.",
     eventIds: ["holud"],
   },
-  { question: "How many people can I bring? Can I bring a plus-one?", answer: "When you complete the RSVP form, you will be shown exactly how many seats per event are saved for you, your family, or any plus-ones. Please read this carefully, and let whoever invited you know if something seems wrong. Or you can contact us at hrideeandnyimul@gmail.com" },
+  { question: "How many people can I bring? Can I bring a plus-one?", answer: "When you complete the RSVP form, you will be shown exactly how many seats per event are saved for you, your family, or any plus-ones. Please read this carefully, and let us know if something looks wrong. You can contact us at " + couple.contactEmail },
   { question: "Are children invited?", answer: "Yes, we love your little ones! We kindly ask that you please keep an eye on them during ceremonies." },
   { question: "Is there parking?", answer: "There is free, on-site parking." },
   { question: "Will there be alcohol?", answer: "No, alcohol will not be served." },

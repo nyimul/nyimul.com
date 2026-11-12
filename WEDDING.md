@@ -96,6 +96,7 @@ Caveats to remember:
 Full guidance is in `app/(wedding)/_photos/README.md`. The short version:
 
 - The originals live outside the repo (the "Wedding Website Pics" folder on the desktop) and never go in git: 12-38 MB each, and the phone photos carry GPS coordinates.
+- `scripts/invites/` is the e-vite cards (see "Aligning your wedding style" in the checklist); they use the exported photos below, never the originals.
 - `scripts/export-wedding-photos.py` makes the web copies in `app/(wedding)/_photos/`: 2400px long edge for full-bleed photos, 1600px for story/gallery, JPEG ~82, every EXIF/XMP/GPS tag dropped, colour profile kept, named by purpose (`hero-a.jpg`, `events.jpg`, `gallery-01.jpg`...). It checks its own output. To add or swap a photo: one line in its PLAN, re-run it, then point `_photos/index.ts` at the file.
 - `_photos/index.ts` is the only place photos are imported. It also holds the alt text and the focal point per breakpoint (`position` / `positionDesktop`).
 - Importing (`import hero from "./hero-a.jpg"`) rather than using `public/` gives intrinsic sizes (no layout jumps), blur placeholders, forever-cached URLs and on-demand AVIF/WebP resizing from `next/image`.
@@ -118,14 +119,14 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 
 ### Should-haves ("the easily forgotten details")
 - [ ] **Wedding location**: map plus **written directions with landmarks**, parking, which entrance. `events[].venue.directions`
-- [ ] **Accommodation**: hotel block(s), booking link, group code, cut-off date, Airbnb suggestions. `content.ts > accommodations`, `Travel`
+- [x] **Accommodation**: the Hilton card (booking link, group code; cut-off date and rate still TODO) and two cheaper hotels nearby as short rows with a Map link (`alternative: true`, drive in `minutes`). `content.ts > accommodations` / `otherHotelsNote`, `Travel`
 - [ ] **Transport**: shuttles/buses/rideshare between hotel and venues, how to book, times. `content.ts > transport`, `Travel`
-- [x] **Gifts**: a plain note (cash gifts only), always shown; registry links are optional and appear under it if added. `content.ts > giftNote` / `registry`, `Gifts`
+- [x] **Gifts**: a plain note (no boxed gifts), always shown; registry links are optional and appear under it if added. `content.ts > giftNote` / `registry`, `Gifts`
 - [x] **Childcare**: children are welcome at every event, so there's nothing beyond the FAQ answer. `content.ts > faq`
 - [ ] **FAQ section** (the guide calls it essential for large or complex weddings; three events, two venues qualifies). `content.ts > faq`, `Faq`
 
 ### Nice-to-haves ("hidden gems")
-- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. Activities, Food and Cafes are in (Nov 2026; the aquarium pair sits beside Activities, one photo under Food and one under Cafes); the Things to do group is still empty. `content.ts > recommendations` (each row opens Google Maps, nearest the hotel first, by `minutes`), `recommendationsMapUrl` (a shared Google Maps list gives the one-button map), `ThingsToDo`
+- [ ] **Local recommendations**: favourite restaurants, cafes and things to do, mainly for out-of-town guests. Activities, Food and Cafes are in (Nov 2026; the aquarium pair sits beside Activities, one photo under Food and one under Cafes); the Things to do group is still empty. `halal: true` on a place shows "Halal options served here" next to its name; three blank halal rows are commented out in Food, waiting for names. `content.ts > recommendations` (each row opens Google Maps, nearest the hotel first, by `minutes`), `recommendationsMapUrl` (a shared Google Maps list gives the one-button map), `ThingsToDo`
 - [ ] **Video message**: a personal welcome. Optional; a short muted loop or a private YouTube embed in `Hero`/`OurStory`
 - [ ] **Photo gallery**: milestones, engagement photos, a "then and now". `_photos/index.ts > galleryPhotos`, `Gallery`
 - [ ] **Wedding party introductions**: photos + short bios. `content.ts > weddingParty`, `WeddingParty`
@@ -151,14 +152,14 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 - [x] Send save-the-dates **6-12 months before** the wedding. Sent.
 
 ### Aligning your wedding style
-- [ ] Digital save-the-dates and thank-you cards can **match the website's design** (same fonts, palette, photo treatment), which saves time and money. Reuse the tokens from `wedding.css`.
+- [x] Digital save-the-dates and thank-you cards can **match the website's design** (same fonts, palette, photo treatment), which saves time and money. Reuse the tokens from `wedding.css`. E-vites done (Nov 2026): `scripts/invites/` holds two cards as HTML + CSS in the site's style (Holud + Reception on navy, Reception only on sage; 1200 x 1920, a white square left for the website QR code) and `render-invites.mjs`, which renders every card there to PNG and JPG with headless Chrome: `node scripts/invites/render-invites.mjs "<output folder>"`. Edit the HTML to change the words or dates, then re-run it. Rendered copies live outside the repo (Desktop > Wedding Website Pics > INVITES).
 
 ### Extra, because this is a Bengali wedding across three events
 - [ ] A short, warm "what to expect" for each event for guests who have never been to a Holud or Nikkah: what happens, how long, when to arrive, seating.
 - [ ] Colors to wear: up to 7 per event, per family's side, in `content.ts > eventColors` (hex or rgb). The palettes from Coolors are in. Also: modesty notes if any, where to buy/rent if you want to help non-Desi guests.
 - [ ] Food: halal, vegetarian options, alcohol yes/no, per event.
 - [ ] Prayer space / timing around salah if relevant.
-- [x] Gift etiquette: cash gifts only, said plainly in the Gifts section (`content.ts > giftNote`).
+- [x] Gift etiquette: no boxed gifts, said plainly in the Gifts section (`content.ts > giftNote`).
 - [x] Who is invited to what: every page shows a signed-in party only their own events (home page, FAQ, RSVP). Tag event-specific content in `content.ts` with `eventIds`.
 
 ---
