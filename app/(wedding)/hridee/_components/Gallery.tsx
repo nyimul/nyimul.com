@@ -18,7 +18,7 @@ const COLUMNS = 3;
 export default function Gallery() {
   if (galleryPhotos.length === 0) return null;
 
-  // Cut the list into COLUMNS runs, as even as it goes: 13 photos become 5, 4 and 4.
+  // Cut the list into COLUMNS runs, as even as it goes (13 photos would be 5, 4 and 4).
   const base = Math.floor(galleryPhotos.length / COLUMNS);
   const extra = galleryPhotos.length % COLUMNS;
   const columns: Photo[][] = [];

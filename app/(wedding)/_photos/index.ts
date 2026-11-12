@@ -34,7 +34,6 @@ import gallery02 from "./gallery-02.jpg";
 import gallery03 from "./gallery-03.jpg";
 import gallery04 from "./gallery-04.jpg";
 import gallery05 from "./gallery-05.jpg";
-import gallery06 from "./gallery-06.jpg";
 import gallery07 from "./gallery-07.jpg";
 import gallery09 from "./gallery-09.jpg";
 import gallery10 from "./gallery-10.jpg";
@@ -140,11 +139,11 @@ export const cafePhotos: Photo[] = [{ src: cafe, alt: "Hridee in front of the mu
 /**
  * Beside the Activities list in Our Favorite Food/Things To Do in Atlanta (the Georgia Aquarium is
  * on it): to the right of the list on wide screens, under it on phones. Shown side by side, so
- * keep it a pair of portraits from the same day.
+ * keep it a pair of portraits: one from each aquarium trip (Feb 2023 and May 2025).
  */
 export const activityPhotos: Photo[] = [
-  { src: activities01, alt: "Hridee and Nyimul at the aquarium" },
-  { src: activities02, alt: "Hridee and Nyimul back to back at the aquarium" },
+  { src: activities01, alt: "Hridee and Nyimul back to back at the aquarium" },
+  { src: activities02, alt: "Hridee and Nyimul in front of an aquarium tank" },
 ];
 
 /** The last photo on the page, right above the footer. */
@@ -164,19 +163,18 @@ export const closingPhoto: ArtDirectedPhoto = {
  */
 export const galleryPhotos: Photo[] = [
   // Left column (tablets and up)
+  { src: gallery17, alt: "Hridee hugging Nyimul from behind by a lake" },
   { src: gallery02, alt: "Hridee and Nyimul sitting on fallen ginkgo leaves" },
   { src: gallery07, alt: "Hridee and Nyimul at a mountain overlook" },
-  { src: gallery05, alt: "Hridee and Nyimul in a park" },
-  { src: gallery09, alt: "Hridee and Nyimul by a lake in winter" },
   { src: gallery10, alt: "Hridee and Nyimul with a birthday dessert" },
   // Middle column
   { src: gallery18, alt: "Hridee and Nyimul taking a photo in a mirror" },
   { src: gallery03, alt: "Hridee and Nyimul at the symphony" },
-  { src: gallery04, alt: "Hridee and Nyimul in a greenhouse full of flowers" },
-  { src: gallery19, alt: "Hridee and Nyimul reflected in a mirrored wall" },
-  // Right column
-  { src: gallery17, alt: "Hridee hugging Nyimul from behind by a lake" },
-  { src: gallery06, alt: "Hridee and Nyimul in front of an aquarium tank" },
+  { src: gallery09, alt: "Hridee and Nyimul by a lake in winter" },
   { src: gallery14, alt: "Hridee and Nyimul under a red umbrella" },
+  // Right column
+  { src: gallery04, alt: "Hridee and Nyimul in a greenhouse full of flowers" },
+  { src: gallery05, alt: "Hridee and Nyimul in a park" },
+  { src: gallery19, alt: "Hridee and Nyimul reflected in a mirrored wall" },
   { src: gallery20, alt: "Hridee and Nyimul outside on a night out" },
 ];

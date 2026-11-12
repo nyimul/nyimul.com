@@ -64,6 +64,8 @@ export type Recommendation = {
   /** Drive from the hotel in minutes, without traffic. Each group lists its places nearest first. */
   minutes: number;
   address?: string;
+  /** Serves halal food: the row shows `halalLabel` ("Halal options served here") next to the name. */
+  halal?: boolean;
   url?: string;
 };
 
@@ -76,6 +78,10 @@ export type RecommendationGroup = {
 /** A hotel block. Only `name` is required; the Travel section shows whatever is filled in. */
 export type Accommodation = {
   name: string;
+  /** A cheaper hotel nearby: a short row under the main hotel's card (name, address, drive, Map link) instead of a card of its own. */
+  alternative?: boolean;
+  /** For alternatives: the drive from the main hotel in minutes. */
+  minutes?: number;
   address?: string;
   bookingUrl?: string;
   groupCode?: string;

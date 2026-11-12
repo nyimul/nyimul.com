@@ -3,7 +3,8 @@
  * Data: `recommendations` in content.ts, grouped (Activities, Food, Cafes). Each group lists its places
  * nearest the hotel first, and every row is one big link that opens the place in Google Maps
  * (a search for its name and address, so there are no map links to collect; it opens the Maps
- * app on phones). There is no embedded map on purpose: it is heavy on old phones, scroll-jacks,
+ * app on phones). A place with `halal: true` shows a small "Halal options served here" pill by its
+ * name. There is no embedded map on purpose: it is heavy on old phones, scroll-jacks,
  * and needs an API key. `recommendationsMapUrl`, a shared Google Maps list, gives guests a real
  * map with every pin in the app they already use, as one button.
  * Each list shows its first INITIAL_ROWS places and a "Show all" button (ShowAll.tsx); the rest,
@@ -15,7 +16,7 @@
  * Cafes lists (`groupPhotos`) and show with "Show all".
  */
 import Image from "next/image";
-import { recommendations, recommendationsIntro, recommendationsMapUrl } from "../../_lib/content";
+import { halalLabel, recommendations, recommendationsIntro, recommendationsMapUrl } from "../../_lib/content";
 import type { Recommendation } from "../../_lib/types";
 import { smallButton } from "../../_lib/ui";
 import { activityPhotos, cafePhotos, chapterPhotos, foodPhotos, type Photo } from "../../_photos";
@@ -57,7 +58,14 @@ function PlaceRow({ place }: { place: Recommendation }) {
       className="group flex items-start justify-between gap-4 py-4 text-ink no-underline"
     >
       <span className="min-w-0">
-        <span className="block text-xl font-semibold leading-snug group-hover:underline">{place.name}</span>
+        <span className="block text-xl font-semibold leading-snug">
+          <span className="group-hover:underline">{place.name}</span>
+          {place.halal && (
+            <span className="ml-2 inline-block whitespace-nowrap rounded-full bg-accent-soft px-2.5 py-0.5 align-middle text-[13px] font-semibold leading-snug text-ink">
+              {halalLabel}
+            </span>
+          )}
+        </span>
         <span className="mt-0.5 block text-muted">{[place.what, place.area].filter(Boolean).join(" · ")}</span>
       </span>
       <span className="shrink-0 text-right">

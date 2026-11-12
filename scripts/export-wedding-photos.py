@@ -37,8 +37,9 @@ PLAN = {
     "food-01": ("where to eat.jpg", STORY, None),
     # "food-02": ("for poster at reception.jpg", STORY, None),  # second Botiwalla photo, removed from the site 10 Nov 2026; uncomment to bring it back
     "cafe": ("hridee in front of raani.jpg", STORY, None),  # Hridee at Raani; the original is small (560x995) and is not upscaled
-    "activities-01": ("Photos-1-001/IMG_9399.heic", STORY, None),  # Feb 2023 aquarium; the pair beside the Activities list
-    "activities-02": ("Photos-1-001/IMG_9406.heic", STORY, None),  # Feb 2023 aquarium, back to back
+    # The pair beside the Activities list: one photo from each aquarium trip.
+    "activities-01": ("Photos-1-001/IMG_9406.heic", STORY, None),  # Feb 2023 aquarium, back to back (IMG_9399 from the same day was dropped 12 Nov 2026)
+    "activities-02": ("IMG_4186.HEIC", STORY, None),               # May 2025 aquarium (was gallery-06 until 12 Nov 2026)
     "closing": ("5S8A3929.jpg", FULL, None),
     # entrance
     "enter": ("Enter page pic perhaps.jpg", FULL, None),
@@ -49,7 +50,7 @@ PLAN = {
     "gallery-03": ("us at the symphony.jpg", STORY, None),  # Mar 2025
     "gallery-04": ("IMG_3200.HEIC", STORY, None),         # Apr 2025 botanical garden
     "gallery-05": ("IMG_0089.JPG", STORY, None),          # Apr 2025 park
-    "gallery-06": ("IMG_4186.HEIC", STORY, None),         # May 2025 aquarium
+    # gallery-06 (IMG_4186, May 2025 aquarium) moved beside the Activities list as activities-02 on 12 Nov 2026
     "gallery-07": ("IMG_4178.HEIC", STORY, None),         # Nov 2025 overlook
     # "gallery-08": ("IMG_1213.HEIC", STORY, None),       # Nov 2025 autumn walk, removed from the site 10 Nov 2026
     "gallery-09": ("IMG_6799.HEIC", STORY, None),         # Jan 2026 winter lake
