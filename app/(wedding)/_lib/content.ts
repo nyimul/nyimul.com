@@ -44,9 +44,10 @@ const nikkahColors = ["#FFE4E1", "#FBF0C4", "#D0F0C0", "#E3DAF0", "#D5E9F5"]; //
 
 export const eventColors: Record<EventId, Record<Family, string[]>> = {
   nikkah: { nyimul: nikkahColors, hridee: nikkahColors },
+  // Both sides share the same two oranges; Nyimul's side adds pinks, Hridee's side adds greens.
   holud: {
-    nyimul: ["#191970", "#7FB3E6", "#D4AF37", "#DBB2D1", "#F77FBE"], // midnight blue, cool horizon, metallic gold, soft pink, bright pink (coolors.co/191970-7fb3e6-d4af37-dbb2d1-f77fbe)
-    hridee: ["#E8701A", "#FFA000", "#D4AF37", "#2E8B57", "#50C878"], // deep orange, amber, metallic gold, sea green, emerald (coolors.co/e8701a-ffa000-d4af37-2e8b57-50c878)
+    nyimul: ["#E8701A", "#E0218A", "#FFA000", "#F77FBE"], // deep orange, amber, bright pink, hot pink (coolors.co/e8701a-ffa000-f77fbe-e0218a)
+    hridee: ["#E8701A", "#2E8B57", "#FFA000", "#50C878"], // deep orange, amber, sea green, emerald (coolors.co/e8701a-ffa000-2e8b57-50c878)
   },
   reception: { nyimul: [], hridee: [] }, // no palette for now; see receptionColors above
 };
@@ -65,7 +66,7 @@ export const events: WeddingEvent[] = [
     id: "nikkah",
     name: "Nikkah",
     date: "2027-04-09",
-    startTime: "09:30",
+    startTime: "10:00",
     venue: {
       name: "TPC Sugarloaf",
       address: "2595 Sugarloaf Club Dr, Duluth, GA 30097",
@@ -81,7 +82,7 @@ export const events: WeddingEvent[] = [
     id: "holud",
     name: "Gaye Holud",
     date: "2027-04-09",
-    startTime: "18:30",
+    startTime: "18:00",
     venue: {
       name: "TPC Sugarloaf",
       address: "2595 Sugarloaf Club Dr, Duluth, GA 30097",
@@ -97,7 +98,7 @@ export const events: WeddingEvent[] = [
     id: "reception",
     name: "Reception",
     date: "2027-04-10",
-    startTime: "19:00",
+    startTime: "18:00",
     venue: {
       name: "Hilton Atlanta Northeast",
       address: "5993 Peachtree Industrial Blvd, Peachtree Corners, GA 30092",
@@ -113,7 +114,7 @@ export const events: WeddingEvent[] = [
 
 /** How you met, the proposal, the in-between. Short paragraphs; photos go in _photos. */
 export const story: { heading: string; body: string }[] = [
-  { heading: "How we met", body: "We met at Georgia Tech through mutual friends. TODO: ADD MORE" },
+  { heading: "How we met", body: "We met in our last semesters at Georgia Tech through our mutual friends. We bonded over our shared taste in music and decided to have our first meet up at Puttshack, and followed by Jeni's (our favorite ice cream place). From there, the rest is history! We've explored many places in Atlanta together, from restaurants to music concerts to parks and coffee shops. We hope you can check out some of our favorite places too during our wedding weekend!" },
   // { heading: "The proposal", body: "Idk what to put here tbh" }, // hidden until it is written; uncomment to show it
 ];
 
@@ -191,11 +192,15 @@ export const recommendations: RecommendationGroup[] = [
       { name: "Cow Wow", what: "Our favorite Korean BBQ", area: "Suwanee", minutes: 25, address: "2850 Lawrenceville-Suwanee Rd Ste F, Suwanee, GA 30024" },
       { name: "Botiwalla by Chai Pani", what: "Our favorite Indian", area: "Ponce City Market", minutes: 30, address: "675 Ponce De Leon Ave NE, Atlanta, GA 30308" },
       { name: "Agavero", what: "Our favorite Mexican", area: "West Midtown", minutes: 30, address: "1133 Huff Rd NW Ste C, Atlanta, GA 30318" },
-      // Halal places, to fill in: name, a few words, area, minutes from the hotel, address. `halal: true` puts
-      // "Halal options served here" (halalLabel) next to the name. Uncomment a row once it is filled in.
-      { name: "Halal", what: "Halal", area: "Halal", minutes: 0, address: "", halal: true },
-      // { name: "", what: "", area: "", minutes: 0, address: "", halal: true },
-      // { name: "", what: "", area: "", minutes: 0, address: "", halal: true },
+      // Halal places. `halal: true` puts "Halal options served here" (halalLabel) next to the name.
+      // Minutes from a routing check on 27 Nov 2026, same method as above.
+      { name: "Shahi Grill", what: "Inside Shahi Bazaar", area: "Lawrenceville", minutes: 25, address: "851 Oak Rd SW, Lawrenceville, GA 30044", halal: true },
+      { name: "Al Amin", what: "Bangladeshi", area: "Buford Highway", minutes: 10, address: "5466 Buford Hwy NE, Doraville, GA 30340", halal: true },
+      { name: "Asma's Cuisine", what: "Indian and Pakistani", area: "Duluth", minutes: 15, address: "3099 Breckinridge Blvd Ste 114B, Duluth, GA 30096", halal: true },
+      { name: "Zouq", what: "Pakistani and Indian", area: "Duluth", minutes: 15, address: "1500 Pleasant Hill Rd Ste 102, Duluth, GA 30096", halal: true },
+      { name: "Masala Indian Cuisine", area: "Decatur", minutes: 20, address: "1713 Church St, Decatur, GA 30033", halal: true },
+      { name: "Zyka", what: "Hyderabadi Indian", area: "Decatur", minutes: 20, address: "1677 Scott Blvd, Decatur, GA 30033", halal: true },
+      { name: "Safi's Kitchen", what: "Afghan", area: "Norcross", minutes: 10, address: "4650 Jimmy Carter Blvd Ste 133A, Norcross, GA 30093", halal: true },
     ],
   },
   {
@@ -228,7 +233,7 @@ export const halalLabel = "Halal options served here";
  * is optional: add links and they appear under the note as buttons; leave it empty for cash gifts
  * only. Never put a home address here.
  */
-export const giftNote = "Having you at our wedding is the best gift, but we ask that you please do not bring boxed gifts.";
+export const giftNote = "We ask that you please do not bring boxed gifts.";
 export const registry: { name: string; url: string; note?: string }[] = [
   // { name: "", url: "" }
 ];

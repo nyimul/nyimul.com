@@ -2,10 +2,14 @@
 //
 //   node scripts/invites/render-invites.mjs "C:/path/to/output folder"
 //
-// Each *.html here is one card (600 x 960 CSS px, see invite.css), captured at 2x, so the files
-// are 1200 x 1920. PNG is the master; the JPG is the one to text (a quarter of the size, no
-// visible difference). Needs Chrome and an internet connection (the fonts come from Google
-// Fonts, as on the site). Nothing is uploaded anywhere; Chrome only reads the local files.
+// Each *.html here is one card (600 x 960 CSS px, see invite.css and classic.css), captured at
+// 2x, so the files are 1200 x 1920. PNG is the master; the JPG is the one to text (a quarter of
+// the size, no visible difference). Needs Chrome and an internet connection (the fonts come from
+// Google Fonts). Nothing is uploaded anywhere; Chrome only reads the local files.
+//
+// A card lists the fonts it must have in a data-fonts attribute, `|`-separated document.fonts.check()
+// strings, and nothing is captured until they are all in. ONLY=classic renders just the cards whose
+// file name starts with that.
 import { spawn } from "node:child_process";
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -22,8 +26,9 @@ const SCALE = 2;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 mkdirSync(out, { recursive: true });
-const cards = readdirSync(here).filter((f) => f.endsWith(".html"));
-if (cards.length === 0) throw new Error("no .html cards in " + here);
+const only = process.env.ONLY ?? "";
+const cards = readdirSync(here).filter((f) => f.endsWith(".html") && f.startsWith(only));
+if (cards.length === 0) throw new Error("no .html cards in " + here + (only ? ` starting with "${only}"` : ""));
 
 const chrome = spawn(
   CHROME,
@@ -81,12 +86,13 @@ await send("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT,
 
 for (const card of cards) {
   await send("Page.navigate", { url: pathToFileURL(join(here, card)).href });
-  // Wait until both fonts are really in and every image has decoded, so no card is captured with a fallback font.
-  const ready = `document.fonts.ready.then(() =>
-    document.fonts.check('500 52px "Playfair Display"') &&
-    document.fonts.check('italic 400 52px "Playfair Display"') &&
-    document.fonts.check('600 12px "Source Sans 3"') &&
-    [...document.images].every((i) => i.complete && i.naturalWidth > 0))`;
+  // Wait until the card's fonts are really in and every image has decoded, so no card is captured with a fallback font.
+  const ready = `document.fonts.ready.then(() => {
+    const fonts = (document.querySelector("[data-fonts]")?.dataset.fonts ?? "").split("|").filter(Boolean);
+    if (fonts.length === 0) throw new Error("the card has no data-fonts attribute");
+    return fonts.every((f) => document.fonts.check(f)) &&
+      [...document.images].every((i) => i.complete && i.naturalWidth > 0);
+  })`;
   const start = Date.now();
   while (!(await evaluate(ready))) {
     if (Date.now() - start > 30000) throw new Error(`${card}: fonts or images never loaded (offline?)`);
