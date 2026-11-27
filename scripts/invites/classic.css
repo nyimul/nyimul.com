@@ -1,0 +1,300 @@
+/*
+  Classic e-vite cards (classic-*.html): no photos, the look of a printed invitation. One card
+  is 600 x 960 CSS px and render-invites.mjs captures it at 2x (1200 x 1920), a phone-shaped
+  image that is sharp when texted.
+
+  Everything is centred inside a double gold rule. Cormorant Garamond for the small caps and
+  the details, Pinyon Script for the two names, gold line-art sprigs from classic-ornaments.mjs.
+  Two palettes, set by the card's class:
+    ivory     ivory stock, navy text, gold details
+    midnight  deep navy stock, ivory text, gold-foil names
+*/
+:root {
+  --font-display: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  --font-script: "Pinyon Script", "Snell Roundhand", "Brush Script MT", cursive;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html,
+body {
+  background: #777; /* outside the card; never captured */
+}
+
+body {
+  width: 600px;
+  height: 960px;
+  overflow: hidden;
+}
+
+.card {
+  position: relative;
+  width: 600px;
+  height: 960px;
+  overflow: hidden;
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+  text-align: center;
+  text-rendering: optimizeLegibility;
+}
+
+.card.ivory {
+  background: radial-gradient(ellipse at 50% 30%, #fcf8f0 0%, #f5efe3 55%, #efe6d6 100%);
+  color: #1f2742;
+  --ink: #1f2742;
+  --muted: #5d5c55;
+  --gold: #b3924a;
+  --gold-text: #a3813a;
+  --qr-border: rgba(163, 129, 58, 0.55);
+}
+
+.card.midnight {
+  background: radial-gradient(ellipse at 50% 32%, #2a3364 0%, #1e2549 55%, #151a35 100%);
+  color: #f1eadb;
+  --ink: #f1eadb;
+  --muted: rgba(241, 234, 219, 0.72);
+  --gold: #cfb36b;
+  --gold-text: #dcc27c;
+  --qr-border: rgba(220, 194, 124, 0.5);
+}
+
+/* Paper grain: a faint noise layer, dark on ivory, light on midnight. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.card.midnight::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Double rule just inside the edge, like a letterpress border. */
+.frame {
+  position: absolute;
+  inset: 20px;
+  border: 1.5px solid var(--gold);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.frame.inner {
+  inset: 27px;
+  border-width: 0.75px;
+  opacity: 0.85;
+}
+
+/* Corner sprigs just inside the inner rule; one file, rotated for each corner. */
+.corner {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  opacity: 0.9;
+  pointer-events: none;
+}
+.corner.tl {
+  top: 36px;
+  left: 36px;
+}
+.corner.tr {
+  top: 36px;
+  right: 36px;
+  transform: rotate(90deg);
+}
+.corner.br {
+  bottom: 36px;
+  right: 36px;
+  transform: rotate(180deg);
+}
+.corner.bl {
+  bottom: 36px;
+  left: 36px;
+  transform: rotate(270deg);
+}
+
+/* Everything sits in a column: top block, events, RSVP. Spare height goes between them. */
+.inner {
+  position: absolute;
+  inset: 27px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 44px 52px 40px;
+}
+
+.top,
+.events,
+.rsvp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* The crest: sprigs with the initials cradled between them. */
+.crest {
+  position: relative;
+  width: 200px;
+  height: 96px;
+}
+.crest img {
+  display: block;
+  width: 200px;
+  height: 96px;
+}
+.crest .initials {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 30px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: var(--gold-text);
+}
+
+.eyebrow {
+  margin-top: 24px;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-indent: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+
+.names {
+  margin-top: 10px;
+  font-family: var(--font-script);
+  font-size: 72px;
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--ink);
+}
+.names .name {
+  display: block;
+  padding: 0 0.15em; /* room for the swashes */
+}
+.names .amp {
+  display: block;
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1;
+  color: var(--gold-text);
+}
+.midnight .names .name {
+  background: linear-gradient(100deg, #b9984a 0%, #f0d995 38%, #c9a95b 62%, #ead08a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lead {
+  margin-top: 14px;
+  font-size: 23px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.divider {
+  display: block;
+  width: 180px;
+  height: 24px;
+  margin-bottom: 22px;
+}
+
+.event + .event {
+  margin-top: 22px;
+}
+.event h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+.event .when {
+  margin-top: 6px;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.event .where {
+  margin-top: 2px;
+  font-size: 19px;
+  font-style: italic;
+  line-height: 1.3;
+  color: var(--muted);
+}
+/* The taller, one-line-per-fact layout for a card with a single event. */
+.event .time {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.event .venue {
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.event .city {
+  font-size: 19px;
+  font-style: italic;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+/* A card with room to spare (one event) sets its names a little larger. */
+.roomy .names {
+  font-size: 78px;
+}
+.roomy .eyebrow {
+  margin-top: 30px;
+}
+.roomy .lead {
+  margin-top: 18px;
+}
+
+/* RSVP: a white square to paste the QR code onto, and the address under it for anyone who cannot scan. */
+.rule {
+  display: block;
+  width: 160px;
+  height: 12px;
+}
+.qr {
+  margin-top: 18px;
+  width: 100px;
+  height: 100px;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid var(--qr-border);
+}
+.rsvp p {
+  margin-top: 12px;
+  font-size: 16.5px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.rsvp strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
