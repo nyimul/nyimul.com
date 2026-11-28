@@ -31,7 +31,7 @@ import Footer from "./_components/Footer";
 
 export default async function WeddingHome() {
   const party = await requireParty();
-  const myEvents = eventsFor(party.invitedEventIds);
+  const myEvents = eventsFor(party.invitedEventIds, party.family);
   const onlyFor = await eventsForSome(party.partyId);
 
   return (
@@ -42,8 +42,8 @@ export default async function WeddingHome() {
         <Events events={myEvents} onlyFor={onlyFor} family={party.family} />
         <RsvpCta />
         <OurStory />
-        <Travel invitedEventIds={party.invitedEventIds} />
-        <Faq invitedEventIds={party.invitedEventIds} />
+        <Travel invitedEventIds={party.invitedEventIds} family={party.family} />
+        <Faq invitedEventIds={party.invitedEventIds} family={party.family} />
         <Gifts />
         <WeddingParty />
         <ThingsToDo />

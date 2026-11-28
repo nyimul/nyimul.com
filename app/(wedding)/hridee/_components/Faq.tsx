@@ -9,8 +9,8 @@
  */
 import { Fragment } from "react";
 import { faq } from "../../_lib/content";
-import { visibleTo } from "../../_lib/party";
-import type { EventId } from "../../_lib/types";
+import { onSide, visibleTo } from "../../_lib/party";
+import type { EventId, Family } from "../../_lib/types";
 import { chapterPhotos } from "../../_photos";
 import Section from "./Section";
 
@@ -35,11 +35,16 @@ function linkify(text: string) {
   });
 }
 
-export default function Faq({ invitedEventIds }: { invitedEventIds: EventId[] }) {
+export default function Faq({ invitedEventIds, family }: { invitedEventIds: EventId[]; family: Family }) {
+  // Worded for the guest's side: Hridee's side reads "Akht" for "Nikkah" (onSide in _lib/party.ts).
+  const items = visibleTo(faq, invitedEventIds).map((item) => ({
+    question: onSide(item.question, family),
+    answer: onSide(family === "hridee" && item.hrideeAnswer ? item.hrideeAnswer : item.answer, family),
+  }));
   return (
     <Section id="faq" title="Questions" photo={chapterPhotos.faq}>
       <div className="divide-y divide-accent-soft border-y border-accent-soft">
-        {visibleTo(faq, invitedEventIds).map((item) => (
+        {items.map((item) => (
           <details key={item.question}>
             <summary className="faq-summary flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-lg font-semibold">
               <span>{item.question}</span>
