@@ -30,7 +30,7 @@ export default async function RsvpPage() {
   const closed = isRsvpClosed(wedding.rsvpDeadline);
   const invitations = new Map(party.invitations.map((i) => [i.eventId, i]));
   const everyone = party.guests.map((g) => g.id);
-  const events: RsvpEvent[] = eventsFor(party.invitedEventIds).map((e) => ({
+  const events: RsvpEvent[] = eventsFor(party.invitedEventIds, party.family).map((e) => ({
     id: e.id,
     name: e.name,
     date: e.date,

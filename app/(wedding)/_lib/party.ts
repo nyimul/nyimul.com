@@ -8,11 +8,11 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { events } from "./content";
+import { events, nikkahName } from "./content";
 import { whoFor } from "./format";
 import { getSession } from "./session";
 import { guestStore } from "./store";
-import type { EventId, PartySummary, WeddingEvent } from "./types";
+import type { EventId, Family, PartySummary, WeddingEvent } from "./types";
 
 /** The signed-in party, or null (no session, or the party was deleted from the guest list). */
 export const getCurrentParty = cache(async (): Promise<PartySummary | null> => {
@@ -28,9 +28,28 @@ export async function requireParty(): Promise<PartySummary> {
   return party;
 }
 
-/** The party's events, in the order they appear in content.ts. */
-export function eventsFor(invited: readonly EventId[]): WeddingEvent[] {
-  return events.filter((e) => invited.includes(e.id));
+/** The party's events, in the order they appear in content.ts, worded for their side (see onSide). */
+export function eventsFor(invited: readonly EventId[], family: Family): WeddingEvent[] {
+  return events
+    .filter((e) => invited.includes(e.id))
+    .map((e) => ({
+      ...e,
+      name: onSide(e.name, family),
+      dressCode: onSide(e.dressCode, family),
+      description: onSide(e.description, family),
+      guestNotes: e.guestNotes && onSide(e.guestNotes, family),
+    }));
+}
+
+/**
+ * Text the way one side of the family says it. Hridee's side calls the Nikkah the Akht
+ * (`nikkahName` in content.ts), so for them "a Nikkah" becomes "an Akht" and "Nikkah" becomes "Akht".
+ */
+export function onSide(text: string, family: Family): string {
+  const name = nikkahName[family];
+  if (name === "Nikkah") return text;
+  const n = /^[aeiou]/i.test(name) ? "n" : "";
+  return text.replace(/\b([Aa])n? Nikkah\b/g, `$1${n} ${name}`).replace(/\bNikkah\b/g, name);
 }
 
 /**

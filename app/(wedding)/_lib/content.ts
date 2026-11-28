@@ -61,6 +61,14 @@ export const colorsToWearLabel = "Wear any of these colors, or mix them";
 /** The small heading above each event's dress code text, in the same style as the line above the swatches. */
 export const dressCodeLabel = "Dress code";
 
+/**
+ * Hridee's side calls the Nikkah the Akht. A guest whose row is on the Hridee's Family tab sees
+ * "Akht" wherever this file says "Nikkah" (event card, RSVP form, FAQ, travel notes, calendar),
+ * and "a Nikkah" reads "an Akht". Nyimul's side sees "Nikkah". So keep writing "Nikkah" here.
+ * The Google Sheet always says Nikkah.
+ */
+export const nikkahName: Record<Family, string> = { nyimul: "Nikkah", hridee: "Akht" };
+
 export const events: WeddingEvent[] = [
   {
     id: "nikkah",
@@ -252,6 +260,8 @@ export const faq: FaqItem[] = [
   {
     question: "I've never been to a Nikkah. What should I expect?",
     answer: "The Nikkah (also known as Akht in Bengali) is the Islamic marriage ceremony conducted by an imam. It is a short ceremony that typically lasts around 25 minutes, ending with the bride and groom's first meeting as newly weds!",
+    // Hridee's side already calls it the Akht, so their answer skips the "also known as".
+    hrideeAnswer: "The Akht is the Islamic marriage ceremony conducted by an imam. It is a short ceremony that typically lasts around 25 minutes, ending with the bride and groom's first meeting as newly weds!",
     eventIds: ["nikkah"],
   },
   {

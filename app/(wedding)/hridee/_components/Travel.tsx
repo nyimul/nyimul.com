@@ -10,8 +10,8 @@
  * as "The reception is here" never reaches a guest who isn't invited to the reception.
  */
 import { accommodations, otherHotelsNote, transport } from "../../_lib/content";
-import { visibleTo } from "../../_lib/party";
-import type { EventId } from "../../_lib/types";
+import { onSide, visibleTo } from "../../_lib/party";
+import type { EventId, Family } from "../../_lib/types";
 import { cardClass, smallButton } from "../../_lib/ui";
 import { chapterPhotos } from "../../_photos";
 import Section from "./Section";
@@ -20,7 +20,7 @@ import Section from "./Section";
 const mapsUrl = (name: string, address?: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address ? `${name}, ${address}` : name)}`;
 
-export default function Travel({ invitedEventIds }: { invitedEventIds: EventId[] }) {
+export default function Travel({ invitedEventIds, family }: { invitedEventIds: EventId[]; family: Family }) {
   const mainHotels = accommodations.filter((hotel) => !hotel.alternative);
   const otherHotels = accommodations.filter((hotel) => hotel.alternative);
   return (
@@ -38,7 +38,7 @@ export default function Travel({ invitedEventIds }: { invitedEventIds: EventId[]
               {hotel.address && <p className="mt-1 text-muted">{hotel.address}</p>}
               {visibleTo(hotel.eventNotes ?? [], invitedEventIds).map((note) => (
                 <p key={note.text} className="mt-3">
-                  {note.text}
+                  {onSide(note.text, family)}
                 </p>
               ))}
               {hotel.notes && <p className="mt-3">{hotel.notes}</p>}

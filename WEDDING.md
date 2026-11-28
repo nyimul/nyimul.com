@@ -175,6 +175,8 @@ Source: https://sayi.do/articles/complete-guide-wedding-website-must-haves. Ever
 
 Not everyone is invited to every event, so **invitations are per party per event**, each with its own seat count. The `party_events` rows decide what each guest sees on the site: no row for the Nikkah means the Nikkah never appears for that party, anywhere.
 
+Hridee's side calls the Nikkah the **Akht**. Guests on the Hridee's Family tab see "Akht" everywhere the site says "Nikkah": the event card, the RSVP form, the FAQ, the travel notes and the calendar entry. Nyimul's side sees "Nikkah". In `content.ts`, keep writing "Nikkah"; the swap is automatic (`nikkahName` there, `onSide` in `_lib/party.ts`). An FAQ answer that would read oddly after the swap can give Hridee's side its own wording with `hrideeAnswer`. The Google Sheet always says Nikkah.
+
 ### The model (see `supabase/schema.sql`)
 - **party**: one invitation / household, which is one row of the family's Google Sheet (its Website ID is the party id). Has a `display_name` ("The Hoque Family"), a `search_name` used for lookup, `archived_at`, set when the row leaves the sheet, `others_need_named`, the sheet's "Others need a named guest", and `family`, the tab the row is on, which decides the event colors that party sees.
 - **guests**: the people in the party. Named people are rows with names. Every invite without a name (the sheet's Invites number minus the names listed) is an **open spot**: `is_slot = true`, `full_name = null`. On the RSVP form the family says how many of those are coming and may type their names. Only open spots' names are editable by guests.

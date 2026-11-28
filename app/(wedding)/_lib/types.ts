@@ -40,6 +40,8 @@ export type WeddingEvent = {
 export type FaqItem = {
   question: string;
   answer: string;
+  /** What Hridee's side sees instead of `answer`, for an answer where swapping Nikkah for Akht alone reads oddly. */
+  hrideeAnswer?: string;
   /** Only show this to parties invited to at least one of these events. Omit to show everyone. */
   eventIds?: EventId[];
 };
